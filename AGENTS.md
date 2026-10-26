@@ -4,31 +4,33 @@ Read `README.md` first. It is the entry point and shows the status. The factory 
 
 ## Workflow: every increment follows these steps
 
-An increment is one unit of work. Each increment has a folder `docs/increments/<nn>-<slug>/`.
+An increment is one unit of work. Each increment has a folder `docs/increments/<nn>-<slug>/`. The format of a design note and of an acceptance test is fixed in `docs/increments/02-trust-core/design.md`, section Format.
 
-1. **Design note.** Write `design.md`: the goal, what is out of scope, a sketch only if it answers a question, and the scenarios with ids `scenario <nn>.<n>`. Each scenario names its verification kind. Stop. The engineer sets `Status: approved` or asks for changes.
-2. **Acceptance tests.** A separate agent with a fresh context writes the tests for the automated scenarios, in `test/acceptance/<nn>-<slug>.test.mjs`. Each test title starts with `scenario <nn>.<n>:`. This agent sees only the approved scenarios and the public interface, never the implementation. Stop. The engineer reviews the tests and locks them.
-3. **Implementation.** The implementing agent writes the code until the tests pass. Stop and ask if a test looks wrong.
-4. **Demonstration.** A separate agent runs the demonstrated scenarios like a user and records them. The engineer views the recordings and runs the manual scenarios.
-5. **Summary.** At most 10 lines. Wait for approval. Then push.
+1. **Design note.** Write `design.md` with goal, scope, interface and scenarios. Each scenario names its verification kind. `factory check-design` must pass. Stop. The engineer approves with a signed commit.
+2. **Acceptance tests.** A separate session runs the agent `acceptance-test-writer` with its fixed prompt. It writes one `testscript` file per automated scenario. It sees only the approved note and the public interface, never the implementation. `factory check-tests` must pass. Stop. The engineer approves with a signed commit.
+3. **Implementation.** The implementing agent writes the code until the tests pass and `factory verify` passes. Stop and ask if a test looks wrong.
+4. **Review.** A fresh-context reviewer checks the diff for special cases, test detection and anything outside the scenarios. Then the agent asks 2 or 3 comprehension questions, at least one about debugging. The engineer answers before the agent explains.
+5. **Demonstration.** Demonstrated scenarios run in a separate session, and their recordings go to `evidence/`. The engineer runs the manual scenarios.
+6. **Summary.** At most 10 lines. Wait for approval. Then push.
 
 Do not write implementation code before steps 1 and 2 are approved.
 
 ## Verification kinds
 
-- **automated:** a black-box test, written in step 2 by a separate agent. It runs a script as its own process and checks only files, exit code and output.
-- **demonstrated:** a separate agent runs the scenario and records it. The engineer views the recording.
-- **manual:** the engineer runs the scenario.
+- **automated:** a `testscript` file from step 2
+- **demonstrated:** a separate session runs it and records it, and the engineer views the recording
+- **manual:** the engineer runs it
 
 ## The implementing agent never
 
-- changes an acceptance test, a `tests.lock` or an approved scenario
+- changes an acceptance test, an `approvals.json`, `.factory/allowed_signers` or an approved design note
 - writes code that detects a test run, or that hard-codes test cases
+- signs commits. Only the engineer signs, and only approvals.
 - counts its own unit tests as evidence. They are scaffolding.
 
 ## Reports
 
-Every report names the kind of each piece of evidence: approved scenario, demonstrated, manual, ADR confirmation, agent test (scaffolding), or not verified.
+Every report names the kind of each piece of evidence: approved scenario, demonstrated, manual, review, ADR confirmation, agent test (scaffolding), or not verified.
 
 ## Source of truth and push
 
@@ -38,14 +40,14 @@ Every report names the kind of each piece of evidence: approved scenario, demons
 ## Docs
 
 - Docs state general rules. They contain no "you" and no "I". The roles are engineer and agent.
-- ADRs are only for architecture decisions and use MADR. Context and decision drivers are value-neutral facts. Only the engineer sets `accepted`. An accepted ADR changes only editorially, and only with the engineer's approval.
+- ADRs are only for architecture decisions and use MADR. Context and decision drivers are value-neutral facts. Only the engineer sets `accepted`.
 - Process and policy are rules in `docs/principles.md`. Each rule names its source, what it depends on, how it is enforced, and when to re-check it.
 - `README.md` stays one page. Update its status in every increment.
 
 ## Code
 
-- `core/` is tool-neutral. No file there names a specific agent tool. Tool-specific parts live in `adapters/<tool>/`.
-- Scripts are Node `.mjs` files (Node 22 or later) without dependencies.
-- Script output is short and grep-able. Each line starts with the script's prefix, for example `factory:`.
+- The CLI is Go. It uses only the standard library at runtime. Test-only dependencies are allowed.
+- `core/` and the tool-neutral packages name no specific agent tool. Tool-specific parts live in `adapters/<tool>/`.
+- Output is short and grep-able. Each line starts with the command's prefix, for example `verify:`.
 - Skill names use the -ing form, for example `designing-increments`.
-- Run `node --test` before every commit.
+- Run `go test ./...` before every commit.

@@ -72,3 +72,21 @@ Labels:
 
 - An early claim that Thoughtworks found "the opposite of Jacob" on TDD was wrong. See the TDD rows above.
 - "Test-first ordering raises fault detection by 8–18%" was a misreading. The paper's finding is about independence (25% vs 14%).
+
+## Added on 2026-10-26: tooling, approvals and test format
+
+| Source | Finding | Taken |
+|---|---|---|
+| Swamp source repository, github.com/swamp-club/swamp (read; advocacy) | A TypeScript CLI on Deno, compiled with `deno compile` into one binary that embeds the runtime. Installed with `curl … \| sh`. `swamp repo init --tool <name>` sets up nine agent tools. The skills are embedded in the binary and written into the agents' skill folders, which are gitignored. | One CLI with embedded skills. The factory commits the copied skills, because cloud sessions read only the repo. |
+| GitHub Spec Kit installation docs (read) | The `specify` CLI is Python, installed with `uv tool install` or run once with `uvx`, pinned to a release tag. | CLIs as the entry point are common. The language follows the ecosystem. |
+| `testscript`, github.com/rogpeppe/go-internal (read) | Extracted from the Go team's script tests for the `go` command. Shell-like scripts check stdout, stderr and exit status. It runs from `go test`. | Acceptance tests as readable `.txtar` files with one shared runner. |
+| Secretive README and PostHog handbook (read) | SSH keys in the Mac's Secure Enclave cannot be exported. Use can require Touch ID. Git can sign with them. | Approvals signed with Touch ID. |
+| Yubico, Git signing with SSH and FIDO2 (read) | `ed25519-sk` keys sign only after a physical touch. Verification uses an allowed-signers file. | Same mechanism, an alternative device. |
+| Node.js TypeScript docs (read) | Type stripping is on by default from v22.18 and v23.6, for erasable syntax only, with no type check. | Considered and rejected in ADR 0001. |
+| Measured in this container, 2026-10-26 | Startup median: Go or Rust binary about 2 ms, Node script about 30 ms, Node with Effect 3 imported from its root about 390 ms. | Decision driver in ADR 0001. |
+| ImpossibleBench, arXiv 2510.20270 (via review) | Read-only tests stop test edits but not special cases in code. LLM monitors caught 86–89% of cheating on simple tasks and 42–50% on complex ones. | Fresh-context review step (rule 12). |
+| EvilGenie, arXiv 2511.21654 (via review, re-read) | An LLM judge was highly effective in unambiguous cases. Held-out tests added only a little. Hard-coding rose from 2% to 33% on ambiguous tasks. | Rule 7 corrected. Fixed grammar for notes and tests (rule 32). |
+| DORA, streamlining change approval (via review) | Approval through peer review, supplemented by automation, recorded in the platform. | Approvals as signed commits that CI checks. |
+| GitHub terms of service (via review) | One free machine account is allowed in addition to the personal account. | Kept as the option for a later team setup. |
+
+Correction: rule 7 cited EvilGenie as support for holdouts. EvilGenie found holdouts added little, and the review in rule 12 caught more.
