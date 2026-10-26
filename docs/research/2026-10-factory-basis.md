@@ -106,3 +106,22 @@ Correction: rule 7 cited EvilGenie as support for holdouts. EvilGenie found hold
 | GitHub docs, artifact attestations (via review) | Build provenance logged in Sigstore's public instance for public repos (SLSA Build Level 2). | Releases with attestations (ADR 0001). |
 | Go blog, reproducible builds (via review) | `go build -trimpath` with `CGO_ENABLED=0` gives reproducible binaries. | Build flags in ADR 0001. |
 | Cursor docs, skills (via review; vendor) | Cursor also loads `.claude/skills/`. | Noted as a consequence in ADR 0001. |
+
+## Added on 2026-10-26 after review 4: how other factories approve, and credentials
+
+| Source | Finding | Taken |
+|---|---|---|
+| GitHub docs, Copilot cloud agent risks and mitigations (read; vendor) | The agent has its own app identity, pushes only to its own `copilot/` branch, and cannot approve or merge. Workflows run only after a human clicks "Approve and run workflows". | Agents never approve or merge (rule 31). |
+| Stripe, Minions part 1 (read; vendor) | A minion run ends in a pull request that passes CI. An engineer reviews it and asks a second engineer for review. Humans merge. | Human approval per pull request (rule 31). |
+| Anthropic, Building a C compiler (read; vendor) | Agents push straight to a shared upstream. Tests are the only gate. A research setup. | Not taken: the factory keeps a human approval. |
+| Willison on StrongDM (read) | "Code must not be reviewed by humans." Scenarios outside the codebase decide. | Not taken for v0. Holdouts stay in the backlog. |
+| Hashimoto, My AI adoption journey (read) | After each agent mistake, he changes `AGENTS.md` or builds a tool himself. | The engineer submits each feedback issue (rule 35). |
+| GitHub changelog, 2025-11-07, `pull_request_target` changes (read) | From 2025-12-08, `pull_request_target` always takes the workflow file and the checkout from the default branch. | The gate runs on `pull_request_target` (rule 34). Whether its checks count as required checks on the pull request head is not verified. |
+| GitHub docs, deployments and environments (read) | Required reviewers are available for public repos on Free. Admin bypass can be switched off. | The approval gate (rule 31). |
+| GitHub docs, managing personal access tokens (read) | A fine-grained token cannot be used to contribute to repos where the user is a collaborator. Each token covers one owner. | A machine account would need a classic token or an organization. Not taken now. |
+| Claude Code docs, sandboxing (via review 4; vendor) | Commands may read credential files such as `~/.ssh` by default. There is no built-in credential deny list. | Deny list in the user settings (rule 33, scenario 02.12). |
+| testscript package docs (via review 4) | Commands can be guarded by conditions such as `[darwin]`, `[short]` or `[exec:x]`. | All conditions are forbidden in acceptance tests. |
+| Invariant Labs, GitHub MCP vulnerability (via review 4; security vendor) | Text in public issues reaches agents that read them and acts as an injected instruction. | Factory agents read only issues with the label `accepted` (rule 35). |
+| GitHub docs, interaction limits (via review 4) | Limits on who may open issues last at most 6 months. | Labels, not limits, decide what agents read. |
+
+Decision on 2026-10-26: the engineer replaced signed approval commits with the GitHub approval gate (option C), and chose to submit feedback issues by hand. The sections above about Secretive, signing keys and allowed-signers files are kept as the record of the rejected option.

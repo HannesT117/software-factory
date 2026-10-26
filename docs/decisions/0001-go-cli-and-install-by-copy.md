@@ -19,7 +19,8 @@ The factory consists of skills, checks, hooks and templates that projects use. C
 * A compiled binary needs no language runtime in the project. A script needs its runtime in every project, cloud session and CI job.
 * Startup time, measured in a Linux container: a Go binary about 2 ms, a Node script about 30 ms. Model latency is seconds, so this difference alone does not decide.
 * Each project pins the factory version it uses, and every update is reviewable.
-* The project is also a learning project for Go.
+* The CLI also decides which pull requests may merge: it checks path groups and test files. A checker with that role must stay small enough for the engineer to read line by line.
+* The engineer has named Go as a language to learn. This is a preference, not a technical force.
 
 ## Considered Options
 
@@ -29,36 +30,45 @@ The factory consists of skills, checks, hooks and templates that projects use. C
 4. Rust CLI, skills copied into projects
 5. Claude Code plugin from a marketplace
 6. Links from the project to a factory checkout (symlink or git submodule)
+7. Existing tools only: GitHub settings, shell scripts for the checks, skills as plain files
 
 ## Decision Outcome
 
-Chosen option 1, because it needs no runtime in the project, keeps tool-specific parts in one replaceable place, and serves the learning goal.
+Chosen option 1, because it needs no runtime in the project, keeps tool-specific parts in one replaceable place, gives the checks one tested home, and matches the engineer's preference for Go.
 
-* **CLI:** one Go binary `factory`. It uses only the Go standard library at runtime, and it calls `git` and `ssh-keygen` for signatures. Test-only dependencies are allowed. The policy logic lives in tool-neutral packages.
+* **CLI:** one Go binary `factory`. It uses only the Go standard library at runtime, and it calls `git`. Test-only dependencies are allowed. The policy logic lives in tool-neutral packages.
 * **Skills:** embedded in the binary. `factory install` copies them into the project's `.agents/skills/` and pins the factory version in `.factory/config.json`. The project commits the copies.
 * **Adapters:** `adapters/<tool>/` translates the tool's hook input and output and calls `factory`. The Claude Code adapter also creates relative symlinks `.claude/skills/<name>` → `../../.agents/skills/<name>`.
-* **Distribution:** GitHub Releases with binaries for macOS, Linux and Windows, built with `CGO_ENABLED=0 go build -trimpath`, with checksums and GitHub artifact attestations. An install step verifies the attestation before it installs, on the engineer's machine, in the cloud setup script, and in CI.
-* **Finding the binary:** hooks call `factory` from `PATH`. `factory` refuses to run if its version differs from the pin in `.factory/config.json`.
+* **Distribution:** GitHub Releases with binaries for macOS, Linux and Windows, built with `CGO_ENABLED=0 go build -trimpath`, with checksums and GitHub artifact attestations. When a project changes its pinned version, the engineer verifies the attestation once, and the project pins the checksum. The install step on the engineer's machine, in the cloud setup script and in CI compares the checksum.
+* **Finding the binary:** hooks call `factory` from `PATH`. `factory` refuses to run if its version differs from the pin in `.factory/config.json`. A build from source in the factory repo has the version `dev` and skips this check.
 
 ### Consequences
 
 * Good, because the project needs no runtime for the factory.
 * Good, because one tool serves the engineer, the hooks and CI.
 * Good, because replacing the agent tool means adding one adapter.
-* Good, because attestations let every install check where a binary was built.
+* Good, because the attestation shows where a binary was built, and the pinned checksum keeps installs offline.
 * Bad, because releases need a pipeline, and every environment needs an install step.
 * Bad, because the skills exist twice, in the factory and in each project.
 * Bad, because Windows clones need `core.symlinks`, and Cursor may list each skill twice.
-* Neutral, because project cloud threads do not load committed `.claude/skills/`. Other cloud sessions do.
+* Bad, because project cloud threads do not load committed `.claude/skills/`. Other cloud sessions do.
+* Bad, because the CLI depends on the host's `git`.
 
 ### Confirmation
 
-* A check fails if a file under `core/` or in the tool-neutral packages names a specific agent tool.
+* `factory validate-skills` reports `tool-name` when a skill names a specific agent tool (scenario 02.14). The review checks that the tool-neutral packages name none.
 * `factory install --check` runs in the CI of every project.
-* Every release carries checksums and an attestation, and the install step refuses a binary whose attestation does not verify.
+* Every release carries checksums and an attestation, and the install step refuses a binary whose checksum differs from the pin.
 * An end-to-end test installs into a fixture project and checks that Claude Code lists the skills through the symlinks.
 
 ## Pros and Cons of the Options
+
+### Go CLI
+
+* Good, because one static binary runs on macOS, Linux and Windows without a runtime.
+* Good, because the standard library covers files, JSON, regular expressions and processes, so the checker stays free of runtime dependencies.
+* Bad, because releases and an install step are needed.
+* Bad, because the engineer is still learning Go, so the first reviews of the code take longer.
 
 ### Node or TypeScript scripts
 
@@ -84,6 +94,12 @@ Chosen option 1, because it needs no runtime in the project, keeps tool-specific
 
 * Good, because changes show up in the project at once.
 * Bad, because the links break in cloud sessions and CI, and no version is pinned.
+
+### Existing tools only
+
+* Good, because there is no own binary to build, release and install.
+* Bad, because shell scripts behave differently on macOS, Linux and Windows and are hard to test.
+* Bad, because each agent tool needs its own hook scripts, with no shared logic.
 
 ## More Information
 
