@@ -4,8 +4,8 @@ These are the sources behind [principles.md](../principles.md) and the ADRs. Eac
 
 Labels:
 
-- **read**: I read the primary source in this research.
-- **via review**: an adversarial review agent read it. I did not re-read it.
+- **read**: the primary source was read during this research.
+- **via review**: an adversarial review agent read it. It was not re-read.
 - **advocacy**: the author sells a product in this space.
 - **vendor**: the source is a vendor's own documentation or marketing.
 
@@ -42,7 +42,7 @@ Labels:
 | Source | Finding | Taken |
 |---|---|---|
 | Anthropic RCT on coding skills, 2026-01-29 (read) | n = 52 in a chat sidebar. AI group 50% vs 67% on a quiz. The largest gap was in debugging. "Generation then comprehension" scored 86% with n = 2. | Comprehension questions, at least one on debugging. |
-| Mario Zechner, Thoughts on slowing down, 2026-03-25 (read) | Agent errors compound without a human bottleneck. Write architecture and APIs yourself. Cap generated code to what you can review. | Small slices. Stop-and-discuss triggers. |
+| Mario Zechner, Thoughts on slowing down, 2026-03-25 (read) | Agent errors compound without a human bottleneck. Write architecture and APIs by hand. Cap generated code to what a person can review. | Small slices. Stop-and-discuss triggers. |
 | Anthropic, Redesigning source control, 2026-10-13 (read) | 30,000 merges a day. Humans review intent, not every line. Agents that watch telemetry catch subtle issues. | Review by intent. Observability is in the backlog. |
 | Anthropic postmortem, 2026-04-23 (read) | Three harness changes lowered Claude Code quality for weeks while the model stayed the same. | Record the agent version. |
 | Anthropic, Demystifying evals for AI agents, 2026-01-09 (read) | Code graders first. Start with 20–50 tasks from real failures. Read transcripts. | Metrics from real failures. |

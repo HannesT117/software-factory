@@ -5,7 +5,7 @@
 
 ## Context
 
-You want no vendor lock-in. Coding agents differ in how they load instructions, skills and hooks:
+The engineer wants no vendor lock-in. Coding agents differ in how they load instructions, skills and hooks:
 
 - Codex, Cursor, Copilot, Gemini CLI, OpenCode and Pi read skills from `.agents/skills/`.
 - Claude Code reads skills from `.claude/skills/` and nothing under `.agents/`. A `<skill-name>` entry there may be a symlink.
