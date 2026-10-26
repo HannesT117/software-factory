@@ -2,6 +2,8 @@
 
 This repo is a software factory: the system around coding agents that decides what counts as done, who checks it, and how a failure turns into a better check. Projects install it with `install.mjs`. The first project is `health`.
 
+Roles: the **engineer** is the human who owns a project. An **agent** is a coding agent that works in it.
+
 ## Status
 
 v0, phase 1 of 6 (basis documents). Branch `claude/factory-v0`.
@@ -21,7 +23,7 @@ v0, phase 1 of 6 (basis documents). Branch `claude/factory-v0`.
 |---|---|---|
 | [0001](docs/decisions/0001-layers-and-install-by-copy.md) | Vendor-neutral core plus thin adapters. Projects get a copy, not a link. | accepted |
 
-ADRs are only for architecture decisions. Only the engineer sets an ADR to `accepted`.
+ADRs are only for architecture decisions and use the [MADR](https://adr.github.io/madr/) format. Only the engineer sets an ADR to `accepted`.
 
 Process and policy are rules in [principles.md](docs/principles.md):
 - what counts as evidence: rules 6–13
@@ -30,9 +32,9 @@ Process and policy are rules in [principles.md](docs/principles.md):
 
 ## Open
 
-- The engineer approves phase 1.
-- Phase 2: the engineer imports the ruleset and makes the repos public.
-- Phase 5: the engineer gives the rules for code comments and explanations, and picks the pstack parts.
+- Approval of phase 1
+- Phase 2: ruleset import and public repos
+- Phase 5: rules for code comments and explanations, choice of pstack parts
 
 ## Later: built when `health` needs it
 
