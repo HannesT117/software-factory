@@ -6,12 +6,12 @@ Roles: the **engineer** is the human who owns a project. An **agent** is a codin
 
 ## Status
 
-v0, phase 1 of 6 (basis documents). Branch `claude/factory-v0`.
+v0, phase 2 of 6 (skeleton). Branch `claude/factory-v0`. Every phase is a slice: design note, approved scenarios, reviewed acceptance tests, then code (see [AGENTS.md](AGENTS.md)).
 
 | Phase | Content | State |
 |---|---|---|
-| 1 Basis | this page, principles, research notes, ADR 0001 | done, waiting for approval |
-| 2 Skeleton | AGENTS.md, `install.mjs`, skill validation, CI, ruleset | open |
+| 1 Basis | this page, principles, research notes, ADR 0001 | done |
+| 2 Skeleton | `install.mjs`, skill check, CI, ruleset | [design note](docs/slices/02-skeleton/design.md) waiting for approval |
 | 3 Pipeline | checks with receipts, lock, private paths, slice status, hooks, adapter | open |
 | 4 Chaos | sabotage tests, `run-chaos` skill, one free exercise | open |
 | 5 Skills | `write-acceptance`, `plan-slice`, `architecture-review`, `writing` | open |
@@ -32,7 +32,7 @@ Process and policy are rules in [principles.md](docs/principles.md):
 
 ## Open
 
-- Approval of phase 1
+- Approval of the slice 02 design note, its scenarios and its open questions
 - Phase 2: ruleset import and public repos
 - Phase 5: rules for code comments and explanations, choice of pstack parts
 
@@ -55,3 +55,5 @@ v0 leaves these parts out on purpose. Each part is built at the point where `hea
 - [docs/principles.md](docs/principles.md): every rule, its source, what it depends on, and when to re-check it.
 - [docs/research/2026-10-factory-basis.md](docs/research/2026-10-factory-basis.md): the sources behind the rules. Reference only, not required reading.
 - [docs/decisions/](docs/decisions/): the ADRs.
+- [docs/slices/](docs/slices/): one design note per slice.
+- [AGENTS.md](AGENTS.md): the workflow and rules for agents that work on the factory.
