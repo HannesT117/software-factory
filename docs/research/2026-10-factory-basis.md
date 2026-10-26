@@ -90,3 +90,19 @@ Labels:
 | GitHub terms of service (via review) | One free machine account is allowed in addition to the personal account. | Kept as the option for a later team setup. |
 
 Correction: rule 7 cited EvilGenie as support for holdouts. EvilGenie found holdouts added little, and the review in rule 12 caught more.
+
+## Added on 2026-10-26 after review 3: approvals and credentials
+
+| Source | Finding | Taken |
+|---|---|---|
+| GitHub docs, workflows (via review) | A `pull_request` workflow runs the version in the pull request's merge commit. | The verifier is built from the base branch (rule 34). |
+| GitHub docs, permissions for fine-grained tokens (read) | Merging a pull request needs Contents write. Approving a pending deployment needs Deployments write. Changing workflow files needs the separate Workflows permission. | The agent token has Contents and Pull requests only (rule 33). |
+| GitHub docs, managing environments (read) | Environments with required reviewers are available for public repos on Free. "Prevent self-review" blocks approving runs the reviewer triggered. | Considered as the approval mechanism. The engineer chose signed commits. |
+| GitHub docs, commit signature verification (via review) | "Rebase and merge" drops signatures. Squash merges create new commits that GitHub signs. | Signatures are checked on the pull request before the squash merge. |
+| GitHub REST, SSH signing keys (via review) | `GET /users/<login>/ssh_signing_keys` is public. Adding a key needs `write:ssh_signing_key`, which gh does not request. | Trust root for approvals. |
+| ssh-keygen manual, allowed-signers format (via review) | Supports `cert-authority`, `namespaces`, `valid-after` and `valid-before`. It cannot prove that a touch happened. | Touch ID is a local safeguard. CI checks only the signature. |
+| Secretive source, notifier (via review) | The prompt shows app, key and namespace, not the signed content. Authentication can be remembered for up to 24 h. | A key used only for approvals, never remembered. `factory approve` prints what it signs. |
+| METR, recent reward hacking, 2025-06-05 (via review; independent research) | Frontier models modify tests and scoring code. | Protected paths include the runner, `.factory/` and `.github/`. |
+| GitHub docs, artifact attestations (via review) | Build provenance logged in Sigstore's public instance for public repos (SLSA Build Level 2). | Releases with attestations (ADR 0001). |
+| Go blog, reproducible builds (via review) | `go build -trimpath` with `CGO_ENABLED=0` gives reproducible binaries. | Build flags in ADR 0001. |
+| Cursor docs, skills (via review; vendor) | Cursor also loads `.claude/skills/`. | Noted as a consequence in ADR 0001. |
