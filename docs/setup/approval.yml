@@ -1,0 +1,15 @@
+# Copy to .github/workflows/approval.yml. See docs/setup/README.md.
+name: approval
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions: {}
+jobs:
+  approval:
+    runs-on: ubuntu-latest
+    environment: approval
+    steps:
+      - env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: echo "approval: approved $HEAD_SHA"

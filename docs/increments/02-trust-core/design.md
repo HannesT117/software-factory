@@ -1,18 +1,17 @@
 # Increment 02: trust core
 
-Status: proposed
-
 ## Goal
 
-- A Go CLI `factory` checks skills, design notes and acceptance tests.
-- **An agent cannot approve.** The engineer approves a design note or a set of tests with a commit on the pull request branch, signed with a Touch ID key. A required check verifies the signature before the squash merge.
+- A Go CLI `factory` checks skills, design notes, acceptance tests and the paths that a pull request changes.
+- **An agent cannot approve.** Each increment has three pull requests: design note, tests, implementation. Each one waits for the engineer's approval on a protected GitHub environment. The agent token cannot give that approval. "Approved" means "merged on `main`".
+- A pull request that changes tests, design notes, CI or factory config changes nothing else. So the engineer sees each such change as its own pull request.
 - Three skills carry the workflow: `designing-increments`, `writing-acceptance-tests` and `reviewing-increments`. The second and third run in their own sessions with fixed prompts.
 - The factory repo uses all of this from increment 03 on.
 
 ## Out of scope
 
-- `factory install`, releases, the install step for cloud sessions and CI, the ruleset: increment 03
-- the provenance log, the workflow gate, holdout scenarios: later, when `health` needs them
+- `factory install`, releases, the install step for cloud sessions and CI: increment 03
+- receipts, the provenance log, holdout scenarios: later, see [backlog](../../backlog.md)
 - adapters other than Claude Code
 
 ## Sketch
@@ -21,28 +20,30 @@ Where does the work stop until the engineer approves, and what is checked before
 
 ```mermaid
 flowchart LR
-  A[Design note] -->|check-design| B{Signed approval}
-  B --> C[Tests from own session]
-  C -->|check-tests| D{Signed approval}
-  D --> E[Implementation]
-  E -->|tests, verify| F[Review from own session]
-  F --> G{Engineer squash-merges}
+  A[Design PR] -->|check-design| B{Approve, merge}
+  B --> C[Tests PR from own session]
+  C -->|check-tests| D{Approve, merge}
+  D --> E[Implementation PR]
+  E -->|tests, review| F{Approve, merge}
 ```
+
+`check-pr` runs on every pull request.
 
 ## Format
 
 **Design note**, `docs/increments/<nn>-<slug>/design.md`:
 
-- Line 1 is `# Increment <nn>: <title>`. Line 3 is exactly `Status: proposed`. A note never says `approved`; an approval exists only as a signed approval commit.
-- Required headings, exact text, any order: `## Goal`, `## Out of scope`, `## Interface`, `## Scenarios`, `## Evidence`, `## Open questions`.
-- A scenario line matches `^- \*\*scenario (\d{2})\.([1-9]\d*)\*\* \((automated|demonstrated|manual)\) \*\*(.+?)[.?]\*\*`. The `<nn>` equals the folder's number. Any other line that starts with `- **scenario` is an error.
+- Line 1 is `# Increment <nn>: <title>`. `<nn>` equals the folder's number.
+- Required headings, exact text, any order: `## Goal`, `## Out of scope`, `## Interface`, `## Scenarios`, `## Evidence`, `## Open questions`. Other headings are allowed.
+- A scenario line matches `^- \*\*scenario (\d{2})\.([1-9]\d*)\*\* \((automated|demonstrated|manual)\) \*\*(.+?)[.?]\*\*`. `<nn>` equals the folder's number. The title is the third group. Any other line that starts with `- **scenario` is an error. Lines in fenced code blocks are ignored.
+- A note that is not ready for its pull request is named `draft.md`. The checks ignore drafts.
 
-**Acceptance test**, `test/acceptance/<nn>-<slug>/scenario-<nn>.<n>.txtar`: a `testscript` file, one per automated scenario. Line 1 is `# scenario <nn>.<n>: <title>`. `skip`, `stop` and `[net]` are not allowed. Example:
+**Acceptance test**, `test/acceptance/<nn>-<slug>/scenario-<nn>.<n>.txtar`: a `testscript` file, one per automated scenario. Line 1 is `# scenario <nn>.<n>: <title>`, with the title exactly as in the note: same case, without the final period or question mark. Not allowed: `skip`, `stop`, and any condition in square brackets, such as `[net]` or `[darwin]`. Example:
 
 ```
-# scenario 02.1: a valid skill passes
+# scenario 02.1: A valid skill passes
 exec factory validate-skills skills
-stdout '^skills: 1 checked, 0 with errors$'
+stdout '^validate-skills: ok 1 checked$'
 
 -- skills/good-skill/SKILL.md --
 ---
@@ -51,42 +52,54 @@ description: Does one thing. Use when testing.
 ---
 ```
 
-How to read one: `exec` runs a command that must succeed. `! exec` runs one that must fail. `exitcode N` checks the exact exit code. `stdout '…'` checks for a line that matches the pattern. `exists path` checks that a file exists. Each `-- path --` starts a given file.
+How to read one: `exec` runs a command that must succeed. `! exec` runs one that must fail. `exitcode N factory …` runs `factory` and checks the exact exit code. `stdout '…'` and `stderr '…'` check for a line that matches the pattern. `exists path` checks that a file exists. Each `-- path --` starts a given file.
 
-One runner, `test/acceptance/acceptance_test.go`, runs all files. It sets `HOME`, `GIT_CONFIG_NOSYSTEM=1`, and a fresh temporary folder per file. The engineer reviews the runner once.
+**Runner**, `test/acceptance/acceptance_test.go`: one file runs all test files. The test writer writes it in the tests pull request of this increment. It registers `factory` as a command, adds the command `exitcode`, sets `REPO` to the repo root, and sets `HOME`, `GIT_CONFIG_NOSYSTEM=1` and a fresh temporary folder per file.
 
-**Approval record**, `docs/increments/<nn>-<slug>/approvals.json`:
+**Path groups.** A pull request that changes a path in a group changes no path outside that group:
 
-```json
-{
-  "design": { "reviewedCommit": "<sha>", "sha256": "<hash of design.md at that commit>" },
-  "tests": { "reviewedCommit": "<sha>", "designSha256": "<hash>", "files": { "<path>": "<hash>" } }
-}
-```
+| Group | Paths |
+|---|---|
+| tests | `test/acceptance/**`, `go.mod`, `go.sum` |
+| design notes | `docs/increments/*/design.md`, `docs/increments/*/draft.md` |
+| CI and config | `.github/**`, `.factory/**` |
+
+**Skill fields**, from the Agent Skills specification:
+
+- `name`: 1 to 64 characters; lowercase letters, digits and single hyphens; no hyphen at the start or end; equal to the folder name.
+- `description`: 1 to 1024 characters.
+- `compatibility`: at most 500 characters.
+- `metadata`: a map of strings.
+- Other allowed fields: `license`, `allowed-tools`.
+- A skill must not name a specific agent tool: `claude`, `cursor`, `codex`, `copilot` or `gemini`, in any case.
 
 **Frontmatter subset** that `validate-skills` reads: `key: value`, quoted values, `|` and `>` blocks, and one nested map for `metadata`. Anything else is `unsupported-yaml`.
 
 ## Interface
 
-Every error line has the form `<prefix>: error <where>: <code> <detail>`. Exit codes are 0 ok, 1 errors, 2 usage or environment.
+Every output line starts with the command name and a colon, for example `check-pr:`. An error line is `<command>: error <where>: <code> <detail>`. `<where>` is a path, or `path:line` when the line is known. The last line is `<command>: ok <n> checked` or `<command>: <n> errors`. Exit codes: 0 ok, 1 errors, 2 usage or environment.
 
 | Command | Codes |
 |---|---|
-| `factory validate-skills [dir ...]` | `name-mismatch`, `name-format`, `name-too-long`, `description-missing`, `description-too-long`, `compatibility-too-long`, `metadata-not-map`, `unknown-field`, `no-frontmatter`, `unsupported-yaml` |
-| `factory check-design <increment-dir>` | `missing-section`, `bad-status`, `bad-scenario-line`, `wrong-increment`, `duplicate-id` |
-| `factory check-tests <increment-dir>` | `missing-test`, `unknown-id`, `title-mismatch`, `forbidden-command` |
-| `factory approve <increment-dir> design\|tests --commit <sha>` | prints the files and hashes it approves, then creates a signed commit that changes only `approvals.json`. Refuses (exit 1) with `dirty-tree`, or with `design-changed` when the tests approval finds a design hash that differs. |
-| `factory verify --pr <base-ref>` | `unsigned`, `unknown-signer`, `extra-paths`, `merge-commit`, `hash-mismatch`, `missing-approval`, `design-changed`, `approval-deleted`; exit 2 with `shallow-clone` |
-| `factory verify` (on `main`) | `hash-mismatch`, `missing-approval`, `approval-deleted` |
-| `factory hook pre-tool-use` | reads hook input on stdin; prints a deny decision as JSON, or nothing |
+| `factory validate-skills [dir ...]` | `name-mismatch`, `name-format`, `name-too-long`, `description-missing`, `description-too-long`, `compatibility-too-long`, `metadata-not-map`, `unknown-field`, `no-frontmatter`, `unsupported-yaml`, `tool-name` |
+| `factory check-design <increment-dir>` | `bad-title`, `missing-section`, `bad-scenario-line`, `wrong-increment`, `duplicate-id` |
+| `factory check-tests [--base <ref>]` | `missing-test`, `unknown-id`, `title-mismatch`, `forbidden-command`. Reads the design notes from `<ref>`, or from the working tree without `--base`. Reads the test files from the working tree. |
+| `factory check-pr --base <ref>` | `mixed-pr`, with the paths of each group. Compares `HEAD` with its merge base with `<ref>`. Exit 2 with `shallow-clone`. |
+| `factory hook pre-tool-use` | Reads Claude Code hook input on stdin: `tool_name`, `tool_input.file_path` or `tool_input.notebook_path`, `agent_type`, `agent_id`, `cwd`. Prints a deny decision as JSON, or nothing. |
 
-The signers are the engineer's SSH signing keys on GitHub, from `GET /users/<login>/ssh_signing_keys`. `<login>` comes from `.factory/config.json`. CI builds `factory` from the base branch, never from the pull request.
+**CI in the factory repo**, after this increment:
+
+- Workflow `gate` on `pull_request_target`. GitHub then takes the workflow file and the checkout from `main`.
+  - Job `checks` builds `factory` from `main`, fetches the pull request as data, and runs `check-pr`, `check-design` for each changed note, and `check-tests --base main`. It runs no code from the pull request and has no permissions.
+  - Job `approval` needs `checks` and uses the environment `approval`.
+- Workflow `test` on `pull_request` runs `go test ./...`, which includes the acceptance tests.
+- The ruleset on `main` requires `checks`, `approval` and `test`.
 
 ## Scenarios
 
 ### Skill check
 
-- **scenario 02.1** (automated) **A valid skill passes.** Given a skill with only standard fields, `factory validate-skills` exits with 0.
+- **scenario 02.1** (automated) **A valid skill passes.** Given a skill with only allowed fields, `factory validate-skills` exits with 0.
 - **scenario 02.2** (automated) **Invalid skills fail with a code.** Given one skill per skill-check code from the Interface, it exits with 1 and prints that code for that file.
 
 ### Design note check
@@ -98,52 +111,59 @@ The signers are the engineer's SSH signing keys on GitHub, from `GET /users/<log
 
 - **scenario 02.5** (automated) **One file per automated scenario passes.** Given a note and one test file per automated scenario, `factory check-tests` exits with 0.
 - **scenario 02.6** (automated) **Wrong test files fail with a code.** Given one case per test-check code, it exits with 1 and prints the code and the id or file.
+- **scenario 02.7** (automated) **Tests come before the implementation.** Given a note on the base branch whose test files are missing or deleted, `factory check-tests --base` exits with 1 with `missing-test`. Given a note that exists only in the working tree, it exits with 0.
 
-### Approve and verify
+### Pull request paths
 
-The tests use a temporary repo, a test key without Touch ID, and a local file instead of the GitHub key list.
+- **scenario 02.8** (automated) **A pull request within one group passes.** Given a pull request that changes only a design note, or only test files and `go.mod`, or only paths outside all groups, `factory check-pr` exits with 0.
+- **scenario 02.9** (automated) **A mixed pull request fails.** Given a pull request that changes code and a test file, or a test file and a design note, or code and a file under `.github/`, `factory check-pr` exits with 1 with `mixed-pr` and names the paths. Given a shallow clone, it exits with 2 with `shallow-clone`.
 
-- **scenario 02.7** (automated) **A signed approval passes.** Given an approval commit signed by a listed key that changes only `approvals.json`, and unchanged approved files, `factory verify --pr` exits with 0.
-- **scenario 02.8** (automated) **A forged approval fails.** Given an approval commit that is unsigned, signed by an unlisted key, a merge commit, or one that changes another file, `factory verify --pr` exits with 1 with `unsigned`, `unknown-signer`, `merge-commit` or `extra-paths`.
-- **scenario 02.9** (automated) **A change after approval fails.** Given a signed approval, when an approved file changes afterwards or a test file has no approval, `factory verify --pr` exits with 1 with `hash-mismatch` or `missing-approval`.
-- **scenario 02.10** (automated) **Tests need the approved design.** Given a design that changed after its approval, `factory approve … tests` exits with 1 with `design-changed`, and `factory verify --pr` exits with 1 with `design-changed`.
-- **scenario 02.11** (automated) **Deleted approvals and shallow clones are caught.** Given a branch that deletes `approvals.json`, `factory verify --pr` exits with 1 with `approval-deleted`. Given a shallow clone, it exits with 2 with `shallow-clone`.
-- **scenario 02.12** (automated) **main stays consistent.** Given `main` after a squash merge, `factory verify` exits with 0. When an approved file is edited on `main`, it exits with 1 with `hash-mismatch`.
-- **scenario 02.13** (manual) **Touch ID approves.** On the Mac, `factory approve` shows the files and hashes, then asks for Touch ID. The required check passes, and the squash merge keeps the approved content.
+### Approval and credentials (manual, in the factory repo)
+
+- **scenario 02.10** (manual) **Only the engineer approves.** A pull request cannot be merged before the engineer approves the `approval` job. After a new push, it needs a new approval. An attempt with the agent token to approve the job fails.
+- **scenario 02.11** (manual) **The gate comes from main.** A pull request that changes the `gate` workflow still runs the version from `main`, and its `checks` result shows on the pull request.
+- **scenario 02.12** (manual) **Agents cannot use the engineer's credentials.** From a local agent session, a push of a change under `.github/workflows/` fails, and reading the repo's rulesets through the API fails. From a cloud session, the push fails too.
 
 ### Guard hook (early feedback, Claude Code adapter)
 
-- **scenario 02.14** (automated) **Protected files.** Given hook input for a write to `test/acceptance/`, an `approvals.json`, `.factory/` or `.github/`, the hook prints a deny decision. The only exception: a write to the increment's test folder by a session started as `acceptance-test-writer` (agent type set, no agent id), while no tests approval exists.
+- **scenario 02.13** (automated) **Protected files.** Given hook input for `Write`, `Edit`, `MultiEdit` or `NotebookEdit` on a path in the tests group or the CI-and-config group, the hook prints a deny decision. The only exception: a write to `test/acceptance/` by a session started as `acceptance-test-writer`, with `agent_type` set and no `agent_id`.
 
 ### Skills
 
-- **scenario 02.15** (automated) **Skills are valid and tool-neutral.** `factory validate-skills core/skills` exits with 0, and no file under `core/` or in the tool-neutral packages names an agent tool (ADR 0001 confirmation).
-- **scenario 02.16** (demonstrated) **Smoke run.** For each skill, one task runs once without and once with the skill, each in a fresh temporary repo without `AGENTS.md`, design notes or git history. The check command runs only afterwards. The recordings go to `evidence/`. This shows that the skill works, not how much it helps.
-- **scenario 02.17** (manual) **Value in real use.** Over increment 03 and the first two `health` increments, the engineer rates the notes and tests from the skills from 1 to 5 on four criteria: unambiguous scenarios, enough interface for the test writer, readable, nothing missing. Also counted: the test writer's clarifying questions, tests changed after review, and interventions.
-- **scenario 02.18** (manual) **Review is recorded.** For increment 02 itself, `review.md` has the reviewer's findings on special cases, test detection and work outside the scenarios, plus 2 or 3 comprehension questions with the engineer's answers.
+- **scenario 02.14** (automated) **The factory's skills are valid and tool-neutral.** `factory validate-skills "$REPO/core/skills"` exits with 0 (ADR 0001 confirmation).
+- **scenario 02.15** (demonstrated) **Smoke run.** For each skill, one task runs once without and once with the skill, each in a fresh temporary repo without `AGENTS.md`, design notes or git history. The check command runs only afterwards. The recordings go to `evidence/`. This shows that the skill works, not how much it helps.
+- **scenario 02.16** (manual) **Value in real use.** Over increment 03 and the first two `health` increments, `retro.md` counts the test writer's clarifying questions, tests changed after review, review findings, and the engineer's interventions. For each note, the engineer records yes or no, with a reason: was the note clear enough for the test writer?
+- **scenario 02.17** (manual) **Review is recorded.** For increment 02 itself, `review.md` has the reviewer's findings on special cases, test detection and work outside the scenarios, plus 2 or 3 comprehension questions with the engineer's answers.
 
 ## Evidence
 
-- **Approved scenarios:** 02.1 to 02.12, 02.14 and 02.15, as `testscript` files from the test-writer session, approved with a signature.
-- **Demonstrated:** 02.16.
-- **Manual:** 02.13, 02.17 and 02.18.
-- **ADR confirmation:** part of 02.15.
+- **Approved scenarios:** 02.1 to 02.9, 02.13 and 02.14, as `testscript` files from the test-writer session, merged with the tests pull request.
+- **Demonstrated:** 02.15.
+- **Manual:** 02.10, 02.11, 02.12, 02.16 and 02.17.
+- **ADR confirmation:** 02.14.
 - **Not evidence:** unit tests from the implementing agent.
 
-## Setup before the first approval
+## Setup before the first pull request
 
-1. A fine-grained token for agents: Contents and Pull requests write, nothing else. No Administration, Workflows or Deployments. Claude Code gets it through its settings. The sandbox denies reading the engineer's own credentials.
-2. In Secretive: a key used only for approvals, with Touch ID on every use and without remembering authentication. Its public key is added on GitHub as an SSH signing key.
-3. `.factory/config.json` on `main` names the engineer's GitHub login.
+The engineer does these steps. The files are in [docs/setup/](../../setup/).
+
+1. **Agent token:** fine-grained, for the factory repo and `health`. Contents and Pull requests write, nothing else.
+2. **Environment `approval`** in the factory repo: the engineer as required reviewer. "Prevent self-review" stays off, because agents act under the engineer's account. "Allow administrators to bypass" is off.
+3. **Approval workflow:** the engineer commits `docs/setup/approval.yml` as `.github/workflows/approval.yml` and merges it.
+4. **Ruleset:** the engineer imports `docs/setup/ruleset.json`: pull requests only, squash merges only, required check `approval`, no force push, no deletion, empty bypass list.
+5. **Before the first local agent session:** Claude Code user settings deny reading `~/.ssh`, `~/.config/gh` and the SSH agent socket, set `allowUnsandboxedCommands: false`, and give git the agent token.
+
+After this increment, a CI pull request adds the jobs `checks` and `test` and makes them required.
 
 ## Limits
 
-- **Bootstrap:** increment 02's own pull request cannot use a `factory` built from `main`, because `main` has none yet. Its approvals use plain `git commit -S` with the Touch ID key. Before the merge, the engineer runs `factory verify --pr`, built from the reviewed commit.
-- **Blind signing:** Touch ID does not show what is signed. `factory approve` prints it first. The engineer touches only for an approval the engineer started.
-- **Guard hook:** it works only in Claude Code, and Bash can get around it. The real checks are the verify run and the token without workflow rights.
+- **Bootstrap:** this increment's pull requests run before `factory` exists on `main`. Until the CI pull request, only `approval` is required, and the engineer checks the paths with `git diff --stat`. The engineer reads `check-pr` and `check-tests` line by line in the review, because they guard all later pull requests.
+- **One account:** agents act under the engineer's GitHub account, and GitHub cannot tell them apart. The guards are the missing token rights (Deployments, Workflows, Administration) and the sandbox. An agent that gets the engineer's own token can approve. Scenario 02.12 checks this.
+- **Not verified:** whether the checks from `pull_request_target` count as required checks on the pull request. Scenarios 02.10 and 02.11 show it. If not, `gate` runs on `pull_request`, and the missing Workflows right is the only guard for the workflow files.
+- **Guard hook:** it works only in Claude Code, and Bash can get around it. It gives early feedback only.
+- **Break glass:** the engineer can switch off the ruleset in the settings. The next retro records each use.
 
 ## Open questions
 
-1. **Trust root:** the GitHub signing keys of the engineer's account replace a signers file in the repo. A lost Mac then needs only a new key on GitHub. Is that right?
-2. **Test dependency:** `testscript` (`github.com/rogpeppe/go-internal`) as a test-only dependency. Is that right?
-3. **Agent commits** stay unsigned. Only approvals are signed. Is that right?
+1. **Test dependency:** `testscript` (`github.com/rogpeppe/go-internal`) as a test-only dependency. Is that right?
+2. **Runner:** the runner adds the command `exitcode` and the variable `REPO`, because `testscript` has neither. Is that right?
