@@ -10,7 +10,6 @@ This is a draft. It is rewritten with the `designing-increments` skill after inc
 - `factory install --check` finds edits to copied files, also in CI.
 - Releases publish binaries for macOS, Linux and Windows, each with a checksum and a GitHub artifact attestation. The install step verifies the attestation on the engineer's machine, in cloud sessions and in CI.
 - A ruleset template protects the default branch: pull requests only, squash merges only, required checks, empty bypass list.
-- After this increment, `health` starts.
 
 ## Out of scope
 

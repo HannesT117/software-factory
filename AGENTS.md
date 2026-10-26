@@ -11,7 +11,7 @@ An increment is one unit of work. Each increment has a folder `docs/increments/<
 3. **Implementation.** The implementing agent writes the code until the tests pass and `factory verify` passes. Stop and ask if a test looks wrong.
 4. **Review.** The engineer starts a separate session as `increment-reviewer`, with the skill `reviewing-increments`. It reads the approved note and the diff against the base branch. It writes `review.md`: findings on special cases, test detection and work outside the scenarios, then 2 or 3 comprehension questions, at least one about debugging. The engineer answers there before the reviewer explains.
 5. **Demonstration.** Demonstrated scenarios run in a separate session, and their recordings go to `evidence/`. The engineer runs the manual scenarios.
-6. **Summary.** At most 10 lines. Wait for approval. The engineer squash-merges the pull request.
+6. **Retro and summary.** Write `retro.md`: metrics, corrections, and every point that concerns the factory. From increment 04 on, `factory feedback` turns factory points into issues in the factory repo. Then a summary of at most 10 lines. Wait for approval. The engineer squash-merges the pull request.
 
 Do not write implementation code before steps 1 and 2 are approved.
 

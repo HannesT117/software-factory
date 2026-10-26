@@ -4,18 +4,18 @@ This repo is a software factory: the system around coding agents that decides wh
 
 - **Engineer:** the human who owns a project.
 - **Agent:** a coding agent that works in it, with its own restricted token.
-- **Increment:** one unit of work: design note, tests from a separate session, implementation, review from a separate session, demonstration, squash merge. The engineer approves the note and the tests with commits signed by Touch ID. [AGENTS.md](AGENTS.md) describes the steps.
+- **Increment:** one unit of work: design note, tests from a separate session, implementation, review from a separate session, demonstration, retro, squash merge. The engineer approves the note and the tests with commits signed by Touch ID. [AGENTS.md](AGENTS.md) describes the steps.
 
 ## Status
 
-v0, increment 02 of 04. Branch `claude/factory-v0`. `health` starts after increment 03.
+v0, increment 02 of 04. Branch `claude/factory-v0`. `health` starts after increment 04.
 
 | Increment | Content | State |
 |---|---|---|
 | 01 Basis | this page, principles, research notes, ADR 0001 | done |
 | 02 Trust core | Go CLI with checks for skills, design notes and tests; signed approvals with `factory approve` and `factory verify`; skills `designing-increments`, `writing-acceptance-tests`, `reviewing-increments`; guard hook | [design note](docs/increments/02-trust-core/design.md) waiting for approval |
 | 03 Install and distribution | `factory install`, releases with attestations, install in cloud and CI, ruleset | [design note](docs/increments/03-install-and-distribution/design.md) draft |
-| 04 Handover | end-to-end test, `adopt.md`, note for `health` | open |
+| 04 Handover and feedback loop | retro per increment, `factory check-retro`, `factory feedback` (issues in the factory repo), version updates, end-to-end test, note for `health` | [design note](docs/increments/04-handover-and-feedback/design.md) draft |
 
 ## Decisions
 
@@ -29,7 +29,7 @@ Process and policy are rules in [principles.md](docs/principles.md):
 - what counts as evidence: rules 6–13
 - the merge gate: rule 16
 - no private data in public repos: rule 26
-- order of work, test writer, approvals, agent token, verifier source: rules 27–34
+- order of work, test writer, approvals, agent token, verifier source, feedback to the factory: rules 27–35
 
 ## Open
 
