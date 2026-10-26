@@ -27,7 +27,7 @@ Labels:
 | Source | Finding | Taken |
 |---|---|---|
 | Böckeler, TDD in the agent loop, martinfowler.com (read) | Sonnet 4.6 coded, Opus 4.8 judged blind. No clear quality difference with or without TDD. Mutation scores were equal. TDD used 3–8.5× the tokens. She stopped telling agents to write tests first. Alternatives: mutation testing, static analysis and modularity reviews, trend tracking, approved scenarios. | No test-first instruction. Approved scenarios. Mutation score as a measure. |
-| Naresh Jain, Are harnesses worth the cost?, martinfowler.com, 2026-10-13 (read) | Frontier model: 10.5× the tokens with the harness, acceptance 10/10 either way. Cheaper model: 3/10 rose to 10/10. Keep an independent acceptance check in every case, and run it once as a final gate for strong models. n = 10 runs. | Inferential reviews once per slice. |
+| Naresh Jain, Are harnesses worth the cost?, martinfowler.com, 2026-10-13 (read) | Frontier model: 10.5× the tokens with the harness, acceptance 10/10 either way. Cheaper model: 3/10 rose to 10/10. Keep an independent acceptance check in every case, and run it once as a final gate for strong models. n = 10 runs. | Inferential reviews once per increment. |
 | Jacob on TDD (read) | Cites the Böckeler article and says TDD "hurt the outcomes". | Overstated. The measurement shows no difference at a higher cost. |
 | Thoughtworks, Future of Software Development retreat, 2026 (via search summary) | "TDD produces dramatically better results." | A discussion theme, not a measurement. Not used. |
 | VibeCheck, arXiv 2609.05978 (read, abstract) | Agent unit tests often run but have weak assertions and miss edge cases. | Agent unit tests are not evidence. |
@@ -42,7 +42,7 @@ Labels:
 | Source | Finding | Taken |
 |---|---|---|
 | Anthropic RCT on coding skills, 2026-01-29 (read) | n = 52 in a chat sidebar. AI group 50% vs 67% on a quiz. The largest gap was in debugging. "Generation then comprehension" scored 86% with n = 2. | Comprehension questions, at least one on debugging. |
-| Mario Zechner, Thoughts on slowing down, 2026-03-25 (read) | Agent errors compound without a human bottleneck. Write architecture and APIs by hand. Cap generated code to what a person can review. | Small slices. Stop-and-discuss triggers. |
+| Mario Zechner, Thoughts on slowing down, 2026-03-25 (read) | Agent errors compound without a human bottleneck. Write architecture and APIs by hand. Cap generated code to what a person can review. | Small increments. Stop-and-discuss triggers. |
 | Anthropic, Redesigning source control, 2026-10-13 (read) | 30,000 merges a day. Humans review intent, not every line. Agents that watch telemetry catch subtle issues. | Review by intent. Observability is in the backlog. |
 | Anthropic postmortem, 2026-04-23 (read) | Three harness changes lowered Claude Code quality for weeks while the model stayed the same. | Record the agent version. |
 | Anthropic, Demystifying evals for AI agents, 2026-01-09 (read) | Code graders first. Start with 20–50 tasks from real failures. Read transcripts. | Metrics from real failures. |

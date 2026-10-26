@@ -73,6 +73,6 @@ Chosen option 1, because it is the only option that works in cloud sessions and 
 
 ## More Information
 
-* **Confidence:** medium. The symlink behaviour comes from the Claude Code docs and is tested in phase 6.
+* **Confidence:** medium. The symlink behaviour comes from the Claude Code docs and is tested in increment 07.
 * **Revisit when** a cross-tool hook standard appears, or Claude Code reads `.agents/skills/`.
 * **Sources:** agentskills.io specification; vercel-labs/skills agent paths; Claude Code docs on skills, memory and plugins; Anthropic postmortem 2026-04-23. Details are in the [research notes](../research/2026-10-factory-basis.md).

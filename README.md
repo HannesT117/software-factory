@@ -2,21 +2,23 @@
 
 This repo is a software factory: the system around coding agents that decides what counts as done, who checks it, and how a failure turns into a better check. Projects install it with `install.mjs`. The first project is `health`.
 
-Roles: the **engineer** is the human who owns a project. An **agent** is a coding agent that works in it.
+- **Engineer:** the human who owns a project.
+- **Agent:** a coding agent that works in it.
+- **Increment:** one unit of work. It runs in five steps: design note, approved scenarios, acceptance tests by a separate agent, implementation, approval. [AGENTS.md](AGENTS.md) describes the steps.
 
 ## Status
 
-v0, phase 2 of 6 (slice skills, then skeleton). Branch `claude/factory-v0`. Every phase is a slice: design note, approved scenarios, reviewed acceptance tests, then code (see [AGENTS.md](AGENTS.md)).
+v0, increment 02 of 07. Branch `claude/factory-v0`.
 
-| Phase | Content | State |
+| Increment | Content | State |
 |---|---|---|
-| 1 Basis | this page, principles, research notes, ADR 0001 | done |
-| 2a Slice skills | `plan-slice`, `write-acceptance`, skill check, design and test checks | [design note](docs/slices/02a-slice-skills/design.md) waiting for approval |
-| 2 Skeleton | `install.mjs`, CI, ruleset | [design note](docs/slices/02-skeleton/design.md) draft, rewritten with `plan-slice` after 2a |
-| 3 Pipeline | checks with receipts, lock, private paths, slice status, hooks, adapter | open |
-| 4 Chaos | sabotage tests, `run-chaos` skill, one free exercise | open |
-| 5 Skills | `write-acceptance`, `plan-slice`, `architecture-review`, `writing` | open |
-| 6 Handover | end-to-end test, `adopt.md`, note for `health` | open |
+| 01 Basis | this page, principles, research notes, ADR 0001 | done |
+| 02 Workflow skills | `designing-increments`, `writing-acceptance-tests`, checks for skills, design notes and tests, test lock, guard hook | [design note](docs/increments/02-workflow-skills/design.md) waiting for approval |
+| 03 Skeleton | `install.mjs`, CI, ruleset | [design note](docs/increments/03-skeleton/design.md) draft |
+| 04 Pipeline | receipts, full lock with provenance log, workflow gate, private paths, increment status | open |
+| 05 Chaos | sabotage tests, `running-chaos-exercises` skill, one free exercise | open |
+| 06 Skills | `reviewing-architecture`, `writing-docs`, PR record | open |
+| 07 Handover | end-to-end test, `adopt.md`, note for `health` | open |
 
 ## Decisions
 
@@ -30,22 +32,23 @@ Process and policy are rules in [principles.md](docs/principles.md):
 - what counts as evidence: rules 6–13
 - the merge gate: rule 16
 - no private data in public repos: rule 26
+- the order of work and who writes the tests: rules 27–30
 
 ## Open
 
-- Approval of the slice 02a design note, its scenarios and its open questions
-- Phase 2: ruleset import and public repos
-- Phase 5: rules for code comments and explanations, choice of pstack parts
+- Approval of the increment 02 design note, its scenarios and its open questions
+- Increment 03: ruleset import and public repos
+- Increment 06: rules for code comments and explanations, choice of pstack parts
 
 ## Later: built when `health` needs it
 
-v0 leaves these parts out on purpose. Each part is built at the point where `health` needs it. A slice is one step of the `health` plan.
+v0 leaves these parts out on purpose. Each part is built at the point where `health` needs it. Numbers such as 1a refer to the steps of the `health` plan.
 
 | Part | Built when |
 |---|---|
-| `coding-task` skill: a task the engineer implements by hand to learn a pattern | `health` slice 1a, first new pattern |
-| `prove-with-media` skill: video and screenshots as evidence for UI changes | `health` slice 1b, first UI |
-| 2 am support: each slice names the log event that shows it failing; timed debugging drills; an `investigate-incident` skill | `health` slice 2, first cron and queue jobs |
+| `coding-task` skill: a task the engineer implements by hand to learn a pattern | `health` 1a, first new pattern |
+| `prove-with-media` skill: video and screenshots as evidence for UI changes | `health` 1b, first UI |
+| 2 am support: each increment names the log event that shows it failing; timed debugging drills; an `investigate-incident` skill | `health` 2, first cron and queue jobs |
 | Product chaos, for example flooding a test database, with a check that the target is not production | `health` has a preview database |
 | Decision-model check routing through Opper | `health` has enough changes to measure misses |
 | `install.mjs --watch`: copies factory changes into the project at once | the factory changes often during `health` work |
@@ -53,8 +56,8 @@ v0 leaves these parts out on purpose. Each part is built at the point where `hea
 
 ## Where things are
 
-- [docs/principles.md](docs/principles.md): every rule, its source, what it depends on, and when to re-check it.
+- [docs/principles.md](docs/principles.md): every rule, its source, what it depends on, how it is enforced, and when to re-check it.
 - [docs/research/2026-10-factory-basis.md](docs/research/2026-10-factory-basis.md): the sources behind the rules. Reference only, not required reading.
 - [docs/decisions/](docs/decisions/): the ADRs.
-- [docs/slices/](docs/slices/): one design note per slice.
+- [docs/increments/](docs/increments/): one folder per increment, with its design note and evidence.
 - [AGENTS.md](AGENTS.md): the workflow and rules for agents that work on the factory.
