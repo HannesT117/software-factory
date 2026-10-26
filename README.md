@@ -6,12 +6,13 @@ Roles: the **engineer** is the human who owns a project. An **agent** is a codin
 
 ## Status
 
-v0, phase 2 of 6 (skeleton). Branch `claude/factory-v0`. Every phase is a slice: design note, approved scenarios, reviewed acceptance tests, then code (see [AGENTS.md](AGENTS.md)).
+v0, phase 2 of 6 (slice skills, then skeleton). Branch `claude/factory-v0`. Every phase is a slice: design note, approved scenarios, reviewed acceptance tests, then code (see [AGENTS.md](AGENTS.md)).
 
 | Phase | Content | State |
 |---|---|---|
 | 1 Basis | this page, principles, research notes, ADR 0001 | done |
-| 2 Skeleton | `install.mjs`, skill check, CI, ruleset | [design note](docs/slices/02-skeleton/design.md) waiting for approval |
+| 2a Slice skills | `plan-slice`, `write-acceptance`, skill check, design and test checks | [design note](docs/slices/02a-slice-skills/design.md) waiting for approval |
+| 2 Skeleton | `install.mjs`, CI, ruleset | [design note](docs/slices/02-skeleton/design.md) draft, rewritten with `plan-slice` after 2a |
 | 3 Pipeline | checks with receipts, lock, private paths, slice status, hooks, adapter | open |
 | 4 Chaos | sabotage tests, `run-chaos` skill, one free exercise | open |
 | 5 Skills | `write-acceptance`, `plan-slice`, `architecture-review`, `writing` | open |
@@ -32,7 +33,7 @@ Process and policy are rules in [principles.md](docs/principles.md):
 
 ## Open
 
-- Approval of the slice 02 design note, its scenarios and its open questions
+- Approval of the slice 02a design note, its scenarios and its open questions
 - Phase 2: ruleset import and public repos
 - Phase 5: rules for code comments and explanations, choice of pstack parts
 
