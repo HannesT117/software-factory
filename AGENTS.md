@@ -4,16 +4,16 @@ Read `README.md` first. It is the entry point and shows the status. The factory 
 
 ## Workflow: every increment follows these steps
 
-An increment is one unit of work. Each increment has a folder `docs/increments/<nn>-<slug>/`. The format of a design note and of an acceptance test is fixed in `docs/increments/02-trust-core/design.md`, section Format.
+An increment is one unit of work in three pull requests. Each increment has a folder `docs/increments/<nn>-<slug>/`. The format of a design note and of an acceptance test, and the path groups, are fixed in `docs/increments/02-trust-core/design.md`, section Format.
 
-1. **Design note.** Write `design.md` with goal, scope, interface and scenarios. Each scenario names its verification kind. `factory check-design` must pass. Open a pull request. Stop. The engineer approves with `factory approve … design` on the pull request branch.
-2. **Acceptance tests.** The engineer starts a separate session as `acceptance-test-writer`, with its fixed prompt and the skill `writing-acceptance-tests`. It writes one `testscript` file per automated scenario and sees only the approved note and the public interface. `factory check-tests` must pass. Stop. The engineer approves with `factory approve … tests`.
-3. **Implementation.** The implementing agent writes the code until the tests pass and `factory verify` passes. Stop and ask if a test looks wrong.
-4. **Review.** The engineer starts a separate session as `increment-reviewer`, with the skill `reviewing-increments`. It reads the approved note and the diff against the base branch. It writes `review.md`: findings on special cases, test detection and work outside the scenarios, then 2 or 3 comprehension questions, at least one about debugging. The engineer answers there before the reviewer explains.
+1. **Design pull request.** Write `design.md` with goal, scope, interface and scenarios. Each scenario names its verification kind. `factory check-design` must pass. The pull request changes only the design note. Stop. The engineer approves and merges it.
+2. **Tests pull request.** The engineer starts a separate session as `acceptance-test-writer`, with its fixed prompt and the skill `writing-acceptance-tests`. It writes one `testscript` file per automated scenario and sees only the design note on `main` and the public interface. `factory check-tests` must pass. The pull request changes only the tests group. Stop. The engineer approves and merges it.
+3. **Implementation pull request.** The implementing agent writes the code until the tests pass. The pull request changes no path in a group. Stop and ask if a test looks wrong.
+4. **Review.** The engineer starts a separate session as `increment-reviewer`, with the skill `reviewing-increments`. It reads the design note and the diff against `main`. It writes `review.md` into the implementation pull request: findings on special cases, test detection and work outside the scenarios, then 2 or 3 comprehension questions, at least one about debugging. The engineer answers there before the reviewer explains.
 5. **Demonstration.** Demonstrated scenarios run in a separate session, and their recordings go to `evidence/`. The engineer runs the manual scenarios.
-6. **Retro and summary.** Write `retro.md`: metrics, corrections, and every point that concerns the factory. From increment 04 on, `factory feedback` turns factory points into issues in the factory repo. Then a summary of at most 10 lines. Wait for approval. The engineer squash-merges the pull request.
+6. **Retro and summary.** Write `retro.md`: metrics, agent version, corrections, and every point that concerns the factory. From increment 04 on, `factory feedback` prints a prefilled issue link for each factory point, and the engineer submits it. Then a summary of at most 10 lines. Stop. The engineer approves and squash-merges.
 
-Do not write implementation code before steps 1 and 2 are approved.
+Do not write implementation code before the design and tests pull requests are merged.
 
 ## Verification kinds
 
@@ -23,10 +23,12 @@ Do not write implementation code before steps 1 and 2 are approved.
 
 ## The implementing agent never
 
-- changes an acceptance test, an `approvals.json`, anything under `.factory/` or `.github/`, or an approved design note
+- changes a path in a group: acceptance tests, the test runner, `go.mod`, `go.sum`, anything under `.github/` or `.factory/`, or a design note on `main`
 - writes code that detects a test run, or that hard-codes test cases
-- signs commits, or uses the engineer's own credentials. Agents use their own fine-grained token. Only the engineer signs, and only approvals.
+- uses the engineer's own credentials, or reads `~/.ssh`, `~/.config/gh` or the SSH agent. Agents use their own fine-grained token.
+- approves or merges a pull request
 - counts its own unit tests as evidence. They are scaffolding.
+- reads an issue in the factory repo that does not have the label `accepted`
 
 ## Reports
 

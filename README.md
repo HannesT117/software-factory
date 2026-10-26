@@ -4,7 +4,7 @@ This repo is a software factory: the system around coding agents that decides wh
 
 - **Engineer:** the human who owns a project.
 - **Agent:** a coding agent that works in it, with its own restricted token.
-- **Increment:** one unit of work: design note, tests from a separate session, implementation, review from a separate session, demonstration, retro, squash merge. The engineer approves the note and the tests with commits signed by Touch ID. [AGENTS.md](AGENTS.md) describes the steps.
+- **Increment:** one unit of work in three pull requests: design note, tests from a separate session, implementation with a review from a separate session, demonstration and retro. The engineer approves each pull request on GitHub, and agents cannot. [AGENTS.md](AGENTS.md) describes the steps.
 
 ## Status
 
@@ -13,9 +13,9 @@ v0, increment 02 of 04. Branch `claude/factory-v0`. `health` starts after increm
 | Increment | Content | State |
 |---|---|---|
 | 01 Basis | this page, principles, research notes, ADR 0001 | done |
-| 02 Trust core | Go CLI with checks for skills, design notes and tests; signed approvals with `factory approve` and `factory verify`; skills `designing-increments`, `writing-acceptance-tests`, `reviewing-increments`; guard hook | [design note](docs/increments/02-trust-core/design.md) waiting for approval |
-| 03 Install and distribution | `factory install`, releases with attestations, install in cloud and CI, ruleset | [design note](docs/increments/03-install-and-distribution/design.md) draft |
-| 04 Handover and feedback loop | retro per increment, `factory check-retro`, `factory feedback` (issues in the factory repo), version updates, end-to-end test, note for `health` | [design note](docs/increments/04-handover-and-feedback/design.md) draft |
+| 02 Trust core | Go CLI with checks for skills, design notes, tests and pull request paths; approval gate on GitHub; skills `designing-increments`, `writing-acceptance-tests`, `reviewing-increments`; guard hook | [design note](docs/increments/02-trust-core/design.md) waiting for approval |
+| 03 Install and distribution | `factory install`, releases with attestations, install in cloud and CI | [draft](docs/increments/03-install-and-distribution/draft.md) |
+| 04 Handover and feedback loop | retro per increment, `factory check-retro`, `factory feedback` (prefilled issue links for the factory repo), version updates, end-to-end test, note for `health` | [draft](docs/increments/04-handover-and-feedback/draft.md) |
 
 ## Decisions
 
@@ -27,36 +27,21 @@ ADRs are only for architecture decisions and use the [MADR](https://adr.github.i
 
 Process and policy are rules in [principles.md](docs/principles.md):
 - what counts as evidence: rules 6–13
-- the merge gate: rule 16
+- the merge gate and approvals: rules 16 and 31
 - no private data in public repos: rule 26
-- order of work, test writer, approvals, agent token, verifier source, feedback to the factory: rules 27–35
+- order of work, test writer, protected paths, agent token, checks from `main`, feedback to the factory: rules 27–35
 
 ## Open
 
 - Approval of ADR 0001 and of the increment 02 design note with its open questions
-- Setup before the first approval: an agent token, a Touch ID key in Secretive registered on GitHub as a signing key, and the engineer's login in `.factory/config.json`
-- Increment 03: ruleset import and public repos
-
-## Later: built when `health` needs it
-
-v0 leaves these parts out on purpose. Each part is built at the point where `health` needs it. Numbers such as 1a refer to the steps of the `health` plan.
-
-| Part | Built when |
-|---|---|
-| A skill for coding tasks that the engineer implements by hand to learn a pattern | `health` 1a, first new pattern |
-| `proving-with-media` skill: video and screenshots as evidence for UI changes | `health` 1b, first UI |
-| 2 am support: each increment names the log event that shows it failing; timed debugging drills; an `investigating-incidents` skill | `health` 2, first cron and queue jobs |
-| Receipts, provenance log, workflow gate, holdout scenarios, private-paths check | an observed failure shows the need |
-| Chaos: sabotage tests and a `running-chaos-exercises` skill; product chaos with a check that the target is not production | the harness or `health` has something worth breaking |
-| `reviewing-architecture` and `writing-docs` skills, PR record template | the second `health` increment |
-| Decision-model check routing through Opper | `health` has enough changes to measure misses |
-| `factory install --watch`: copies factory changes into the project at once | the factory changes often during `health` work |
-| Architecture model as code, checked against the import graph | `health` has at least two packages |
+- Setup before the first pull request: agent token, environment `approval`, approval workflow, ruleset for `main`. Steps in [docs/setup/](docs/setup/README.md).
 
 ## Where things are
 
 - [docs/principles.md](docs/principles.md): every rule, its source, what it depends on, how it is enforced, and when to re-check it.
 - [docs/research/2026-10-factory-basis.md](docs/research/2026-10-factory-basis.md): the sources behind the rules. Reference only, not required reading.
 - [docs/decisions/](docs/decisions/): the ADRs.
-- [docs/increments/](docs/increments/): one folder per increment, with its design note, approvals, review and evidence.
+- [docs/increments/](docs/increments/): one folder per increment, with its design note, review, evidence and retro.
+- [docs/backlog.md](docs/backlog.md): parts that are built when `health` needs them.
+- [docs/setup/](docs/setup/README.md): the engineer's one-time setup per repo.
 - [AGENTS.md](AGENTS.md): the workflow and rules for agents that work on the factory.
