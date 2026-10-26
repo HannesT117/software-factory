@@ -1,6 +1,6 @@
 # 0001: Vendor-neutral core, thin adapters, install by copy
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-10-26
 
 ## Context

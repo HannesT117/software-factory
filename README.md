@@ -2,8 +2,6 @@
 
 This repo is a software factory: the system around coding agents that decides what counts as done, who checks it, and how a failure turns into a better check. Projects install it with `install.mjs`. The first project is `health`.
 
-This page is the entry point. It stays one page long.
-
 ## Status
 
 v0, phase 1 of 6 (basis documents). Branch `claude/factory-v0`.
@@ -24,8 +22,6 @@ v0, phase 1 of 6 (basis documents). Branch `claude/factory-v0`.
 | [0001](decisions/0001-layers-and-install-by-copy.md) | Vendor-neutral core plus thin adapters. Projects get a copy, not a link. | proposed |
 | [0002](decisions/0002-evidence-policy.md) | Evidence is locked scenarios, human-stated properties and types. Agent unit tests are not evidence. | proposed |
 | [0003](decisions/0003-merge-gate.md) | Public repos. A GitHub ruleset is the merge gate. | proposed |
-
-Only you set an ADR to `accepted`. After that, the ADR is locked and changes only through a new ADR.
 
 ## Open
 
