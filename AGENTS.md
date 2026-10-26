@@ -35,7 +35,7 @@ Every report names the kind of each piece of evidence: approved scenario, demons
 ## Source of truth and push
 
 - The engineer's clone at `~/dev/software-factory` is the source of truth. Before each change, compare GitHub with the local clone. If the engineer works locally without pushing, ask for a push or a copy and build on that state.
-- Commit locally. Push only after the engineer has approved everything that is pending. Push only fast-forward, never with force. Changes reach `main` only by squash merge of a pull request.
+- Push the work branch after every commit, fast-forward only, never with force. Never push to `main`. Changes reach `main` only by squash merge of a pull request, and a branch rule enforces this.
 
 ## Docs
 
