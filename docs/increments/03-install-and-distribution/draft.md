@@ -4,7 +4,7 @@ This is a draft. It is rewritten with the `designing-increments` skill after inc
 
 ## Goal
 
-- `factory install` brings the skills, the `AGENTS.md` block and the adapter files into a project, and updates them.
+- `factory install` brings the skills, the `AGENTS.md` block, the adapter files and the pull request template into a project, and updates them.
 - `factory install --check` finds edits to copied files, also in CI.
 - Releases publish binaries for macOS, Linux and Windows, each with a checksum and a GitHub artifact attestation.
 - A release starts only by `workflow_dispatch`, which the agent token cannot trigger. The release workflow checks that the commit is on `main`. Releases are immutable.
