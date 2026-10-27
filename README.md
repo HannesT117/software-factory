@@ -12,7 +12,7 @@ v0, increment 02 of 04. `health` starts after increment 04.
 
 | Increment | Content | State |
 |---|---|---|
-| 01 Basis | this page, principles, research notes, ADR 0001 | done |
+| 01 Basis | this page, principles, research notes, ADRs 0001 and 0002 | done |
 | 02 Trust core | Go CLI with checks for skills, design notes, tests and pull request paths; approval gate on GitHub; skills `designing-increments`, `writing-acceptance-tests`, `reviewing-increments`; guard hook | [design note](docs/increments/02-trust-core/design.md) waiting for approval |
 | 03 Install and distribution | `factory install`, releases with attestations, install in cloud and CI | [draft](docs/increments/03-install-and-distribution/draft.md) |
 | 04 Handover and feedback loop | retro per increment, `factory check-retro`, `factory feedback` (prefilled issue links for the factory repo), version updates, end-to-end test, note for `health` | [draft](docs/increments/04-handover-and-feedback/draft.md) |
@@ -21,7 +21,8 @@ v0, increment 02 of 04. `health` starts after increment 04.
 
 | ADR | Decision | Status |
 |---|---|---|
-| [0001](docs/decisions/0001-go-cli-and-install-by-copy.md) | Go CLI with thin adapters per agent tool. Projects get a copy of the skills. | proposed (reopened 2026-10-26) |
+| [0001](docs/decisions/0001-go-cli-with-thin-adapters.md) | The factory tooling is a Go CLI with thin adapters per agent tool. | proposed |
+| [0002](docs/decisions/0002-delivery-as-pinned-copies.md) | Projects get committed copies of the factory's parts and pin the version. | proposed |
 
 ADRs are only for architecture decisions and use the [MADR](https://adr.github.io/madr/) format. Only the engineer sets an ADR to `accepted`.
 
@@ -33,7 +34,7 @@ Process and policy are rules in [principles.md](docs/principles.md):
 
 ## Open
 
-- Approval of ADR 0001 and of the increment 02 design note with its open questions
+- Approval of ADRs 0001 and 0002, and of the increment 02 design note with its open questions
 - Setup before the first pull request: agent token, environment `approval`, approval workflow, ruleset for `main`. Steps in [docs/setup/](docs/setup/README.md).
 
 ## Where things are

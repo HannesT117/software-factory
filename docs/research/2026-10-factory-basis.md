@@ -103,9 +103,9 @@ Correction: rule 7 cited EvilGenie as support for holdouts. EvilGenie found hold
 | ssh-keygen manual, allowed-signers format (via review) | Supports `cert-authority`, `namespaces`, `valid-after` and `valid-before`. It cannot prove that a touch happened. | Touch ID is a local safeguard. CI checks only the signature. |
 | Secretive source, notifier (via review) | The prompt shows app, key and namespace, not the signed content. Authentication can be remembered for up to 24 h. | A key used only for approvals, never remembered. `factory approve` prints what it signs. |
 | METR, recent reward hacking, 2025-06-05 (via review; independent research) | Frontier models modify tests and scoring code. | Protected paths include the runner, `.factory/` and `.github/`. |
-| GitHub docs, artifact attestations (via review) | Build provenance logged in Sigstore's public instance for public repos (SLSA Build Level 2). | Releases with attestations (ADR 0001). |
-| Go blog, reproducible builds (via review) | `go build -trimpath` with `CGO_ENABLED=0` gives reproducible binaries. | Build flags in ADR 0001. |
-| Cursor docs, skills (via review; vendor) | Cursor also loads `.claude/skills/`. | Noted as a consequence in ADR 0001. |
+| GitHub docs, artifact attestations (via review) | Build provenance logged in Sigstore's public instance for public repos (SLSA Build Level 2). | Releases with attestations (ADR 0002). |
+| Go blog, reproducible builds (via review) | `go build -trimpath` with `CGO_ENABLED=0` gives reproducible binaries. | Build flags in ADR 0002. |
+| Cursor docs, skills (via review; vendor) | Cursor also loads `.claude/skills/`. | Noted as a consequence in ADR 0002. |
 
 ## Added on 2026-10-26 after review 4: how other factories approve, and credentials
 
