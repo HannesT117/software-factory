@@ -29,7 +29,7 @@ Chosen option 1, because the parts are then in the repo for every environment, a
 
 * **Skills and files:** embedded in the binary. `factory install` copies them into the project's `.agents/skills/` and pins the factory version in `.factory/config.json`. The project commits the copies.
 * **Claude Code:** the adapter creates relative symlinks `.claude/skills/<name>` → `../../.agents/skills/<name>`.
-* **Binary:** GitHub Releases with binaries for macOS, Linux and Windows, built with `CGO_ENABLED=0 go build -trimpath`, with checksums and GitHub artifact attestations. When a project changes its pinned version, the engineer verifies the attestation once, and the project pins the checksum. The install step on the engineer's machine, in the cloud setup script and in CI compares the checksum.
+* **Binary:** GitHub Releases with binaries for macOS, Linux and Windows, built with `CGO_ENABLED=0 go build -trimpath`, with checksums and GitHub artifact attestations. When a project changes its pinned version, `gh attestation verify` checks the attestation once, and the project pins the checksum. The install step on the engineer's machine, in the cloud setup script and in CI compares the checksum.
 * **Finding the binary:** hooks call `factory` from `PATH`. `factory` refuses to run if its version differs from the pin in `.factory/config.json`. A build from source in the factory repo has the version `dev` and skips this check.
 
 ### Consequences

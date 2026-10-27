@@ -13,8 +13,7 @@ The factory has checks, hooks and templates. The checks run in three places: in 
 * Hooks have no cross-tool standard. Each agent tool has its own hook input and output.
 * A compiled binary needs no language runtime in the project. A script needs its runtime in every project, cloud session and CI job.
 * Startup time, measured in a Linux container: a Go binary about 2 ms, a Node script about 30 ms. Model latency is seconds, so this difference alone does not decide.
-* The CLI also decides which pull requests may merge: it checks path groups and test files. A checker with that role must stay small enough for the engineer to read line by line.
-* The engineer has named Go as a language to learn. This is a preference, not a technical force.
+* The CLI also decides which pull requests may merge: it checks path groups and test files. A checker with that role must stay small enough to read line by line in a review, and it must not depend on third-party code at runtime.
 
 ## Considered Options
 
@@ -26,7 +25,7 @@ The factory has checks, hooks and templates. The checks run in three places: in 
 
 ## Decision Outcome
 
-Chosen option 1, because it needs no runtime in the project, gives the checks one tested home, and matches the engineer's preference for Go.
+Chosen option 1, because it needs no runtime in the project, gives the checks one tested home, and its standard library covers what the checks need without third-party code.
 
 * **CLI:** one Go binary `factory`. It uses only the Go standard library at runtime, and it calls `git`. Test-only dependencies are allowed. The policy logic lives in tool-neutral packages.
 * **Adapters:** `adapters/<tool>/` translates the tool's hook input and output and calls `factory`. Only adapters name a specific agent tool.
@@ -51,7 +50,6 @@ Chosen option 1, because it needs no runtime in the project, gives the checks on
 * Good, because one static binary runs on macOS, Linux and Windows without a runtime.
 * Good, because the standard library covers files, JSON, regular expressions and processes, so the checker stays free of runtime dependencies.
 * Bad, because releases and an install step are needed.
-* Bad, because the engineer is still learning Go, so the first reviews of the code take longer.
 
 ### Node or TypeScript scripts
 
@@ -60,13 +58,13 @@ Chosen option 1, because it needs no runtime in the project, gives the checks on
 
 ### TypeScript compiled into one binary
 
-* Good, because the language matches TypeScript projects such as `health`.
-* Bad, because the binary embeds a full runtime, and the engineer did not name TypeScript as a language to learn.
+* Good, because the language matches projects written in TypeScript.
+* Bad, because each binary carries the whole Deno runtime.
 
 ### Rust CLI
 
 * Good, because it has the same distribution model and stronger types.
-* Bad, because Rust CLIs usually depend on crates, and the engineer did not name Rust as a language to learn.
+* Bad, because Rust's standard library has no JSON parser and no regular expressions, so the checks would depend on crates such as `serde_json` and `regex`.
 
 ### Existing tools only
 

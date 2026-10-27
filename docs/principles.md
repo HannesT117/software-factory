@@ -18,7 +18,7 @@ Sources are listed in [research/2026-10-factory-basis.md](research/2026-10-facto
 | 1 | Verification and a deterministic pipeline are the centre. Skills are a thin layer for judgment. | StrongDM, Anthropic C compiler, Stripe Minions, Böckeler | evidence | not enforced | a factory with a different centre shows better results |
 | 2 | Work that repeats becomes a script. Intelligence is called only for judgment, with typed inputs and outputs. | Jacob, Syntax #1049 (advocacy) | evidence | not enforced | a script costs more to keep than the agent run it replaces |
 | 3 | A factory fits one product. Add a rule only after an observed failure. | Jacob; Hashimoto | human | not enforced | every retro |
-| 4 | A correction made twice becomes a check. | Hashimoto; `health` plan | human | not enforced | every retro |
+| 4 | A correction made twice becomes a check. | Hashimoto | human | not enforced | every retro |
 | 5 | Computational checks run before inferential checks. | Böckeler, Harness engineering | evidence | planned (backlog): order in `run-checks` | never, unless inferential checks become cheap and deterministic |
 | 6 | Acceptance scenarios are black-box, approved by the engineer, and locked. | Böckeler ("approved scenarios"); Jacob; StrongDM | evidence | planned (increment 02): tests in their own pull request, approved by the engineer; `check-pr` and `check-tests` in the gate | never |
 | 7 | Part of the scenarios is hidden from the implementing agent (holdout). | StrongDM. EvilGenie found that held-out tests added little; the review in rule 12 caught more. | model | planned (backlog): holdout fetch in CI | agents stop gaming visible tests in measured runs |

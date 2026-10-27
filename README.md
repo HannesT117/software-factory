@@ -1,6 +1,6 @@
 # Overview
 
-This repo is a software factory: the system around coding agents that decides what counts as done, who checks it, and how a failure turns into a better check. It is a Go CLI, `factory`. Projects install it with `factory install`. The first project is `health`.
+This repo is a software factory: the system around coding agents that decides what counts as done, who checks it, and how a failure turns into a better check. It is a Go CLI, `factory`. Projects install it with `factory install`.
 
 - **Engineer:** the human who owns a project.
 - **Agent:** a coding agent that works in it, with its own restricted token.
@@ -8,14 +8,14 @@ This repo is a software factory: the system around coding agents that decides wh
 
 ## Status
 
-v0, increment 02 of 04. `health` starts after increment 04.
+v0, increment 02 of 04.
 
 | Increment | Content | State |
 |---|---|---|
 | 01 Basis | this page, principles, research notes, ADRs 0001 and 0002 | done |
 | 02 Trust core | Go CLI with checks for skills, design notes, ADRs, tests and pull request paths; approval gate on GitHub; skills for the workflow, pull requests and commit messages; guard hook | [design note](docs/increments/02-trust-core/design.md) waiting for approval |
 | 03 Install and distribution | `factory install`, releases with attestations, install in cloud and CI | [draft](docs/increments/03-install-and-distribution/draft.md) |
-| 04 Handover and feedback loop | retro per increment, `factory check-retro`, `factory feedback` (prefilled issue links for the factory repo), version updates, end-to-end test, note for `health` | [draft](docs/increments/04-handover-and-feedback/draft.md) |
+| 04 Handover and feedback loop | retro per increment, `factory check-retro`, `factory feedback` (prefilled issue links for the factory repo), version updates, end-to-end test | [draft](docs/increments/04-handover-and-feedback/draft.md) |
 
 ## Decisions
 
@@ -45,6 +45,6 @@ Process and policy are rules in [principles.md](docs/principles.md):
 - [docs/research/2026-10-factory-basis.md](docs/research/2026-10-factory-basis.md): the sources behind the rules. Reference only, not required reading.
 - [docs/decisions/](docs/decisions/): the ADRs.
 - [docs/increments/](docs/increments/): one folder per increment, with its design note, review, evidence and retro.
-- [docs/backlog.md](docs/backlog.md): parts that are built when `health` needs them.
+- [docs/backlog.md](docs/backlog.md): parts that are built when a project needs them.
 - [docs/setup/](docs/setup/README.md): the engineer's one-time setup per repo.
 - [AGENTS.md](AGENTS.md): the workflow and rules for agents that work on the factory.
