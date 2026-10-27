@@ -31,6 +31,7 @@ Process and policy are rules in [principles.md](docs/principles.md):
 - the merge gate and approvals: rules 16 and 31
 - no private data in public repos: rule 26
 - order of work, test writer, protected paths, agent token, checks from `main`, feedback to the factory: rules 27–35
+- docs show the current state and follow their format: rule 36
 
 ## Open
 

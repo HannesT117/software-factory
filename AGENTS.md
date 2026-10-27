@@ -43,6 +43,8 @@ Every report names the kind of each piece of evidence: approved scenario, demons
 
 - Docs state general rules. They contain no "you" and no "I". The roles are engineer and agent.
 - ADRs are only for architecture decisions and use MADR. Context and decision drivers are value-neutral facts. An ADR has no status field: on `main` it is in force, because the engineer merged it. An ADR in force is never rewritten. A new ADR that replaces it adds `status: superseded by ADR-<nnnn>` to the old one, in the same pull request. An ADR that stops applying without a replacement gets `status: deprecated` and a one-line reason under More Information.
+- Docs describe the current state. How a doc came about stays in git and in the pull request. Research notes keep rejected options with their reason, not the course of the research.
+- A doc that follows a named format (MADR, the Agent Skills specification, the design-note format) uses only the elements of that format. An addition names its source in the pull request. `factory check-adr` must pass.
 - Process and policy are rules in `docs/principles.md`. Each rule names its source, what it depends on, how it is enforced, and when to re-check it.
 - `README.md` stays one page. Update its status in every increment.
 
