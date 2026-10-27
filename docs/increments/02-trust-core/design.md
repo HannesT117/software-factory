@@ -2,7 +2,7 @@
 
 ## Goal
 
-- A Go CLI `factory` checks skills, design notes, ADRs, acceptance tests and the paths that a pull request changes.
+- A Go CLI `factory` checks skills, design notes, decision records, acceptance tests and the paths that a pull request changes.
 - **An agent cannot approve.** Each increment has three pull requests: design note, tests, implementation. Each one waits for the engineer's approval on a protected GitHub environment. The agent token cannot give that approval. "Approved" means "merged on `main`".
 - A pull request that changes tests, design notes, CI or factory config changes nothing else. So the engineer sees each such change as its own pull request.
 - Five skills carry the workflow: `designing-increments`, `writing-acceptance-tests`, `reviewing-increments`, `writing-pull-requests` and `writing-commit-messages`. `writing-acceptance-tests` and `reviewing-increments` run in their own sessions with fixed prompts. `writing-pull-requests` and `writing-commit-messages` follow rule 37 and the section "Pull requests" in `AGENTS.md`.
@@ -64,9 +64,9 @@ How to read one: `exec` runs a command that must succeed. `! exec` runs one that
 | design notes | `docs/increments/*/design.md`, `docs/increments/*/draft.md` |
 | CI and config | `.github/**`, `.factory/**` |
 
-**ADR**, `docs/decisions/<nnnn>-<slug>.md`, in the MADR format:
+**Decision record**, `docs/decisions/<category>/<nnnn>-<slug>.md`, in the MADR format. The categories are `architecture` and `process`:
 
-- Frontmatter is optional. Allowed fields: `date` (`YYYY-MM-DD`) and `status`. `status` is either `superseded by ADR-<nnnn>`, where ADR `<nnnn>` exists, or `deprecated`.
+- Frontmatter is optional. Allowed fields: `date` (`YYYY-MM-DD`) and `status`. `status` is either `superseded by ADR-<nnnn>`, where record `<nnnn>` exists in the same category, or `deprecated`.
 - The first heading is `# <title>`.
 - Required `##` headings: `Context and Problem Statement`, `Considered Options`, `Decision Outcome`. Also allowed: `Decision Drivers`, `Pros and Cons of the Options`, `More Information`. No other `##` heading.
 - Under `Decision Outcome`, the only `###` headings are `Consequences` and `Confirmation`. Under `Pros and Cons of the Options`, each `###` heading names an option.
@@ -91,7 +91,7 @@ Every output line starts with the command name and a colon, for example `check-p
 |---|---|
 | `factory validate-skills [dir ...]` | `name-mismatch`, `name-format`, `name-too-long`, `description-missing`, `description-too-long`, `compatibility-too-long`, `metadata-not-map`, `unknown-field`, `no-frontmatter`, `unsupported-yaml`, `tool-name` |
 | `factory check-design <increment-dir>` | `bad-title`, `missing-section`, `bad-scenario-line`, `wrong-increment`, `duplicate-id` |
-| `factory check-adr [dir]` | `unknown-field`, `bad-date`, `bad-status`, `unknown-adr`, `missing-title`, `missing-section`, `unknown-section`. Checks every `.md` file in `dir`, by default `docs/decisions`. |
+| `factory check-adr [dir]` | `unknown-category`, `unknown-field`, `bad-date`, `bad-status`, `unknown-adr`, `missing-title`, `missing-section`, `unknown-section`. Checks every `.md` file under `dir`, by default `docs/decisions`. A file outside the folders `architecture` and `process` is `unknown-category`. |
 | `factory check-tests [--base <ref>]` | `missing-test`, `unknown-id`, `title-mismatch`, `forbidden-command`. Reads the design notes from `<ref>`, or from the working tree without `--base`. Reads the test files from the working tree. |
 | `factory check-pr --base <ref>` | `mixed-pr`, with the paths of each group. Compares `HEAD` with its merge base with `<ref>`. Exit 2 with `shallow-clone`. |
 | `factory hook pre-tool-use` | Reads Claude Code hook input on stdin: `tool_name`, `tool_input.file_path` or `tool_input.notebook_path`, `agent_type`, `agent_id`, `cwd`. Prints a deny decision as JSON, or nothing. |
@@ -144,10 +144,10 @@ Every output line starts with the command name and a colon, for example `check-p
 - **scenario 02.16** (manual) **Value in real use.** Over increment 03 and the first two increments of a project that uses the factory, `retro.md` counts the test writer's clarifying questions, tests changed after review, review findings, and the engineer's interventions. For each note, the engineer records yes or no, with a reason: was the note clear enough for the test writer?
 - **scenario 02.17** (manual) **Review is recorded.** For increment 02 itself, `review.md` has the reviewer's findings on special cases, test detection, work outside the scenarios, and changed docs that contain their own history or elements outside their format, plus 2 or 3 comprehension questions with the engineer's answers.
 
-### ADR check
+### Decision record check
 
-- **scenario 02.18** (automated) **A valid ADR passes.** Given an ADR with only the allowed frontmatter fields and headings, `factory check-adr` exits with 0.
-- **scenario 02.19** (automated) **A faulty ADR fails with a code.** Given one ADR per ADR-check code, it exits with 1 and prints the code with the line number.
+- **scenario 02.18** (automated) **A valid decision record passes.** Given a record in each category with only the allowed frontmatter fields and headings, `factory check-adr` exits with 0.
+- **scenario 02.19** (automated) **A faulty decision record fails with a code.** Given one record per check code of `check-adr`, it exits with 1 and prints the code with the line number.
 
 ## Evidence
 
