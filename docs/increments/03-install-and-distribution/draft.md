@@ -13,7 +13,7 @@ This is a draft. It is rewritten with the `designing-increments` skill after inc
 
 ## Out of scope
 
-- the provenance log, the workflow gate, holdout scenarios, chaos and more skills: later, when `health` needs them
+- the provenance log, the workflow gate, holdout scenarios, chaos and more skills: later, see the backlog
 - adapters other than Claude Code
 
 ## Interface
@@ -30,7 +30,7 @@ To be written with `designing-increments`.
 - **scenario 03.6** (automated) **Version pin.** Given a project that pins another version, when `factory` runs, then it exits with 2 and names both versions.
 - **scenario 03.7** (manual) **Release with attestation.** A `workflow_dispatch` run on `main` builds the binaries, and `gh attestation verify --signer-workflow` passes for each of them. A run on a commit that is not on `main` fails.
 - **scenario 03.8** (manual) **Install everywhere.** The install step works on the Mac, in the cloud setup script and in CI, and it refuses a binary whose checksum differs from the pinned one.
-- **scenario 03.9** (manual) **The gate works in a project.** In `health`, after the setup steps, a pull request cannot be merged without the engineer's approval, also not by the owner.
+- **scenario 03.9** (manual) **The gate works in a project.** In a project, after the setup steps, a pull request cannot be merged without the engineer's approval, also not by the owner.
 
 ## Evidence
 

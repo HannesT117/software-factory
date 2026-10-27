@@ -141,7 +141,7 @@ Every output line starts with the command name and a colon, for example `check-p
 
 - **scenario 02.14** (automated) **The factory's skills are valid and tool-neutral.** `factory validate-skills "$REPO/core/skills"` exits with 0 (ADR 0001 confirmation).
 - **scenario 02.15** (demonstrated) **Smoke run.** For each skill, one task runs once without and once with the skill, each in a fresh temporary repo without `AGENTS.md`, design notes or git history. The check command runs only afterwards. The recordings go to `evidence/`. This shows that the skill works, not how much it helps.
-- **scenario 02.16** (manual) **Value in real use.** Over increment 03 and the first two `health` increments, `retro.md` counts the test writer's clarifying questions, tests changed after review, review findings, and the engineer's interventions. For each note, the engineer records yes or no, with a reason: was the note clear enough for the test writer?
+- **scenario 02.16** (manual) **Value in real use.** Over increment 03 and the first two increments of a project that uses the factory, `retro.md` counts the test writer's clarifying questions, tests changed after review, review findings, and the engineer's interventions. For each note, the engineer records yes or no, with a reason: was the note clear enough for the test writer?
 - **scenario 02.17** (manual) **Review is recorded.** For increment 02 itself, `review.md` has the reviewer's findings on special cases, test detection, work outside the scenarios, and changed docs that contain their own history or elements outside their format, plus 2 or 3 comprehension questions with the engineer's answers.
 
 ### ADR check
@@ -159,13 +159,7 @@ Every output line starts with the command name and a colon, for example `check-p
 
 ## Setup before the first pull request
 
-The engineer does these steps. The files are in [docs/setup/](../../setup/).
-
-1. **Agent token:** fine-grained, for the factory repo and `health`. Contents and Pull requests write, nothing else.
-2. **Environment `approval`** in the factory repo: the engineer as required reviewer. "Prevent self-review" stays off, because agents act under the engineer's account. "Allow administrators to bypass" is off.
-3. **Approval workflow:** the engineer commits `docs/setup/approval.yml` as `.github/workflows/approval.yml` and merges it.
-4. **Ruleset:** the engineer imports `docs/setup/ruleset.json`: pull requests only, squash merges only, required check `approval`, no force push, no deletion, empty bypass list.
-5. **Before the first local agent session:** Claude Code user settings deny reading `~/.ssh`, `~/.config/gh` and the SSH agent socket, set `allowUnsandboxedCommands: false`, and give git the agent token.
+These steps need a person with admin rights on the repo. [docs/setup/README.md](../../setup/README.md) lists them: repo settings, agent token, environment `approval`, approval workflow, ruleset, and the settings for local agent sessions.
 
 After this increment, a CI pull request adds the jobs `checks` and `test` and makes them required.
 
