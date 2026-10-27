@@ -1,25 +1,13 @@
-<!-- One pull request is one step of an increment. The summary has at most 10 lines. -->
+## Summary
 
-## Kind
-
-<!-- One of: design, tests, implementation, setup -->
-
-## Increment
-
-<!-- <nn>-<slug>, or "none" for setup -->
+## Context
 
 ## What changes
 
--
+## Diagram
+
+## Merge risk
+
+## Trade-offs
 
 ## Evidence
-
-<!-- Name the kind of each piece: approved scenario, demonstrated, manual, review, ADR confirmation, agent test (scaffolding), not verified. -->
-
--
-
-## For the engineer
-
-<!-- What to read, decide or run before the approval. -->
-
--
