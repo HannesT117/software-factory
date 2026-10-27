@@ -36,17 +36,21 @@ Every report names the kind of each piece of evidence: approved scenario, demons
 
 ## Pull requests
 
-With squash merges, the title and description of a pull request become the commit message on `main`.
+With squash merges, the title and description of a pull request become the commit message on `main`. The description gives a reader without context an overview of the change.
 
 - **Title:** a complete sentence in the imperative, at most 50 characters (72 at most), capitalized, without a final period. It is clear without the description.
-- **Description:** the sections of `.github/pull_request_template.md`:
-  - **Why:** the problem, and why this approach solves it.
-  - **What changes:** in plain words.
-  - **Trade-offs:** costs and shortcomings that are not obvious, or "None".
-  - **Evidence:** each piece with its kind (see Reports).
+- **Description:** the sections of `.github/pull_request_template.md`, in this order. Delete an optional section that does not apply.
+  - **Summary** (required): two or three sentences that a reader without context understands.
+  - **Context** (optional): the problem, and what a reader must know to follow the change.
+  - **What changes** (required): the change at a high level. Core changes first, then mechanical ones such as renames or generated files.
+  - **Diagram** (optional): a Mermaid sketch of about 7 elements that answers one question (rule 18).
+  - **Merge risk** (required): one-way door or two-way door; what the change could break beyond the diff; the one fact that makes it safe, and how far that fact is proven; how to undo the change.
+  - **Trade-offs** (optional): costs and shortcomings that are not obvious.
+  - **Evidence** (required): each piece with its kind (see Reports).
 - The description is self-contained and describes the current state. Before the approval, check that it still matches the diff.
-- One problem per pull request.
+- One problem per pull request. If the description gets long, split the pull request.
 - Notes for the engineer's approval (what to read, decide or run) go into the first comment of the pull request, not into the description.
+- Commits on a work branch use the same title rules. Their body explains what and why, not how.
 
 ## Source of truth and push
 
