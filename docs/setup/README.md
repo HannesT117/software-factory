@@ -6,6 +6,7 @@ The engineer does these steps once per repo, in this order. Agents cannot do the
 2. **Environment.** Settings → Environments → New environment `approval`. Required reviewers: the engineer. "Prevent self-review": off, because agents act under the engineer's account. "Allow administrators to bypass configured protection rules": off.
 3. **Approval workflow.** Copy `approval.yml` to `.github/workflows/approval.yml`, open a pull request, and merge it. The workflow must be on `main` before the ruleset requires its check.
 4. **Ruleset.** Settings → Rules → Rulesets → Import a ruleset → `ruleset.json`. Check that the required check `approval` has GitHub Actions as its source.
-5. **Local agent sessions.** Before the first one: in the Claude Code user settings, deny reading `~/.ssh`, `~/.config/gh` and the SSH agent socket, set `allowUnsandboxedCommands: false`, and give git the agent token. Increment 02 adds a template for this.
+5. **Branch cleanup.** Settings → General → "Automatically delete head branches": on.
+6. **Local agent sessions.** Before the first one: in the Claude Code user settings, deny reading `~/.ssh`, `~/.config/gh` and the SSH agent socket, set `allowUnsandboxedCommands: false`, and give git the agent token. Increment 02 adds a template for this.
 
 To check: a pull request shows the job `approval` as waiting, and the merge button stays blocked until the engineer approves.
