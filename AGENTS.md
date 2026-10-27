@@ -32,7 +32,7 @@ Do not write implementation code before the design and tests pull requests are m
 
 ## Reports
 
-Every report names the kind of each piece of evidence: approved scenario, demonstrated, manual, review, ADR confirmation, agent test (scaffolding), or not verified.
+Every report starts with one line for each pull request that the agent opened or changed since the last report: its title and its link. Every report names the kind of each piece of evidence: approved scenario, demonstrated, manual, review, ADR confirmation, agent test (scaffolding), or not verified.
 
 ## Pull requests
 
