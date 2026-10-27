@@ -78,5 +78,4 @@ Chosen option 1, because it needs no runtime in the project, gives the checks on
 
 * **Confidence:** medium. The startup times are measured. The factory has no Go code yet.
 * **Revisit when** a cross-tool hook standard appears, or the checks grow beyond what the engineer can read line by line.
-* **History:** first accepted with option 2. The engineer reopened it on 2026-10-26, before anything was merged to main, and chose the Go CLI. On 2026-10-27 the delivery into projects moved to ADR 0002.
 * **Sources:** Claude Code docs on hooks; Swamp source repository; startup times measured on 2026-10-26. Details are in the [research notes](../research/2026-10-factory-basis.md).
