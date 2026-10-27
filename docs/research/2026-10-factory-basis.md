@@ -46,6 +46,7 @@ Labels:
 | Source | Finding | Taken |
 |---|---|---|
 | GitHub docs, Copilot cloud agent risks and mitigations (read; vendor) | The agent has its own app identity, pushes only to its own `copilot/` branch, and cannot approve or merge. Workflows run only after a human clicks "Approve and run workflows". | Agents never approve or merge (rule 31). |
+| GitHub docs, About pull request reviews (via search) | "Pull request authors cannot approve their own pull requests." | Not taken: pull request reviews as the approval, because agents open pull requests under the approver's account (process decision 0001). |
 | DORA, Streamlining change approval (via review) | Approval through peer review, supplemented by automation, recorded in the platform. | Approval in the platform (rule 31). |
 | GitHub docs, deployments and environments (read) | Required reviewers are available for public repos on Free. "Prevent self-review" blocks approving a run that the reviewer started. Admin bypass can be switched off. | The approval gate, with "Prevent self-review" off (rule 31). |
 | GitHub docs, permissions for fine-grained tokens (read) | Merging a pull request needs Contents write. Approving a pending deployment needs Deployments write. Changing workflow files needs the Workflows permission. | The agent token has Contents and Pull requests only (rule 33). |
