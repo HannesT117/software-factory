@@ -38,7 +38,7 @@ Every report names the kind of each piece of evidence: approved scenario, demons
 
 With squash merges, the title and description of a pull request become the commit message on `main`. The description gives a reader without context an overview of the change.
 
-- **Title:** a complete sentence in the imperative, at most 50 characters (72 at most), capitalized, without a final period. It is clear without the description.
+- **Title:** a complete sentence in the imperative, at most 50 characters (72 at most), capitalized, without a final period. It names what the change does, not which files it touches, and it is clear without the description. It contains no internal numbers such as increment or scenario ids. If the title needs "and" to join two topics, split the pull request.
 - **Description:** the sections of `.github/pull_request_template.md`, in this order. Delete an optional section that does not apply.
   - **Summary** (required): two or three sentences that a reader without context understands.
   - **Context** (optional): the problem, and what a reader must know to follow the change.
