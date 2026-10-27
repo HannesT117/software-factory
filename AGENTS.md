@@ -34,6 +34,20 @@ Do not write implementation code before the design and tests pull requests are m
 
 Every report names the kind of each piece of evidence: approved scenario, demonstrated, manual, review, ADR confirmation, agent test (scaffolding), or not verified.
 
+## Pull requests
+
+With squash merges, the title and description of a pull request become the commit message on `main`.
+
+- **Title:** a complete sentence in the imperative, at most 50 characters (72 at most), capitalized, without a final period. It is clear without the description.
+- **Description:** the sections of `.github/pull_request_template.md`:
+  - **Why:** the problem, and why this approach solves it.
+  - **What changes:** in plain words.
+  - **Trade-offs:** costs and shortcomings that are not obvious, or "None".
+  - **Evidence:** each piece with its kind (see Reports).
+- The description is self-contained and describes the current state. Before the approval, check that it still matches the diff.
+- One problem per pull request.
+- Notes for the engineer's approval (what to read, decide or run) go into the first comment of the pull request, not into the description.
+
 ## Source of truth and push
 
 - The engineer's clone at `~/dev/software-factory` is the source of truth. Before each change, compare GitHub with the local clone. If the engineer works locally without pushing, ask for a push or a copy and build on that state.

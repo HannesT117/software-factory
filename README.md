@@ -32,6 +32,7 @@ Process and policy are rules in [principles.md](docs/principles.md):
 - no private data in public repos: rule 26
 - order of work, test writer, protected paths, agent token, checks from `main`, feedback to the factory: rules 27–35
 - docs show the current state and follow their format: rule 36
+- pull request descriptions: rule 37
 
 ## Open
 

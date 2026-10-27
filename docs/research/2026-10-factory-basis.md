@@ -75,6 +75,16 @@ Labels:
 | Go blog, reproducible builds (via review) | `go build -trimpath` with `CGO_ENABLED=0` gives reproducible binaries. | Build flags in ADR 0002. |
 | Cursor docs, skills (via review; vendor) | Cursor also loads `.claude/skills/`. | A consequence in ADR 0002. |
 
+## Pull request descriptions
+
+| Source | Finding | Taken |
+|---|---|---|
+| Google engineering practices, Writing good CL descriptions (read) | The first line is a short, standalone summary of what the change does, as an imperative sentence. The body states the problem, why this approach is best, and its shortcomings, with background such as benchmark results. Links may not be visible to later readers, so the description carries enough context. Review the description before submitting, so that it still matches the change. | Title and body sections (rule 37). |
+| Linux kernel, Submitting patches, "Describe your changes" (read) | Describe the problem, the user-visible impact, then the change in technical detail. Quantify optimizations and name non-obvious costs. One problem per patch. The description is self-contained and does not refer to earlier versions. Imperative mood. | Why, trade-offs, evidence, one problem per pull request (rule 37). |
+| Chris Beams, How to write a Git commit message (read) | Subject at most 50 characters (72 hard), capitalized, no final period, imperative. The body explains what and why, not how. | Title rules (rule 37). |
+| GitHub docs, squash merging (read) | The default squash commit message can be set to the pull request title and description. | The description is the commit message on `main` (setup step 6). |
+| Conventional Commits 1.0.0 (read) | A type prefix such as `feat:`, `fix:` or `docs:` makes commits machine-readable for changelogs and Semantic Versioning. | Not taken: an extra standard. Titles follow Google and Beams. |
+
 ## People, comprehension and operations
 
 | Source | Finding | Taken |
