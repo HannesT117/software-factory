@@ -2,7 +2,7 @@
 
 ## Goal
 
-- A Go CLI `factory` checks skills, design notes, acceptance tests and the paths that a pull request changes.
+- A Go CLI `factory` checks skills, design notes, ADRs, acceptance tests and the paths that a pull request changes.
 - **An agent cannot approve.** Each increment has three pull requests: design note, tests, implementation. Each one waits for the engineer's approval on a protected GitHub environment. The agent token cannot give that approval. "Approved" means "merged on `main`".
 - A pull request that changes tests, design notes, CI or factory config changes nothing else. So the engineer sees each such change as its own pull request.
 - Three skills carry the workflow: `designing-increments`, `writing-acceptance-tests` and `reviewing-increments`. The second and third run in their own sessions with fixed prompts.
@@ -64,6 +64,14 @@ How to read one: `exec` runs a command that must succeed. `! exec` runs one that
 | design notes | `docs/increments/*/design.md`, `docs/increments/*/draft.md` |
 | CI and config | `.github/**`, `.factory/**` |
 
+**ADR**, `docs/decisions/<nnnn>-<slug>.md`, in the MADR format:
+
+- Frontmatter is optional. Allowed fields: `date` (`YYYY-MM-DD`) and `status`. `status` is either `superseded by ADR-<nnnn>`, where ADR `<nnnn>` exists, or `deprecated`.
+- The first heading is `# <title>`.
+- Required `##` headings: `Context and Problem Statement`, `Considered Options`, `Decision Outcome`. Also allowed: `Decision Drivers`, `Pros and Cons of the Options`, `More Information`. No other `##` heading.
+- Under `Decision Outcome`, the only `###` headings are `Consequences` and `Confirmation`. Under `Pros and Cons of the Options`, each `###` heading names an option.
+- Lines in fenced code blocks are ignored.
+
 **Skill fields**, from the Agent Skills specification:
 
 - `name`: 1 to 64 characters; lowercase letters, digits and single hyphens; no hyphen at the start or end; equal to the folder name.
@@ -83,6 +91,7 @@ Every output line starts with the command name and a colon, for example `check-p
 |---|---|
 | `factory validate-skills [dir ...]` | `name-mismatch`, `name-format`, `name-too-long`, `description-missing`, `description-too-long`, `compatibility-too-long`, `metadata-not-map`, `unknown-field`, `no-frontmatter`, `unsupported-yaml`, `tool-name` |
 | `factory check-design <increment-dir>` | `bad-title`, `missing-section`, `bad-scenario-line`, `wrong-increment`, `duplicate-id` |
+| `factory check-adr [dir]` | `unknown-field`, `bad-date`, `bad-status`, `unknown-adr`, `missing-title`, `missing-section`, `unknown-section`. Checks every `.md` file in `dir`, by default `docs/decisions`. |
 | `factory check-tests [--base <ref>]` | `missing-test`, `unknown-id`, `title-mismatch`, `forbidden-command`. Reads the design notes from `<ref>`, or from the working tree without `--base`. Reads the test files from the working tree. |
 | `factory check-pr --base <ref>` | `mixed-pr`, with the paths of each group. Compares `HEAD` with its merge base with `<ref>`. Exit 2 with `shallow-clone`. |
 | `factory hook pre-tool-use` | Reads Claude Code hook input on stdin: `tool_name`, `tool_input.file_path` or `tool_input.notebook_path`, `agent_type`, `agent_id`, `cwd`. Prints a deny decision as JSON, or nothing. |
@@ -90,7 +99,7 @@ Every output line starts with the command name and a colon, for example `check-p
 **CI in the factory repo**, after this increment:
 
 - Workflow `gate` on `pull_request_target`. GitHub then takes the workflow file and the checkout from `main`.
-  - Job `checks` builds `factory` from `main`, fetches the pull request as data, and runs `check-pr`, `check-design` for each changed note, and `check-tests --base main`. It runs no code from the pull request and has no permissions.
+  - Job `checks` builds `factory` from `main`, fetches the pull request as data, and runs `check-pr`, `check-design` for each changed note, `check-adr` and `check-tests --base main`. It runs no code from the pull request and has no permissions.
   - Job `approval` needs `checks` and uses the environment `approval`.
 - Workflow `test` on `pull_request` runs `go test ./...`, which includes the acceptance tests.
 - The ruleset on `main` requires `checks`, `approval` and `test`.
@@ -135,9 +144,14 @@ Every output line starts with the command name and a colon, for example `check-p
 - **scenario 02.16** (manual) **Value in real use.** Over increment 03 and the first two `health` increments, `retro.md` counts the test writer's clarifying questions, tests changed after review, review findings, and the engineer's interventions. For each note, the engineer records yes or no, with a reason: was the note clear enough for the test writer?
 - **scenario 02.17** (manual) **Review is recorded.** For increment 02 itself, `review.md` has the reviewer's findings on special cases, test detection and work outside the scenarios, plus 2 or 3 comprehension questions with the engineer's answers.
 
+### ADR check
+
+- **scenario 02.18** (automated) **A valid ADR passes.** Given an ADR with only the allowed frontmatter fields and headings, `factory check-adr` exits with 0.
+- **scenario 02.19** (automated) **A faulty ADR fails with a code.** Given one ADR per ADR-check code, it exits with 1 and prints the code with the line number.
+
 ## Evidence
 
-- **Approved scenarios:** 02.1 to 02.9, 02.13 and 02.14, as `testscript` files from the test-writer session, merged with the tests pull request.
+- **Approved scenarios:** 02.1 to 02.9, 02.13, 02.14, 02.18 and 02.19, as `testscript` files from the test-writer session, merged with the tests pull request.
 - **Demonstrated:** 02.15.
 - **Manual:** 02.10, 02.11, 02.12, 02.16 and 02.17.
 - **ADR confirmation:** 02.14.
