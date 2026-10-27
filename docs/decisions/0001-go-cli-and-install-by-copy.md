@@ -1,7 +1,6 @@
 ---
 status: proposed
 date: 2026-10-26
-decision-makers: engineer
 ---
 
 # Factory tooling as a Go CLI with thin adapters; skills copied into projects
