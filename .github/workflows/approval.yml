@@ -11,4 +11,5 @@ jobs:
     steps:
       - env:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: echo "approval: approved $HEAD_SHA"
+        run: |
+          echo "approval: approved $HEAD_SHA"
