@@ -16,3 +16,4 @@ v0 leaves these parts out on purpose. Each part is built when a project that use
 | Decision-model check routing through Opper | a project has enough changes to measure misses |
 | `factory install --watch`: copies factory changes into the project at once | the factory changes often while a project uses it |
 | Architecture model as code, checked against the import graph | a project has at least two packages |
+
