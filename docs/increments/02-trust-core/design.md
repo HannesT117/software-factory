@@ -129,9 +129,9 @@ Every output line starts with the command name and a colon, for example `check-p
 
 ### Approval and credentials (manual, in the factory repo)
 
-- **scenario 02.10** (manual) **Only the engineer approves.** A pull request cannot be merged before the engineer approves the `approval` job. After a new push, it needs a new approval. An attempt with the agent token to approve the job fails.
+- **scenario 02.10** (manual) **Only a person approves.** A pull request cannot be merged before a required reviewer approves the `approval` job. After a new push, it needs a new approval. An attempt with the agent token to approve the job fails. A pull request that adds its own workflow with a job named `approval` that passes at once still cannot be merged.
 - **scenario 02.11** (manual) **The gate comes from main.** A pull request that changes the `gate` workflow still runs the version from `main`, and its `checks` result shows on the pull request.
-- **scenario 02.12** (manual) **Agents cannot use the engineer's credentials.** From a local agent session, a push of a change under `.github/workflows/` fails, and reading the repo's rulesets through the API fails. From a cloud session, the push fails too.
+- **scenario 02.12** (manual) **Agent sessions cannot get around the gate.** From a local agent session, a push of a change under `.github/workflows/` fails, and reading the repo's rulesets through the API fails. From a cloud session, an attempt to approve the `approval` job through the API fails, and an attempt to change the ruleset through the API fails.
 
 ### Guard hook (early feedback, Claude Code adapter)
 
@@ -166,8 +166,8 @@ After this increment, a CI pull request adds the jobs `checks` and `test` and ma
 ## Limits
 
 - **Bootstrap:** this increment's pull requests run before `factory` exists on `main`. Until the CI pull request, only `approval` is required, and the engineer checks the paths with `git diff --stat`. The engineer reads `check-pr` and `check-tests` line by line in the review, because they guard all later pull requests.
-- **One account:** agents act under the engineer's GitHub account, and GitHub cannot tell them apart. The guards are the missing token rights (Deployments, Workflows, Administration) and the sandbox. An agent that gets the engineer's own token can approve. Scenario 02.12 checks this.
-- **Not verified:** whether the checks from `pull_request_target` count as required checks on the pull request. Scenarios 02.10 and 02.11 show it. If not, `gate` runs on `pull_request`, and the missing Workflows right is the only guard for the workflow files.
+- **One account:** agents act under the engineer's GitHub account, and GitHub cannot tell them apart. In local sessions, the guards are the missing token rights (Deployments, Workflows, Administration) and the sandbox. Cloud sessions use the engineer's own credentials through the GitHub proxy and can push workflow files. There the guards are the ruleset, which binds every account, and the approval, which needs a person. Scenario 02.12 checks both.
+- **Not verified:** whether the checks from `pull_request_target` count as required checks on the pull request. Scenarios 02.10 and 02.11 show it. If not, `gate` runs on `pull_request`. Then a cloud session could change the gate, and agents work only in local sessions.
 - **Guard hook:** it works only in Claude Code, and Bash can get around it. It gives early feedback only.
 - **Break glass:** the engineer can switch off the ruleset in the settings. The next retro records each use.
 
