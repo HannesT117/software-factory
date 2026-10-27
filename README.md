@@ -19,12 +19,12 @@ v0, increment 02 of 04. `health` starts after increment 04.
 
 ## Decisions
 
-| ADR | Decision | Status |
-|---|---|---|
-| [0001](docs/decisions/0001-go-cli-with-thin-adapters.md) | The factory tooling is a Go CLI with thin adapters per agent tool. | proposed |
-| [0002](docs/decisions/0002-delivery-as-pinned-copies.md) | Projects get committed copies of the factory's parts and pin the version. | proposed |
+| ADR | Decision |
+|---|---|
+| [0001](docs/decisions/0001-go-cli-with-thin-adapters.md) | The factory tooling is a Go CLI with thin adapters per agent tool. |
+| [0002](docs/decisions/0002-delivery-as-pinned-copies.md) | Projects get committed copies of the factory's parts and pin the version. |
 
-ADRs are only for architecture decisions and use the [MADR](https://adr.github.io/madr/) format. Only the engineer sets an ADR to `accepted`.
+ADRs are only for architecture decisions and use the [MADR](https://adr.github.io/madr/) format. An ADR on `main` is in force: the engineer accepts it by merging its pull request.
 
 Process and policy are rules in [principles.md](docs/principles.md):
 - what counts as evidence: rules 6–13
@@ -34,7 +34,7 @@ Process and policy are rules in [principles.md](docs/principles.md):
 
 ## Open
 
-- Approval of ADRs 0001 and 0002, and of the increment 02 design note with its open questions
+- Review of ADRs 0001 and 0002, and of the increment 02 design note with its open questions
 - Setup before the first pull request: agent token, environment `approval`, approval workflow, ruleset for `main`. Steps in [docs/setup/](docs/setup/README.md).
 
 ## Where things are
