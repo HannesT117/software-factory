@@ -36,7 +36,6 @@ Chosen option 1, because it needs no runtime in the project, gives the checks on
 * Good, because one tool serves the engineer, the hooks and CI.
 * Good, because replacing the agent tool means adding one adapter.
 * Bad, because a compiled tool needs releases and an install step in every environment ([ADR 0002](0002-delivery-as-pinned-copies.md)).
-* Bad, because the CLI depends on the host's `git`.
 
 ### Confirmation
 
