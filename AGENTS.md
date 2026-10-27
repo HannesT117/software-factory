@@ -42,7 +42,7 @@ Every report names the kind of each piece of evidence: approved scenario, demons
 ## Docs
 
 - Docs state general rules. They contain no "you" and no "I". The roles are engineer and agent.
-- ADRs are only for architecture decisions and use MADR. Context and decision drivers are value-neutral facts. An ADR has no status field: on `main` it is in force, because the engineer merged it. A later ADR that replaces it adds `status: superseded by ADR <nnnn>` to the old one in the same pull request.
+- ADRs are only for architecture decisions and use MADR. Context and decision drivers are value-neutral facts. An ADR has no status field: on `main` it is in force, because the engineer merged it. An ADR in force is never rewritten. A new ADR that replaces it adds `status: superseded by ADR-<nnnn>` to the old one, in the same pull request. An ADR that stops applying without a replacement gets `status: deprecated` and a one-line reason under More Information.
 - Process and policy are rules in `docs/principles.md`. Each rule names its source, what it depends on, how it is enforced, and when to re-check it.
 - `README.md` stays one page. Update its status in every increment.
 
