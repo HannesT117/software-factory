@@ -5,7 +5,7 @@
 - A Go CLI `factory` checks skills, design notes, ADRs, acceptance tests and the paths that a pull request changes.
 - **An agent cannot approve.** Each increment has three pull requests: design note, tests, implementation. Each one waits for the engineer's approval on a protected GitHub environment. The agent token cannot give that approval. "Approved" means "merged on `main`".
 - A pull request that changes tests, design notes, CI or factory config changes nothing else. So the engineer sees each such change as its own pull request.
-- Three skills carry the workflow: `designing-increments`, `writing-acceptance-tests` and `reviewing-increments`. The second and third run in their own sessions with fixed prompts.
+- Five skills carry the workflow: `designing-increments`, `writing-acceptance-tests`, `reviewing-increments`, `writing-pull-requests` and `writing-commit-messages`. `writing-acceptance-tests` and `reviewing-increments` run in their own sessions with fixed prompts. `writing-pull-requests` and `writing-commit-messages` follow rule 37 and the section "Pull requests" in `AGENTS.md`.
 - The factory repo uses all of this from increment 03 on.
 
 ## Out of scope
