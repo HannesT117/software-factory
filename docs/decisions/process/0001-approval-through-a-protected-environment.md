@@ -13,6 +13,8 @@ Agents open pull requests, and a person approves each one before it reaches `mai
 * Agents open pull requests under the approver's account. GitHub does not let the author of a pull request approve it.
 * A fine-grained token cannot be used to contribute to a repo where its account is only a collaborator. Each token covers one owner.
 * Cloud sessions act with the approver's own GitHub credentials through the Claude Code GitHub proxy, and they can push workflow files.
+* A required reviewer can approve a waiting job through the API. A personal access token (classic) or an OAuth token needs the `repo` scope for that.
+* A required check matches a name and an app. Every workflow reports as the app GitHub Actions, and GitHub counts a skipped job as a passed required check.
 * The repos are public, on GitHub Free.
 * Verification code that the factory writes itself must be read line by line before it can be trusted.
 
@@ -38,7 +40,8 @@ Chosen option 5, because it needs no verification code of its own, works on GitH
 * Good, because the factory has no code for signatures, keys or trust roots.
 * Good, because the approval is one click in GitHub, also in the mobile app.
 * Good, because a second person can join as a required reviewer without a change to the factory.
-* Bad, because an agent that gets the approver's own GitHub token can approve, and GitHub cannot tell it from the approver.
+* Bad, because an agent that gets the approver's own GitHub token, for example a `gh` token sent to cloud sessions with `/web-setup`, can approve, and GitHub cannot tell it from the approver.
+* Bad, because the gate holds only while the real job runs on every event that brings a pull request to `main`. A fake job with the same name passes otherwise. The workflow therefore also reacts to `edited`, and its job has no `if:`.
 * Bad, because the approval is not recorded in git. It stays in GitHub's deployment history.
 * Bad, because environment reviewers on private repos need a paid plan.
 
