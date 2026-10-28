@@ -36,7 +36,6 @@ flowchart LR
 - Line 1 is `# Increment <nn>: <title>`. `<nn>` equals the folder's number.
 - Required headings, exact text, any order: `## Goal`, `## Out of scope`, `## Interface`, `## Scenarios`, `## Evidence`, `## Open questions`. Other headings are allowed.
 - A scenario line matches `^- \*\*scenario (\d{2})\.([1-9]\d*)\*\* \((automated|demonstrated|manual)\) \*\*(.+?)[.?]\*\*`. `<nn>` equals the folder's number. The title is the third group. Any other line that starts with `- **scenario` is an error. Lines in fenced code blocks are ignored.
-- A note that is not ready for its pull request is named `draft.md`. The checks ignore drafts.
 
 **Acceptance test**, `test/acceptance/<nn>-<slug>/scenario-<nn>.<n>.txtar`: a `testscript` file, one per automated scenario. Line 1 is `# scenario <nn>.<n>: <title>`, with the title exactly as in the note: same case, without the final period or question mark. Not allowed: `skip`, `stop`, and any condition in square brackets, such as `[net]` or `[darwin]`. Example:
 
@@ -61,7 +60,7 @@ How to read one: `exec` runs a command that must succeed. `! exec` runs one that
 | Group | Paths |
 |---|---|
 | tests | `test/acceptance/**`, `go.mod`, `go.sum` |
-| design notes | `docs/increments/*/design.md`, `docs/increments/*/draft.md` |
+| design notes | `docs/increments/*/design.md` |
 | CI and config | `.github/**`, `.factory/**` |
 
 **Decision record**, `docs/decisions/<category>/<nnnn>-<slug>.md`, in the MADR format. The categories are `architecture` and `process`:
