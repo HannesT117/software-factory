@@ -14,8 +14,8 @@ v0, increment 02 of 04.
 |---|---|---|
 | 01 Basis | this page, principles, research notes, ADRs 0001 and 0002 | done |
 | 02 Trust core | Go CLI with checks for skills, design notes, ADRs, tests and pull request paths; approval gate on GitHub; skills for the workflow, pull requests and commit messages; guard hook | [design note](docs/increments/02-trust-core/design.md) waiting for approval |
-| 03 Install and distribution | `factory install`, releases with attestations, install in cloud and CI | [draft](docs/increments/03-install-and-distribution/draft.md) |
-| 04 Handover and feedback loop | retro per increment, `factory check-retro`, `factory feedback` (prefilled issue links for the factory repo), version updates, end-to-end test | [draft](docs/increments/04-handover-and-feedback/draft.md) |
+| 03 Install and distribution | `factory install`; the binary through releases with attestations or through `go install …@vX.Y.Z` (open); install in cloud and CI | planned |
+| 04 Handover and feedback loop | retro per increment, `factory check-retro`, `factory feedback` (prefilled issue links for the factory repo), version updates, end-to-end test | planned |
 
 ## Decisions
 
