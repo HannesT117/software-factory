@@ -38,4 +38,4 @@ To be written with `designing-increments`. This increment also collects the firs
 
 ## Open questions
 
-To be written with `designing-increments`.
+- **Distribution:** releases with attestations, or `go install …@vX.Y.Z`? Go checks a module against its public checksum database, so the second needs no release pipeline, but every CI needs Go.
