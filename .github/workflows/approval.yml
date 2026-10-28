@@ -1,4 +1,6 @@
 name: approval
+# The run name shows which commit a reviewer approves.
+run-name: approval for ${{ github.event.pull_request.head.sha }}
 on:
   pull_request_target:
     branches: [main]
