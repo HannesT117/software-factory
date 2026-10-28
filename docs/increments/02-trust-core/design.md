@@ -101,7 +101,7 @@ Every output line starts with the command name and a colon, for example `check-p
 - Workflow `gate` on `pull_request_target`. GitHub then takes the workflow file and the checkout from `main`.
   - Job `checks` builds `factory` from `main`, fetches the pull request as data, and runs `check-pr`, `check-design` for each changed note, `check-adr` and `check-tests --base main`. It runs no code from the pull request and has no permissions.
   - Job `approval` uses the environment `approval`. It has no `needs:` and no `if:`, because GitHub counts a skipped job as a passed required check.
-- Workflow `test` on `pull_request` runs `go test ./...`, which includes the acceptance tests. On a pull request that changes the tests group, each added test file must fail and every other test must pass, because the code for new tests does not exist yet. On any other pull request, all tests must pass.
+- Workflow `test` on `pull_request` runs `go test ./...`, which includes the acceptance tests. On a pull request that changes the tests group, each added test file must fail and every other test must pass, because the code for new tests does not exist yet. On any other pull request, all tests must pass. On a pull request that changes code, the job also mutates the code of `factory`, runs the acceptance tests against each mutant, and reports the mutation score in its summary. The score does not block a merge.
 - The ruleset on `main` requires `checks`, `approval` and `test`.
 
 ## Scenarios
@@ -133,6 +133,7 @@ Every output line starts with the command name and a colon, for example `check-p
 - **scenario 02.11** (manual) **The gate comes from main.** A pull request that changes the `gate` workflow still runs the version from `main`, and its `checks` result shows on the pull request.
 - **scenario 02.12** (manual) **Agent sessions cannot get around the gate.** From a local agent session, a push of a change under `.github/workflows/` fails, reading the repo's rulesets through the API fails, `gh auth token` and `git credential fill` fail, and the Read tool cannot read `~/.ssh`. From a cloud session, an attempt to approve the `approval` job through the API fails, and an attempt to change the ruleset through the API fails.
 - **scenario 02.20** (manual) **New tests start red.** A tests pull request whose added test files pass, or that makes an existing test fail, cannot be merged. A tests pull request whose added test files fail, and whose other tests pass, can be merged.
+- **scenario 02.21** (manual) **The strength of the acceptance tests is measured.** An implementation pull request shows, in the summary of the job `test`, the share of code mutants that the acceptance tests detect. A low share does not block the merge.
 
 ### Guard hook (early feedback, Claude Code adapter)
 
@@ -154,7 +155,8 @@ Every output line starts with the command name and a colon, for example `check-p
 
 - **Approved scenarios:** 02.1 to 02.9, 02.13, 02.14, 02.18 and 02.19, as `testscript` files from the test-writer session, merged with the tests pull request.
 - **Demonstrated:** 02.15.
-- **Manual:** 02.10, 02.11, 02.12, 02.16, 02.17 and 02.20.
+- **Manual:** 02.10, 02.11, 02.12, 02.16, 02.17, 02.20 and 02.21.
+- **Measurement, not evidence:** the mutation score from 02.21, recorded in `retro.md`.
 - **ADR confirmation:** 02.14.
 - **Not evidence:** unit tests from the implementing agent.
 
@@ -168,7 +170,6 @@ After this increment, a CI pull request adds the jobs `checks` and `test` and ma
 
 - **Bootstrap:** this increment's pull requests run before `factory` exists on `main`. Until the CI pull request, only `approval` is required, and the engineer checks the paths with `git diff --stat`. The engineer reads `check-pr` and `check-tests` line by line in the review, because they guard all later pull requests.
 - **One account:** agents act under the engineer's GitHub account, and GitHub cannot tell them apart. In local sessions, the guards are the missing token rights (Deployments, Workflows, Administration) and the sandbox. Cloud sessions use the engineer's own credentials through the GitHub proxy and can push workflow files. There the guards are the ruleset, which binds every account, and the approval, which needs a person. Scenario 02.12 checks both.
-- **Not verified:** whether the checks from `pull_request_target` count as required checks on the pull request. Scenarios 02.10 and 02.11 show it. If not, `gate` runs on `pull_request`. Then a cloud session could change the gate, and agents work only in local sessions.
 - **Guard hook:** it works only in Claude Code, and Bash can get around it. It gives early feedback only.
 - **Break glass:** the engineer can switch off the ruleset in the settings, for example for an urgent fix while a design note on `main` has no tests yet. The next retro records each use.
 
@@ -176,3 +177,4 @@ After this increment, a CI pull request adds the jobs `checks` and `test` and ma
 
 1. **Test dependency:** `testscript` (`github.com/rogpeppe/go-internal`) as a test-only dependency. Is that right?
 2. **Runner:** the runner adds the command `exitcode` and the variable `REPO`, because `testscript` has neither. Is that right?
+3. **Mutation tool:** Gremlins (made for small Go modules, before version 1.0) or go-mutesting? The tool must reach the code that the acceptance tests run through the `factory` binary. It is a CI tool only, not a runtime dependency.
