@@ -1,0 +1,10 @@
+# Gate test only: a job with the same name as the required check, which passes at once.
+name: fake-approval
+on:
+  pull_request:
+permissions: {}
+jobs:
+  approval:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "fake approval passes at once"
