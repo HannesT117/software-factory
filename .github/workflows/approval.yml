@@ -2,10 +2,12 @@ name: approval
 on:
   pull_request_target:
     branches: [main]
-    types: [opened, synchronize, reopened, ready_for_review]
+    # edited covers a base branch that changes to main after other checks ran.
+    types: [opened, synchronize, reopened, ready_for_review, edited]
 permissions: {}
 jobs:
   approval:
+    # No `if:` here: GitHub counts a skipped job as a passed required check.
     runs-on: ubuntu-latest
     environment: approval
     steps:
