@@ -129,7 +129,7 @@ Every output line starts with the command name and a colon, for example `check-p
 
 ### Approval and credentials (manual, in the factory repo)
 
-- **scenario 02.10** (manual) **Only a person approves.** A pull request cannot be merged before a required reviewer approves the `approval` job. After a new push, it needs a new approval. An attempt with the agent token to approve the job fails. A pull request that adds its own workflow with a job named `approval` that passes at once still cannot be merged.
+- **scenario 02.10** (manual) **Only a person approves.** A pull request cannot be merged before a required reviewer approves the `approval` job. After a new push, it needs a new approval. An attempt with the agent token to approve the job fails. A pull request that adds its own workflow with a job named `approval` that passes at once still cannot be merged, also when it first targets another branch and its base changes to `main` later.
 - **scenario 02.11** (manual) **The gate comes from main.** A pull request that changes the `gate` workflow still runs the version from `main`, and its `checks` result shows on the pull request.
 - **scenario 02.12** (manual) **Agent sessions cannot get around the gate.** From a local agent session, a push of a change under `.github/workflows/` fails, and reading the repo's rulesets through the API fails. From a cloud session, an attempt to approve the `approval` job through the API fails, and an attempt to change the ruleset through the API fails.
 
