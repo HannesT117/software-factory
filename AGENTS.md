@@ -32,7 +32,7 @@ Do not write implementation code before the design and tests pull requests are m
 
 ## Reports
 
-Every report starts with one line for each pull request that the agent opened or changed since the last report: its title and its link. Every report names the kind of each piece of evidence: approved scenario, demonstrated, manual, review, ADR confirmation, agent test (scaffolding), or not verified.
+Every report starts with one line for each pull request that the agent opened or changed since the last report: its title and its link. Before building a change, the agent weighs its benefit against its cost. It drops a change with little benefit, also one that a review suggested, and names what it dropped in the report. Every report names the kind of each piece of evidence: approved scenario, demonstrated, manual, review, ADR confirmation, agent test (scaffolding), or not verified.
 
 ## Pull requests
 
@@ -40,7 +40,7 @@ With squash merges, the title and description of a pull request become the commi
 
 - **Title:** a complete sentence in the imperative, at most 50 characters (72 at most), capitalized, without a final period. It names what the change does, not which files it touches, and it is clear without the description. It contains no internal numbers such as increment or scenario ids. If the title needs "and" to join two topics, split the pull request.
 - **Description:** the sections of `.github/pull_request_template.md`, in this order. Delete an optional section that does not apply.
-  - **Summary** (required): two or three sentences that a reader without context understands.
+  - **Summary** (required): two or three sentences that a reader without context understands: what changes, and which problem it solves.
   - **Context** (optional): the problem, and what a reader must know to follow the change.
   - **What changes** (required): the change at a high level. Core changes first, then mechanical ones such as renames or generated files.
   - **Diagram** (optional): a Mermaid sketch of about 7 elements that answers one question (rule 18).
@@ -49,6 +49,7 @@ With squash merges, the title and description of a pull request become the commi
   - **Evidence** (required): each piece with its kind (see Reports).
 - The description is self-contained and describes the current state. Before the approval, check that it still matches the diff.
 - One problem per pull request. If the description gets long, split the pull request.
+- Before opening a pull request, look at the open ones. A change that fits the topic of an open pull request goes there.
 - Notes for the engineer's approval (what to read, decide or run) go into the first comment of the pull request, not into the description.
 - Commits on a work branch use the same title rules. Their body explains what and why, not how.
 
