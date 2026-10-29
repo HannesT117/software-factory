@@ -49,7 +49,7 @@ With squash merges, the title and description of a pull request become the commi
   - **Evidence** (required): each piece with its kind (see Reports).
 - The description is self-contained and describes the current state. Before the approval, check that it still matches the diff.
 - One problem per pull request. If the description gets long, split the pull request.
-- Before opening a pull request, look at the open ones. A change that fits the topic of an open pull request goes there.
+- Every plan names the target pull request of each change. First check the topics and path groups of the open pull requests. A change that fits an open pull request goes there. A new pull request names why no open one fits.
 - Notes for the engineer's approval (what to read, decide or run) go into the first comment of the pull request, not into the description.
 - Commits on a work branch use the same title rules. Their body explains what and why, not how.
 
