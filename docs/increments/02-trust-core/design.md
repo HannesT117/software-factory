@@ -3,10 +3,10 @@
 ## Goal
 
 - A Go CLI `factory` checks skills, design notes, decision records, acceptance tests and the paths that a pull request changes.
-- **An agent cannot approve.** Each increment has three pull requests: design note, tests, implementation. The engineer approves the design note and the tests on a protected GitHub environment. The agent token cannot give that approval. A pull request that changes only paths on the project's list of approval-free paths merges without the engineer once all required checks pass. "Approved" means "merged on `main`".
+- **An agent cannot approve.** Each increment has three pull requests: design note, tests, implementation. The engineer approves two of them, the design note and the tests, on a protected GitHub environment. The agent token cannot give that approval. A pull request that changes only paths on the project's list of approval-free paths merges without the engineer once all required checks pass. "Approved" means "merged on `main`".
 - A pull request that changes tests, design notes or the domain model, CI or factory config changes nothing else. So the engineer sees each such change as its own pull request.
 - Five skills carry the workflow: `designing-increments`, `writing-acceptance-tests`, `reviewing-increments`, `writing-pull-requests` and `writing-commit-messages`. `writing-acceptance-tests` and `reviewing-increments` run in their own sessions with fixed prompts. `writing-pull-requests` and `writing-commit-messages` follow rule 37 and the section "Pull requests" in `AGENTS.md`.
-- `designing-increments` carries the formats of the design note and the domain model as templates. Before it designs a part, it searches for existing tools. It asks the engineer about terms, context boundaries and dependencies between contexts in rounds of numbered questions. It finds facts itself and gives no recommended answers.
+- `designing-increments` carries the formats of the design note and the domain model as templates. Before it designs a part, it searches for existing tools. It asks the engineer about terms, context boundaries and dependencies between contexts in rounds of numbered questions. Each question says what it is about and the consequences of each option. It finds facts itself and gives no recommended answers.
 - The core of the factory imports no adapter (ADR 0001).
 - Two new rules in `docs/principles.md`: a design names the existing tools it checked for each part, and building a part needs a reason; the engineer owns the terms, the context boundaries and the dependencies between contexts, and an agent stops and asks when an architecture check fails.
 - The factory repo uses all of this from increment 03 on.
@@ -44,6 +44,7 @@ This section is the spec for the templates in the skills: `designing-increments`
 
 - Line 1 is `# Increment <nn>: <title>`. `<nn>` equals the folder's number.
 - Required headings, exact text, any order: `## Goal`, `## Out of scope`, `## Existing tools`, `## Interface`, `## Scenarios`, `## Evidence`, `## Open questions`. Other headings are allowed.
+- Each item under `## Open questions` says what it is about, so that a reader without context understands it, and names the consequences of each option. Implementation details are not open questions; the agent decides them.
 - `## Existing tools` names, for each part that the increment builds, the tools that were checked, the decision (used, not used, later) and the reason. A part with no tool found names what was searched.
 - The optional heading `## Domain` lists new or changed terms, the bounded contexts that the increment touches, and new dependencies between contexts. A new context or a new dependency between contexts also gets an architecture decision record.
 - A scenario line matches `^- \*\*scenario (\d{2})\.([1-9]\d*)\*\* \((automated|demonstrated|manual)\) \*\*(.+?)[.?]\*\*`. `<nn>` equals the folder's number. The title is the third group. Any other line that starts with `- **scenario` is an error. Lines in fenced code blocks are ignored.
@@ -64,7 +65,7 @@ description: Does one thing. Use when testing.
 
 How to read one: `exec` runs a command that must succeed. `! exec` runs one that must fail. `exitcode N factory …` runs `factory` and checks the exact exit code. `stdout '…'` and `stderr '…'` check for a line that matches the pattern. `exists path` checks that a file exists. Each `-- path --` starts a given file.
 
-**Runner**, `test/acceptance/acceptance_test.go`: one file runs all test files. The test writer writes it in the tests pull request of this increment. It registers `factory` as a command, adds the command `exitcode`, sets `REPO` to the repo root, and sets `HOME`, `GIT_CONFIG_NOSYSTEM=1` and a fresh temporary folder per file.
+**Runner**, `test/acceptance/acceptance_test.go`: one file runs all test files. The test writer writes it in the tests pull request of this increment. It registers `factory` as a command, adds the command `exitcode` (because `testscript` checks only success or failure, not the exit code), sets `REPO` to the repo root (because each file runs in its own empty folder), and sets `HOME`, `GIT_CONFIG_NOSYSTEM=1` and a fresh temporary folder per file.
 
 **Path groups.** A pull request that changes a path in a group changes no path outside that group:
 
@@ -110,8 +111,8 @@ How to read one: `exec` runs a command that must succeed. `! exec` runs one that
 | `check-adr` | adr-guard (.NET, MIT), adrscope (Rust, MIT) | not used | Each needs another runtime in the CI of every project; `check-adr` ships in the one `factory` binary (ADR 0001). adrscope expects structured MADR with its own frontmatter fields. |
 | `check-pr` path groups | GitHub push rulesets, rule "Restrict file paths" | not used | GitHub offers push rulesets only for private and internal repositories. The factory repo is public. |
 | `hook pre-tool-use` | Claude Code `permissions.deny` | not used | "An allow rule can't carve an exception out of a deny rule", so a project deny rule on the tests group would also block the test-writer session. |
-| Acceptance tests | `testscript` from `github.com/rogpeppe/go-internal` | used | One readable file per scenario. See open question 1. |
-| Mutation score | Gremlins, go-mutesting | open | See open question 3. |
+| Acceptance tests | `testscript` from `github.com/rogpeppe/go-internal` (BSD-3-Clause) | used | The Go team's own script engine for testing the `go` command, factored out into a separate module. One readable file per scenario. A test-only dependency, which `AGENTS.md` allows. |
+| Mutation score | Gremlins, go-mutesting | Gremlins used | Made for small Go modules like this one. It is before version 1.0; the score does not block a merge, so a fault in the tool blocks nothing. |
 | Check that the core imports no adapter | go-arch-lint (MIT) | not used | One rule needs only `go list`. go-arch-lint fits a project with several rules. |
 | Interview in `designing-increments` | skills `grilling` and `domain-modeling` by Matt Pocock (MIT) | idea used, files not used | Their frontmatter has fields outside the allowed skill fields. They give a recommended answer to each question, which the factory leaves out, so that the engineer decides instead of agreeing. |
 | Domain model | Context Mapper (CML, Apache-2.0); ddd-crew Bounded Context Canvas (CC BY-SA 4.0) | later | Context Mapper needs a JDK and checks no TypeScript or Go code. The canvas pays off from the second bounded context. |
@@ -134,7 +135,7 @@ Every output line starts with the command name and a colon, for example `check-p
 - Workflow `gate` on `pull_request_target`. GitHub then takes the workflow file and the checkout from `main`.
   - Job `checks` builds `factory` from `main`, fetches the pull request as data, and runs `check-pr`, `check-design` for each changed note, `check-adr` and `check-tests --base main`. It runs no code from the pull request and has no permissions. Its output `approval` is `not-required` only when all checks pass, `check-pr` prints `approval not required`, and the head branch is in the repo itself, not in a fork. Otherwise it is `required`.
   - Job `approval` runs after `checks` with `if: always()`, so it is never skipped; GitHub counts a skipped job as a passed required check. It uses the environment `no-approval`, which has no reviewers, only when the output of `checks` is `not-required`. In every other case, also when `checks` fails or sets no output, it uses the environment `approval`.
-- Workflow `test` on `pull_request` runs `go test ./...`, which includes the acceptance tests. On a pull request that changes the tests group, each added test file must fail and every other test must pass, because the code for new tests does not exist yet. On any other pull request, all tests must pass. On a pull request that changes code, the job also mutates the code of `factory`, runs the acceptance tests against each mutant, and reports the mutation score in its summary. The score does not block a merge.
+- Workflow `test` on `pull_request` runs `go test ./...`, which includes the acceptance tests. On a pull request that changes the tests group, each added test file must fail and every other test must pass, because the code for new tests does not exist yet. On any other pull request, all tests must pass. On a pull request that changes code, the job also mutates the code of `factory` with Gremlins, runs the acceptance tests against each mutant, and reports the mutation score in its summary. The score does not block a merge.
 - The ruleset on `main` requires `checks`, `approval` and `test`.
 
 ## Scenarios
@@ -209,12 +210,9 @@ After this increment, a CI pull request adds the jobs `checks` and `test` and ma
 - **Bootstrap:** this increment's pull requests run before `factory` exists on `main`. Until the CI pull request, only `approval` is required, and the engineer checks the paths with `git diff --stat`. The engineer reads `check-pr` and `check-tests` line by line in the review, because they guard all later pull requests.
 - **One account:** agents act under the engineer's GitHub account, and GitHub cannot tell them apart. In local sessions, the guards are the missing token rights (Deployments, Workflows, Administration) and the sandbox. Cloud sessions use the engineer's own credentials through the GitHub proxy and can push workflow files. There the guards are the ruleset, which binds every account, and the approval, which needs a person. Scenario 02.12 checks both.
 - **Guard hook:** it works only in Claude Code, and Bash can get around it. It gives early feedback only.
-- **Merge without approval:** for such a pull request, the review, the demonstrated scenarios and the manual scenarios run after the merge. A finding becomes a fix in a new pull request. The approved tests are the only guard before the merge, so code that detects a test run is caught only after the merge. See open question 4.
+- **Merge without approval:** for such a pull request, the review, the demonstrated scenarios and the manual scenarios run after the merge. A finding becomes a fix in a new pull request. The approved tests are the only guard before the merge, so code that detects a test run is caught only after the merge. See open question 1.
 - **Break glass:** the engineer can switch off the ruleset in the settings, for example for an urgent fix while a design note on `main` has no tests yet. The next retro records each use.
 
 ## Open questions
 
-1. **Test dependency:** `testscript` (`github.com/rogpeppe/go-internal`) as a test-only dependency. Is that right?
-2. **Runner:** the runner adds the command `exitcode` and the variable `REPO`, because `testscript` has neither. Is that right?
-3. **Mutation tool:** Gremlins (made for small Go modules, before version 1.0) or go-mutesting? The tool must reach the code that the acceptance tests run through the `factory` binary. It is a CI tool only, not a runtime dependency.
-4. **Review before a merge without approval:** all agents act under one account. So a review result that an agent session writes into the pull request cannot be told apart from one that the implementing agent writes. Either the review runs as a CI job from `main`, with an agent CLI and its token as a secret, and its result is a required check. Or the review runs after the merge, as in the limit "Merge without approval". Which one?
+1. **Review before a merge without approval:** all agents act under one account. So a review result that an agent session writes into the pull request cannot be told apart from one that the implementing agent writes. Either the review runs as a CI job from `main`, with an agent CLI and its token as a secret, and its result is a required check. Or the review runs after the merge, as in the limit "Merge without approval". Which one?
