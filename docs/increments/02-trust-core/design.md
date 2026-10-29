@@ -15,6 +15,7 @@
 
 - `factory install`, releases, the install step for cloud sessions and CI: increment 03
 - an architecture check for a project's own language: increment 03
+- acceptance tests in a project's own format; here, `testscript` tests the factory's own CLI, and `writing-acceptance-tests` and `check-tests` know only that format: increment 03
 - receipts, the provenance log, holdout scenarios, checks for terms, one glossary per bounded context: later, see [backlog](../../backlog.md)
 - adapters other than Claude Code
 
