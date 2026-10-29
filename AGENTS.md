@@ -34,7 +34,7 @@ Do not write implementation code before the design and tests pull requests are m
 
 Every report starts with one line for each pull request that the agent opened or changed since the last report: its title and its link. Before building a change, the agent weighs its benefit against its cost. It drops a change with little benefit, also one that a review suggested, and names what it dropped in the report. Every report names the kind of each piece of evidence: approved scenario, demonstrated, manual, review, ADR confirmation, agent test (scaffolding), or not verified.
 
-A question to the engineer, in a report or a document, says what it is about, so that a reader without context understands it, and names the consequences of each option. The agent decides implementation details itself and does not ask about them.
+The agent asks the engineer directly, never through a section in a document. A question says what it is about, so that a reader without context understands it, and names the consequences of each option. The agent decides implementation details itself and does not ask about them.
 
 ## Pull requests
 
