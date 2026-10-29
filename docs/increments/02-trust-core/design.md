@@ -3,8 +3,8 @@
 ## Goal
 
 - A Go CLI `factory` checks skills, design notes, decision records, acceptance tests and the paths that a pull request changes.
-- **An agent cannot approve.** Each increment has three pull requests: design note, tests, implementation. The engineer approves two of them, the design note and the tests, on a protected GitHub environment. The agent token cannot give that approval. A pull request that changes only paths on the project's list of approval-free paths merges without the engineer once all required checks pass. "Approved" means "merged on `main`".
-- A pull request that changes tests, design notes or the domain model, CI or factory config changes nothing else. So the engineer sees each such change as its own pull request.
+- **An agent cannot approve.** Each increment has two pull requests: the design note, and the tests with their code. The engineer approves the design note, and the tests before any code exists, on a protected GitHub environment. The agent token cannot give that approval. The gate remembers an approval: when the commits after it change only paths on the project's list of approval-free paths, the pull request merges without a new approval once all required checks pass.
+- A pull request that changes design notes or the domain model, or CI or factory config, changes nothing else. A pull request with tests adds code only in commits after the engineer approved the tests. So the engineer sees each such change on its own.
 - Five skills carry the workflow: `designing-increments`, `writing-acceptance-tests`, `reviewing-increments`, `writing-pull-requests` and `writing-commit-messages`. `writing-acceptance-tests` runs in its own session with a fixed prompt. `reviewing-increments` runs in the reviewer, a fresh context with a fixed prompt. `writing-pull-requests` and `writing-commit-messages` follow rule 37 and the section "Pull requests" in `AGENTS.md`.
 - `designing-increments` carries the formats of the design note and the domain model as templates. Before it designs a part, it searches for existing tools. It asks the engineer about terms, context boundaries and dependencies between contexts in rounds of numbered questions. Each question says what it is about and the consequences of each option. It finds facts itself and gives no recommended answers.
 - **The implementing session cannot end without a review.** A mandatory hook starts the reviewer. The reviewer checks the diff against the design note, runs the demonstrated scenarios, and asks 2 or 3 comprehension questions. It publishes its result for the engineer as a Claude artifact and links it in the pull request. It turns on auto-merge only when it found nothing; otherwise the pull request waits for the engineer.
@@ -27,16 +27,15 @@ Where does the work stop until the engineer approves, and what is checked before
 ```mermaid
 flowchart LR
   A[Design PR] -->|check-design| B{Engineer approves}
-  B --> C[Tests PR from own session]
-  C -->|check-tests| D{Engineer approves}
-  D --> E[Implementation PR]
-  E -->|tests, check-pr| F{Only approval-free paths?}
+  B --> C[Tests from own session]
+  C -->|check-tests, tests-start-red| D{Engineer approves}
+  D --> E[Code on the same branch]
+  E -->|test, check-pr, reviewer| F{Only approval-free paths since the approval?}
   F -->|yes| G[Merge]
-  F -->|no| H{Engineer approves}
-  H --> G
+  F -->|no| D
 ```
 
-`check-pr` runs on every pull request. Design and tests pull requests always reach "Engineer approves", because their paths are in a group.
+`check-pr` runs on every pull request. Design notes and tests always reach "Engineer approves", because their paths are in a group.
 
 ## Format
 
@@ -67,9 +66,9 @@ description: Does one thing. Use when testing.
 
 How to read one: `exec` runs a command that must succeed. `! exec` runs one that must fail. `exitcode N factory …` runs `factory` and checks the exact exit code. `stdout '…'` and `stderr '…'` check for a line that matches the pattern. `exists path` checks that a file exists. Each `-- path --` starts a given file.
 
-**Runner**, `test/acceptance/acceptance_test.go`: one file runs all test files. The test writer writes it in the tests pull request of this increment. It registers `factory` as a command, adds the command `exitcode` (because `testscript` checks only success or failure, not the exit code), sets `REPO` to the repo root (because each file runs in its own empty folder), and sets `HOME`, `GIT_CONFIG_NOSYSTEM=1` and a fresh temporary folder per file.
+**Runner**, `test/acceptance/acceptance_test.go`: one file runs all test files. The test writer writes it with the tests of this increment. It registers `factory` as a command, adds the command `exitcode` (because `testscript` checks only success or failure, not the exit code), sets `REPO` to the repo root (because each file runs in its own empty folder), and sets `HOME`, `GIT_CONFIG_NOSYSTEM=1` and a fresh temporary folder per file.
 
-**Path groups.** A pull request that changes a path in a group changes no path outside that group:
+**Path groups.** A pull request that changes a path in a group changes no path outside that group. One exception: a pull request may change approval-free paths in commits after the engineer approved its changes to the tests group.
 
 | Group | Paths |
 |---|---|
@@ -77,7 +76,7 @@ How to read one: `exec` runs a command that must succeed. `! exec` runs one that
 | design notes | `docs/increments/*/design.md`, `docs/domain/**` |
 | CI and config | `.github/**`, `.factory/**` |
 
-**Approval-free paths**, `.factory/approval-free-paths`: one path pattern per line, with `*` and `**` as in the path groups. A pull request needs no approval only when every path it changes matches a line, and no changed path is in a group. Without the file, every pull request needs approval.
+**Approval-free paths**, `.factory/approval-free-paths`: one path pattern per line, with `*` and `**` as in the path groups. A pull request needs no new approval only when every path changed since the engineer's last approval of this pull request matches a line, and none of these paths is in a group. Without an earlier approval, the comparison starts at the base. Without the file, every pull request needs approval.
 
 **Domain model**, in the design-notes group. A project without bounded contexts yet has no domain model.
 
@@ -115,6 +114,7 @@ How to read one: `exec` runs a command that must succeed. `! exec` runs one that
 | Review result for the engineer | Claude artifacts | used, in the Claude Code adapter | The engineer's choice. The skill writes a tool-neutral report; the adapter publishes it. |
 | Starting the reviewer | Claude Code hooks of type `agent` | not used | They are experimental, can use only tools like Read, Grep and Glob, and time out after 60 seconds by default, so they cannot run scenarios. |
 | Review in CI | Copilot code review; Opper; GitHub Models | not used | Copilot reviews cost AI credits and are comments only, so they cannot block a merge. GitHub Models was retired on 2026-07-30. A single model call in CI adds little to the approved tests. |
+| Tests and code together on `main` | GitHub stacked pull requests | not used | GitHub has no auto-merge for stacks, and the tests pull request of a stack can merge alone and turn `main` red. Public preview since 2026-07-30. |
 | `hook pre-tool-use` | Claude Code `permissions.deny` | not used | "An allow rule can't carve an exception out of a deny rule", so a project deny rule on the tests group would also block the test-writer session. |
 | Acceptance tests | `testscript` from `github.com/rogpeppe/go-internal` (BSD-3-Clause) | used | The Go team's own script engine for testing the `go` command, factored out into a separate module. One readable file per scenario. A test-only dependency, which `AGENTS.md` allows. |
 | Mutation score | Gremlins, go-mutesting | Gremlins used | Made for small Go modules like this one. It is before version 1.0; the score does not block a merge, so a fault in the tool blocks nothing. |
@@ -132,16 +132,18 @@ Every output line starts with the command name and a colon, for example `check-p
 | `factory check-design <increment-dir>` | `bad-title`, `missing-section`, `bad-scenario-line`, `wrong-increment`, `duplicate-id` |
 | `factory check-adr [dir]` | `unknown-category`, `unknown-field`, `bad-date`, `bad-status`, `unknown-adr`, `missing-title`, `missing-section`, `unknown-section`. Checks every `.md` file under `dir`, by default `docs/decisions`. A file outside the folders `architecture` and `process` is `unknown-category`. |
 | `factory check-tests [--base <ref>]` | `missing-test`, `unknown-id`, `title-mismatch`, `forbidden-command`. Reads the design notes from `<ref>`, or from the working tree without `--base`. Reads the test files from the working tree. |
-| `factory check-pr --base <ref>` | `mixed-pr`, with the paths of each group. Compares `HEAD` with its merge base with `<ref>`. Exit 2 with `shallow-clone`. Before the last line, prints `check-pr: approval required` or `check-pr: approval not required`, with `.factory/approval-free-paths` read from `<ref>`. |
+| `factory check-pr --base <ref> [--approved <commit>]` | `mixed-pr`, with the paths of each group. Compares `HEAD` with its merge base with `<ref>`. With `--approved`, changes to the tests group up to `<commit>`, followed by approval-free paths after it, are not `mixed-pr`. Exit 2 with `shallow-clone`, or with `not-ancestor` when `<commit>` is not an ancestor of `HEAD`. Before the last line, prints `check-pr: approval required` or `check-pr: approval not required`, for the paths changed after `<commit>`, or after the merge base without `--approved`. Reads `.factory/approval-free-paths` from `<ref>`. |
 | `factory hook stop` | Reads Claude Code hook input for `Stop` on stdin: `stop_hook_active`, `cwd`. Prints a block decision while the latest commit that changes a path on the list of approval-free paths has no review result in `evidence/<nn>-<slug>/review.md` that names that commit. The reason names the step that starts the reviewer. Prints nothing when `stop_hook_active` is true. |
 | `factory hook pre-tool-use` | Reads Claude Code hook input on stdin: `tool_name`, `tool_input.file_path` or `tool_input.notebook_path`, `agent_type`, `agent_id`, `cwd`. Prints a deny decision as JSON, or nothing. |
 
 **CI in the factory repo**, after this increment:
 
 - Workflow `gate` on `pull_request_target`. GitHub then takes the workflow file and the checkout from `main`.
-  - Job `checks` builds `factory` from `main`, fetches the pull request as data, and runs `check-pr`, `check-design` for each changed note and `check-adr`. It runs `check-tests --base main` only when the pull request changes a path on the list of approval-free paths, so a design note without tests blocks code, not docs. It runs no code from the pull request and has no permissions. Its output `approval` is `not-required` only when all checks pass, `check-pr` prints `approval not required`, and the head branch is in the repo itself, not in a fork. Otherwise it is `required`.
+  - Job `checks` builds `factory` from `main`, fetches the pull request as data, and runs `check-pr`, `check-design` for each changed note and `check-adr`. It runs `check-tests --base main` only when the pull request changes the tests group or an approval-free path, so a design note without tests blocks code, not docs. It finds the engineer's last approval of this pull request: the newest run of `gate` for this pull request whose `approval` job a reviewer approved, read from the run's review history through the REST API. That run's head commit becomes `--approved`, but only when the job `tests-start-red` passed on it. It runs no code from the pull request and has only read permissions for actions and checks. Its output `approval` is `not-required` only when all checks pass, `check-pr` prints `approval not required`, and the head branch is in the repo itself, not in a fork. Otherwise it is `required`.
   - Job `approval` runs after `checks` with `if: always()`, so it is never skipped; GitHub counts a skipped job as a passed required check. It uses the environment `no-approval`, which has no reviewers, only when the output of `checks` is `not-required`. In every other case, also when `checks` fails or sets no output, it uses the environment `approval`.
-- Workflow `test` on `pull_request` runs `go test ./...`, which includes the acceptance tests. On a pull request that changes the tests group, each added test file must fail and every other test must pass, because the code for new tests does not exist yet. On any other pull request, all tests must pass. On a pull request that changes code, the job also mutates the code of `factory` with Gremlins, runs the acceptance tests against each mutant, and reports the mutation score in its summary. The score does not block a merge.
+- Workflow `test` on `pull_request` has two jobs:
+  - Job `test` runs `go test ./...`, which includes the acceptance tests. All tests must pass. While a pull request has new test files but not their code, `test` fails, so the pull request cannot merge yet. On a pull request that changes code, the job also mutates the code of `factory` with Gremlins, runs the acceptance tests against each mutant, and reports the mutation score in its summary. The score does not block a merge.
+  - Job `tests-start-red`, not required: on a commit whose changes since the base are only in the tests group, each added test file must fail and every other test must pass. The engineer sees its result before approving the tests.
 - The ruleset on `main` requires `checks`, `approval` and `test`.
 
 ## Scenarios
@@ -165,16 +167,17 @@ Every output line starts with the command name and a colon, for example `check-p
 ### Pull request paths
 
 - **scenario 02.8** (automated) **A pull request within one group passes.** Given a pull request that changes only a design note, or only test files and `go.mod`, or only paths outside all groups, `factory check-pr` exits with 0.
-- **scenario 02.9** (automated) **A mixed pull request fails.** Given a pull request that changes code and a test file, or a test file and a design note, or code and a file under `.github/`, `factory check-pr` exits with 1 with `mixed-pr` and names the paths. Given a shallow clone, it exits with 2 with `shallow-clone`.
+- **scenario 02.9** (automated) **A mixed pull request fails.** Given a pull request that changes a test file and a design note, or code and a file under `.github/`, or code and a test file without `--approved`, `factory check-pr` exits with 1 with `mixed-pr` and names the paths. Given a shallow clone, it exits with 2 with `shallow-clone`.
+- **scenario 02.25** (automated) **Tests first, then code.** Given `.factory/approval-free-paths` with the line `internal/**` on the base branch, and a pull request whose commits up to `--approved <commit>` change only `test/acceptance/a.txtar` and whose later commits change only `internal/x.go`, `factory check-pr` exits with 0 and prints `check-pr: approval not required`. If a later commit also changes `test/acceptance/a.txtar`, it prints `check-pr: approval required`. If `<commit>` is not an ancestor of `HEAD`, it exits with 2 with `not-ancestor`.
 - **scenario 02.22** (automated) **Approval-free pull requests are recognized.** Given `.factory/approval-free-paths` with the line `internal/**` on the base branch, a pull request that changes only `internal/x.go` makes `factory check-pr` print `check-pr: approval not required`. It prints `check-pr: approval required` for a pull request that also changes `README.md`, for a base branch without the file, and for a list with the line `**` and a pull request that changes `test/acceptance/a.txtar`.
 
 ### Approval and credentials (manual, in the factory repo)
 
-- **scenario 02.10** (manual) **Only a person approves.** A pull request cannot be merged before a required reviewer approves the `approval` job. After a new push, it needs a new approval. An attempt with the agent token to approve the job fails. A pull request that adds its own workflow with a job named `approval` that passes at once still cannot be merged, also when it first targets another branch and its base changes to `main` later. A pull request for which `check-pr` prints `approval not required` merges without a reviewer once `checks` and `test` pass. A pull request from a fork always waits for a reviewer.
+- **scenario 02.10** (manual) **Only a person approves.** A pull request cannot be merged before a required reviewer approves the `approval` job. After a new push, it needs a new approval. An attempt with the agent token to approve the job fails. A pull request that adds its own workflow with a job named `approval` that passes at once still cannot be merged, also when it first targets another branch and its base changes to `main` later. A pull request for which `check-pr` prints `approval not required` merges without a reviewer once `checks` and `test` pass. A pull request from a fork always waits for a reviewer. After the engineer approved the tests of a pull request, later commits that change only approval-free paths need no new approval; a later commit that changes a test file needs one. An approval on another pull request does not count.
 - **scenario 02.11** (manual) **The gate comes from main.** A pull request that changes the `gate` workflow still runs the version from `main`, and its `checks` result shows on the pull request.
 - **scenario 02.12** (manual) **Agent sessions cannot get around the gate.** From a local agent session, a push of a change under `.github/workflows/` fails, reading the repo's rulesets through the API fails, `gh auth token` and `git credential fill` fail, and the Read tool cannot read `~/.ssh`. From a cloud session, an attempt to approve the `approval` job through the API fails, and an attempt to change the ruleset through the API fails.
-- **scenario 02.20** (manual) **New tests start red.** A tests pull request whose added test files pass, or that makes an existing test fail, cannot be merged. A tests pull request whose added test files fail, and whose other tests pass, can be merged.
-- **scenario 02.21** (manual) **The strength of the acceptance tests is measured.** An implementation pull request shows, in the summary of the job `test`, the share of code mutants that the acceptance tests detect. A low share does not block the merge.
+- **scenario 02.20** (manual) **New tests start red.** On a pull request with new test files and no code yet, `tests-start-red` passes when each added test fails and every other test passes, and fails otherwise. `test` fails until the code exists, so the pull request cannot merge earlier. When `tests-start-red` failed on the approved commit, later code commits need a new approval.
+- **scenario 02.21** (manual) **The strength of the acceptance tests is measured.** A pull request with code shows, in the summary of the job `test`, the share of code mutants that the acceptance tests detect. A low share does not block the merge.
 
 ### Hooks (Claude Code adapter)
 
@@ -199,7 +202,7 @@ Every output line starts with the command name and a colon, for example `check-p
 
 ## Evidence
 
-- **Approved scenarios:** 02.1 to 02.9, 02.13, 02.14, 02.18, 02.19, 02.22, 02.23 and 02.24, as `testscript` files from the test-writer session, merged with the tests pull request.
+- **Approved scenarios:** 02.1 to 02.9, 02.13, 02.14, 02.18, 02.19, 02.22 to 02.25, as `testscript` files from the test-writer session, approved before the code exists.
 - **Demonstrated:** 02.15.
 - **Manual:** 02.10, 02.11, 02.12, 02.16, 02.17, 02.20 and 02.21.
 - **Measurement, not evidence:** the mutation score from 02.21, recorded in `retro.md`.
@@ -210,11 +213,11 @@ Every output line starts with the command name and a colon, for example `check-p
 
 These steps need a person with admin rights on the repo. [docs/setup/README.md](../../setup/README.md) lists them: repo settings, agent token, environment `approval`, approval workflow, ruleset, and the settings for local agent sessions.
 
-After this increment, a CI pull request adds the jobs `checks` and `test` and makes them required. It also adds `.factory/approval-free-paths` with the paths of the Go code and `evidence/**`. Skills, docs and adapter settings are not on the list, because they steer the agents.
+After this increment, a CI pull request adds the jobs `checks`, `test` and `tests-start-red`, and makes `checks` and `test` required. It also adds `.factory/approval-free-paths` with the paths of the Go code and `evidence/**`. Skills, docs and adapter settings are not on the list, because they steer the agents.
 
 ## Limits
 
-- **Bootstrap:** this increment's pull requests run before `factory` exists on `main`. Until the CI pull request, only `approval` is required, and the engineer checks the paths with `git diff --stat`. The engineer reads `check-pr` and `check-tests` line by line in the review, because they guard all later pull requests.
+- **Bootstrap:** this increment's pull requests run before `factory` exists on `main`. Until the CI pull request, only `approval` is required, and the engineer checks the paths with `git diff --stat`. The engineer reads `check-pr`, `check-tests` and the part of `gate` that finds the last approval line by line in the review, because they guard all later pull requests.
 - **One account:** agents act under the engineer's GitHub account, and GitHub cannot tell them apart. In local sessions, the guards are the missing token rights (Deployments, Workflows, Administration) and the sandbox. Cloud sessions use the engineer's own credentials through the GitHub proxy and can push workflow files. There the guards are the ruleset, which binds every account, and the approval, which needs a person. Scenario 02.12 checks both.
 - **Guard hook:** it works only in Claude Code, and Bash can get around it. It gives early feedback only.
 - **Merge without approval:** before such a merge, the approved acceptance tests pass in CI, and the reviewer found nothing. The reviewer runs in the implementing session's environment and acts under the same account, so its "nothing found" is a strong signal, not proof. The manual scenarios run after the merge; a finding becomes a fix in a new pull request.
@@ -222,8 +225,4 @@ After this increment, a CI pull request adds the jobs `checks` and `test` and ma
 
 ## Open questions
 
-1. **Tests and code reach `main` together.** Context: new tests fail until their code exists. If the tests pull request merges alone, `main` is red, and every other pull request fails the job `test` until the code follows. Two ways keep `main` green:
-   - **C1, GitHub stack:** the tests pull request targets `main`, the code pull request targets the tests branch, and merging the top one lands both in one step. Consequences: the engineer approves only the tests, but must merge each stack by hand, because GitHub has no auto-merge for stacks and agents never merge. A tests pull request merged alone still turns `main` red. The feature is new, and the gate with stacks is untested.
-   - **C2, one branch, tests first:** the test writer pushes the tests, and the engineer approves them. Then the implementing agent pushes the code to the same branch. The gate remembers the approval: when the commits after it change only approval-free paths, no new approval is needed; when they also change tests, the pull request waits again. Consequences: two pull requests per increment (design note; tests with code), auto-merge works, and the engineer merges nothing by hand. The gate must read earlier approvals from GitHub; this logic guards the merge and needs its own manual tests. Tests and code reach `main` as one commit.
-
-   Which one?
+None.
