@@ -44,8 +44,7 @@ This section is the spec for the templates in the skills: `designing-increments`
 **Design note**, `docs/increments/<nn>-<slug>/design.md`:
 
 - Line 1 is `# Increment <nn>: <title>`. `<nn>` equals the folder's number.
-- Required headings, exact text, any order: `## Goal`, `## Out of scope`, `## Existing tools`, `## Interface`, `## Scenarios`, `## Evidence`, `## Open questions`. Other headings are allowed.
-- Each item under `## Open questions` says what it is about, so that a reader without context understands it, and names the consequences of each option. Implementation details are not open questions; the agent decides them.
+- Required headings, exact text, any order: `## Goal`, `## Out of scope`, `## Existing tools`, `## Interface`, `## Scenarios`, `## Evidence`. Other headings are allowed.
 - `## Existing tools` names, for each part that the increment builds, the tools that were checked, the decision (used, not used, later) and the reason. A part with no tool found names what was searched.
 - The optional heading `## Domain` lists new or changed terms, the bounded contexts that the increment touches, and new dependencies between contexts. A new context or a new dependency between contexts also gets an architecture decision record.
 - A scenario line matches `^- \*\*scenario (\d{2})\.([1-9]\d*)\*\* \((automated|demonstrated|manual)\) \*\*(.+?)[.?]\*\*`. `<nn>` equals the folder's number. The title is the third group. Any other line that starts with `- **scenario` is an error. Lines in fenced code blocks are ignored.
@@ -222,7 +221,3 @@ After this increment, a CI pull request adds the jobs `checks`, `test` and `test
 - **Guard hook:** it works only in Claude Code, and Bash can get around it. It gives early feedback only.
 - **Merge without approval:** before such a merge, the approved acceptance tests pass in CI, and the reviewer found nothing. The reviewer runs in the implementing session's environment and acts under the same account, so its "nothing found" is a strong signal, not proof. The manual scenarios run after the merge; a finding becomes a fix in a new pull request.
 - **Break glass:** the engineer can switch off the ruleset in the settings, for example for an urgent fix while a design note on `main` has no tests yet. The next retro records each use.
-
-## Open questions
-
-None.
