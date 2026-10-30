@@ -15,7 +15,7 @@ v0, increment 02 of 04.
 | 01 Basis | this page, principles, research notes, ADRs 0001 and 0002 | done |
 | 02 Trust core | Go CLI with checks for skills, design notes, ADRs, tests and pull request paths; approval gate on GitHub that lets code merge without a new approval after the tests are approved; a reviewer that a hook starts; skills for the workflow, pull requests and commit messages; guard hook | [design note](docs/increments/02-trust-core/design.md) approved; tests next |
 | 03 Install and distribution | `factory install`; the binary through releases with attestations or through `go install …@vX.Y.Z` (open); install in cloud and CI; an architecture check for the project's language (for TypeScript: dependency-cruiser or an oxlint rule, open); acceptance tests in the project's own format | planned |
-| 04 Handover and feedback loop | retro per increment, `factory check-retro`, `factory feedback` (prefilled issue links for the factory repo), version updates, end-to-end test | planned |
+| 04 Handover and feedback loop | a coordinator session that starts the test writer after a design note merges and the implementing session after the tests are approved; retro per increment, `factory check-retro`, `factory feedback` (prefilled issue links for the factory repo), version updates, end-to-end test | planned |
 
 ## Decisions
 
