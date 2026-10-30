@@ -1,0 +1,10 @@
+# scenario <nn>.<n>: <title exactly as in the note, without the final period or question mark>
+# <One comment line per case: what is given, and what the command must do.>
+exec <command> <args>
+stdout '^<command>: ok \d+ checked$'
+
+exitcode 1 <command> <args>
+stdout '^<command>: error \S*<file>(:\d+)?: <code>( |$)'
+
+-- <given/file> --
+<content of the given file>
