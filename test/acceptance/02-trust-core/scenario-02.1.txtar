@@ -1,4 +1,4 @@
-# scenario 02.1: A valid skill passes
+# scenario 02.1: A correct skill is accepted
 exec factory validate-skills skills
 stdout '^validate-skills: ok 1 checked$'
 

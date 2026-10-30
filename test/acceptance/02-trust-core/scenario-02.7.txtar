@@ -1,4 +1,4 @@
-# scenario 02.7: Tests come before the implementation
+# scenario 02.7: Code waits for its tests
 env GIT_AUTHOR_NAME=Agent GIT_AUTHOR_EMAIL=agent@example.com GIT_COMMITTER_NAME=Agent GIT_COMMITTER_EMAIL=agent@example.com
 
 # The note is on the base branch, and its test file is missing.
@@ -22,12 +22,15 @@ exec git commit -q -a -m 'delete test'
 exitcode 1 factory check-tests --base main
 stdout '^check-tests: error .*: missing-test( |$)'
 
-# The note exists only in the working tree and has no test file yet.
+# The note exists only on the branch of the pull request and has no test
+# file yet.
 cd $WORK/new
 exec git init -q -b main
 exec git add README.md
 exec git commit -q -m base
 exec git checkout -q -b work
+exec git add docs
+exec git commit -q -m note
 exec factory check-tests --base main
 stdout '^check-tests: ok \d+ checked$'
 

@@ -1,4 +1,4 @@
-# scenario 02.23: The core imports no adapter
+# scenario 02.23: The core uses no adapter
 # For each package with Go files outside adapters/ and cmd/, go list prints
 # the line "core <package>", followed by " imports <dependency>" for each
 # dependency under adapters/. Deps lists all dependencies, as go list -deps

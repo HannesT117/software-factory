@@ -1,4 +1,4 @@
-# scenario 02.24: No end without a review
+# scenario 02.24: An implementing session cannot end without a review
 # On main, .factory/approval-free-paths has the line internal/**. The branch
 # work has one commit that changes internal/x.go, tagged code. The hook runs
 # in the repo, and its input names the repo as cwd.

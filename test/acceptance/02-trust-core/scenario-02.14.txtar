@@ -1,4 +1,4 @@
-# scenario 02.14: The factory's skills are valid and tool-neutral
+# scenario 02.14: The factory's skills are valid and name no agent tool
 exec factory validate-skills $REPO/core/skills
 stdout '^validate-skills: ok \d+ checked$'
 

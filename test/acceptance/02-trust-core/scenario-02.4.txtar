@@ -1,4 +1,4 @@
-# scenario 02.4: A faulty note fails with a code
+# scenario 02.4: Each mistake in a design note is reported
 # Each note breaks one rule. The error line names the code with the line
 # number. A missing section has no line of its own, so its line number is
 # optional.

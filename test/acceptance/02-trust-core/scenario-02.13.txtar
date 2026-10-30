@@ -1,4 +1,4 @@
-# scenario 02.13: Protected files
+# scenario 02.13: Only the test writer may write tests
 # Each input file is the hook input for one tool call. The project is
 # /home/engineer/project.
 

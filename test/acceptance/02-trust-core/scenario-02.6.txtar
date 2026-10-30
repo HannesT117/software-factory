@@ -1,4 +1,4 @@
-# scenario 02.6: Wrong test files fail with a code
+# scenario 02.6: Each mistake in the tests is reported
 # One case per code. Each error line names the code and the scenario id,
 # in the path or in the detail:
 # - 05.1 is automated and has no test file: missing-test

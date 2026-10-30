@@ -1,4 +1,4 @@
-# scenario 02.5: One file per automated scenario passes
+# scenario 02.5: Matching tests are accepted
 # The note has two automated scenarios, one demonstrated and one manual.
 # Each test title is the scenario title without its final period or
 # question mark.

@@ -1,4 +1,4 @@
-# scenario 02.19: A faulty decision record fails with a code
+# scenario 02.19: Each mistake in a decision record is reported
 # Each record breaks one rule. The error line names the code with the line
 # number. A missing title, a missing section and a wrong folder have no line
 # of their own, so their line number is optional.

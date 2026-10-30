@@ -1,4 +1,4 @@
-# scenario 02.2: Invalid skills fail with a code
+# scenario 02.2: Each mistake in a skill is reported
 # Each skill breaks one rule. The error line names the code for its file.
 exitcode 1 factory validate-skills skills
 stdout '^validate-skills: error \S*wrong-folder/SKILL\.md(:\d+)?: name-mismatch( |$)'

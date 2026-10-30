@@ -1,4 +1,4 @@
-# scenario 02.3: A note in the format passes
+# scenario 02.3: A complete design note is accepted
 # The note has the required headings in another order, one other heading,
 # and a scenario-like line in a fenced code block, which is ignored.
 exec factory check-design docs/increments/05-sample

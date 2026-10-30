@@ -1,4 +1,4 @@
-# scenario 02.8: A pull request within one group passes
+# scenario 02.8: A pull request with one kind of change is accepted
 # Each case is a branch from main that changes the listed paths.
 env GIT_AUTHOR_NAME=Agent GIT_AUTHOR_EMAIL=agent@example.com GIT_COMMITTER_NAME=Agent GIT_COMMITTER_EMAIL=agent@example.com
 cd repo
