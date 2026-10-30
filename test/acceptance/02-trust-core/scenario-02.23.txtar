@@ -1,0 +1,11 @@
+# scenario 02.23: The core imports no adapter
+# For each package with Go files outside adapters/ and cmd/, go list prints
+# the line "core <package>", followed by " imports <dependency>" for each
+# dependency under adapters/. Deps lists all dependencies, as go list -deps
+# does.
+cd $REPO
+exec go list -f '{{$p := print .ImportPath "/"}}{{if and .GoFiles (ne (printf "%.48s" $p) "github.com/HannesT117/software-factory/adapters/") (ne (printf "%.43s" $p) "github.com/HannesT117/software-factory/cmd/")}}core {{.ImportPath}}{{range .Deps}}{{if eq (printf "%.48s" (print . "/")) "github.com/HannesT117/software-factory/adapters/"}} imports {{.}}{{end}}{{end}}{{end}}' ./...
+
+# The core has at least one package, and none imports an adapter.
+stdout '^core github\.com/HannesT117/software-factory'
+! stdout ' imports '

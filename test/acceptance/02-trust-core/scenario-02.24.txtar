@@ -1,0 +1,57 @@
+# scenario 02.24: No end without a review
+# On main, .factory/approval-free-paths has the line internal/**. The branch
+# work has one commit that changes internal/x.go, tagged code. The hook runs
+# in the repo, and its input names the repo as cwd.
+env GIT_AUTHOR_NAME=Agent GIT_AUTHOR_EMAIL=agent@example.com GIT_COMMITTER_NAME=Agent GIT_COMMITTER_EMAIL=agent@example.com
+cd repo
+exec git init -q -b main
+exec git add -A
+exec git commit -q -m base
+exec git checkout -q -b work
+cp ../edit internal/x.go
+exec git commit -q -a -m code
+exec git tag code
+
+# No review result: the hook blocks, and the reason names the reviewer step.
+stdin ../stop.json
+exec factory hook stop
+stdout '"decision"\s*:\s*"block"'
+stdout '"reason"\s*:\s*"(?i).*review'
+
+# With stop_hook_active set to true, the hook prints nothing.
+stdin ../stop-active.json
+exec factory hook stop
+! stdout .
+
+# A review result that names another commit does not count.
+mkdir evidence/05-sample
+exec git log -1 --format='Review of commit %H' main
+cp stdout evidence/05-sample/review.md
+exec git add evidence
+exec git commit -q -m 'review of main'
+stdin ../stop.json
+exec factory hook stop
+stdout '"decision"\s*:\s*"block"'
+
+# A review result that names that commit ends the block.
+exec git log -1 --format='Review of commit %H' code
+cp stdout evidence/05-sample/review.md
+exec git commit -q -a -m review
+stdin ../stop.json
+exec factory hook stop
+! stdout .
+
+-- edit --
+changed
+-- stop.json --
+{"session_id":"s1","transcript_path":"/home/engineer/.transcripts/s1.jsonl","cwd":".","hook_event_name":"Stop","stop_hook_active":false}
+-- stop-active.json --
+{"session_id":"s1","transcript_path":"/home/engineer/.transcripts/s1.jsonl","cwd":".","hook_event_name":"Stop","stop_hook_active":true}
+-- repo/.factory/approval-free-paths --
+internal/**
+-- repo/README.md --
+# Sample
+-- repo/internal/x.go --
+package x
+-- repo/docs/increments/05-sample/design.md --
+# Increment 05: sample

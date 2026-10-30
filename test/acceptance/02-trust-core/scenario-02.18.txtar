@@ -1,0 +1,91 @@
+# scenario 02.18: A valid decision record passes
+# The records use every allowed frontmatter field and heading, and a heading
+# in a fenced code block, which is ignored.
+exec factory check-adr docs/decisions
+stdout '^check-adr: ok \d+ checked$'
+
+-- docs/decisions/architecture/0001-use-a-cli.md --
+---
+date: 2026-10-01
+status: superseded by ADR-0002
+---
+# Use a CLI
+
+## Context and Problem Statement
+
+The factory needs one tool for its checks.
+
+## Decision Drivers
+
+* One binary for every project
+
+## Considered Options
+
+* A CLI
+* A web service
+
+## Decision Outcome
+
+Chosen option: "A CLI", because it is one binary.
+
+### Consequences
+
+* Good, because it runs everywhere.
+
+### Confirmation
+
+A test runs the CLI.
+
+## Pros and Cons of the Options
+
+### A CLI
+
+* Good, because it is one binary.
+
+### A web service
+
+* Bad, because it needs a server.
+
+## More Information
+
+```
+## Not a heading in a code block
+```
+-- docs/decisions/architecture/0002-use-a-go-cli.md --
+# Use a Go CLI
+
+## Context and Problem Statement
+
+The CLI needs a language.
+
+## Considered Options
+
+* Go
+* Python
+
+## Decision Outcome
+
+Chosen option: "Go", because it builds one binary.
+-- docs/decisions/process/0001-approve-in-chat.md --
+---
+date: 2026-10-02
+status: deprecated
+---
+# Approve in chat
+
+## Context and Problem Statement
+
+The engineer approves each pull request.
+
+## Considered Options
+
+* Chat
+* A protected environment
+
+## Decision Outcome
+
+Chosen option: "Chat", because it is quick.
+
+## More Information
+
+Deprecated: a protected environment replaced the chat.

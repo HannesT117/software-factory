@@ -1,0 +1,65 @@
+# scenario 02.6: Wrong test files fail with a code
+# One case per code. Each error line names the code and the scenario id,
+# in the path or in the detail:
+# - 05.1 is automated and has no test file: missing-test
+# - 05.9 is not in the note: unknown-id
+# - the title of 05.2 differs in case: title-mismatch
+# - 05.3 uses skip, 05.4 uses stop, 05.5 uses a condition: forbidden-command
+cd repo
+exec git init -q -b main
+exitcode 1 factory check-tests
+stdout '^check-tests: error .*(05\.1.*: missing-test|: missing-test .*05\.1)'
+stdout '^check-tests: error .*(05\.9.*: unknown-id|: unknown-id .*05\.9)'
+stdout '^check-tests: error .*(05\.2.*: title-mismatch|: title-mismatch .*05\.2)'
+stdout '^check-tests: error .*(05\.3.*: forbidden-command|: forbidden-command .*05\.3)'
+stdout '^check-tests: error .*(05\.4.*: forbidden-command|: forbidden-command .*05\.4)'
+stdout '^check-tests: error .*(05\.5.*: forbidden-command|: forbidden-command .*05\.5)'
+stdout '^check-tests: \d+ errors$'
+
+-- repo/docs/increments/05-sample/design.md --
+# Increment 05: sample
+
+## Goal
+
+- The sample tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Scenarios
+
+- **scenario 05.1** (automated) **A thing works.** Given a thing, the tool accepts it.
+- **scenario 05.2** (automated) **A second thing works.** Given a second thing, the tool accepts it.
+- **scenario 05.3** (automated) **A third thing works.** Given a third thing, the tool accepts it.
+- **scenario 05.4** (automated) **A fourth thing works.** Given a fourth thing, the tool accepts it.
+- **scenario 05.5** (automated) **A fifth thing works.** Given a fifth thing, the tool accepts it.
+
+## Evidence
+
+- Approved scenarios: 05.1 to 05.5.
+-- repo/test/acceptance/05-sample/scenario-05.9.txtar --
+# scenario 05.9: A thing that is not in the note works
+exec sample run other
+-- repo/test/acceptance/05-sample/scenario-05.2.txtar --
+# scenario 05.2: a second thing works
+exec sample run second
+-- repo/test/acceptance/05-sample/scenario-05.3.txtar --
+# scenario 05.3: A third thing works
+skip 'not ready'
+exec sample run third
+-- repo/test/acceptance/05-sample/scenario-05.4.txtar --
+# scenario 05.4: A fourth thing works
+exec sample run fourth
+stop
+-- repo/test/acceptance/05-sample/scenario-05.5.txtar --
+# scenario 05.5: A fifth thing works
+[net] exec sample run fifth

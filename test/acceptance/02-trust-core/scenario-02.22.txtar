@@ -1,0 +1,56 @@
+# scenario 02.22: Approval-free pull requests are recognized
+# On main, .factory/approval-free-paths has the line internal/**.
+# Each case is a branch that changes the listed paths.
+env GIT_AUTHOR_NAME=Agent GIT_AUTHOR_EMAIL=agent@example.com GIT_COMMITTER_NAME=Agent GIT_COMMITTER_EMAIL=agent@example.com
+cd repo
+exec git init -q -b main
+exec git add -A
+exec git commit -q -m base
+
+# Only internal/x.go
+exec git checkout -q -b code main
+cp ../edit internal/x.go
+exec git commit -q -a -m code
+exec factory check-pr --base main
+stdout '^check-pr: approval not required$'
+
+# internal/x.go and README.md
+exec git checkout -q -b code-and-readme main
+cp ../edit internal/x.go
+cp ../edit README.md
+exec git commit -q -a -m 'code and readme'
+exec factory check-pr --base main
+stdout '^check-pr: approval required$'
+
+# Only internal/x.go, on a base branch without the file
+exec git checkout -q -b no-list main
+exec git rm -q .factory/approval-free-paths
+exec git commit -q -m 'no list'
+exec git checkout -q -b code-on-no-list no-list
+cp ../edit internal/x.go
+exec git commit -q -a -m code
+exec factory check-pr --base no-list
+stdout '^check-pr: approval required$'
+
+# Only test/acceptance/a.txtar, on a base branch whose list has the line **
+exec git checkout -q -b all-free main
+cp ../all-free .factory/approval-free-paths
+exec git commit -q -a -m 'all free'
+exec git checkout -q -b tests-on-all-free all-free
+cp ../edit test/acceptance/a.txtar
+exec git commit -q -a -m tests
+exec factory check-pr --base all-free
+stdout '^check-pr: approval required$'
+
+-- edit --
+changed
+-- all-free --
+**
+-- repo/.factory/approval-free-paths --
+internal/**
+-- repo/README.md --
+# Sample
+-- repo/internal/x.go --
+package x
+-- repo/test/acceptance/a.txtar --
+# scenario 05.1: A thing works

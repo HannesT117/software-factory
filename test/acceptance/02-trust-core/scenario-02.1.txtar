@@ -1,0 +1,32 @@
+# scenario 02.1: A valid skill passes
+exec factory validate-skills skills
+stdout '^validate-skills: ok 1 checked$'
+
+# A skill with every allowed field and each form of the frontmatter subset.
+# The field compatibility may name an agent tool.
+exec factory validate-skills full
+stdout '^validate-skills: ok 1 checked$'
+
+-- skills/good-skill/SKILL.md --
+---
+name: good-skill
+description: Does one thing. Use when testing.
+---
+-- full/full-skill/SKILL.md --
+---
+name: full-skill
+description: |
+  Uses every allowed field.
+  Use when testing.
+license: 'MIT'
+compatibility: >
+  Needs git. Tested with Claude Code
+  and Codex.
+allowed-tools: "Read Grep"
+metadata:
+  owner: engineer
+  version: "1.0"
+---
+# Full skill
+
+Read the design note first, then run the check.

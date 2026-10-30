@@ -1,0 +1,56 @@
+# scenario 02.9: A mixed pull request fails
+# Each case is a branch from main that changes the listed paths.
+env GIT_AUTHOR_NAME=Agent GIT_AUTHOR_EMAIL=agent@example.com GIT_COMMITTER_NAME=Agent GIT_COMMITTER_EMAIL=agent@example.com
+cd repo
+exec git init -q -b main
+exec git add -A
+exec git commit -q -m base
+
+# A test file and a design note
+exec git checkout -q -b tests-and-note main
+cp ../edit test/acceptance/05-sample/scenario-05.1.txtar
+cp ../edit docs/increments/05-sample/design.md
+exec git commit -q -a -m 'tests and note'
+exitcode 1 factory check-pr --base main
+stdout '^check-pr: error .*: mixed-pr( |$)'
+stdout '^check-pr: .*test/acceptance/05-sample/scenario-05\.1\.txtar'
+stdout '^check-pr: .*docs/increments/05-sample/design\.md'
+
+# Code and a file under .github/
+exec git checkout -q -b code-and-ci main
+cp ../edit internal/x.go
+cp ../edit .github/workflows/ci.yml
+exec git commit -q -a -m 'code and ci'
+exitcode 1 factory check-pr --base main
+stdout '^check-pr: error .*: mixed-pr( |$)'
+stdout '^check-pr: .*internal/x\.go'
+stdout '^check-pr: .*\.github/workflows/ci\.yml'
+
+# Code and a test file, without --approved
+exec git checkout -q -b code-and-tests main
+cp ../edit internal/x.go
+cp ../edit test/acceptance/05-sample/scenario-05.1.txtar
+exec git commit -q -a -m 'code and tests'
+exitcode 1 factory check-pr --base main
+stdout '^check-pr: error .*: mixed-pr( |$)'
+stdout '^check-pr: .*internal/x\.go'
+stdout '^check-pr: .*test/acceptance/05-sample/scenario-05\.1\.txtar'
+
+# A shallow clone of a branch, as a CI checkout with depth 1 makes it
+exec git clone -q --depth 1 --no-single-branch --branch code-and-ci file://$WORK/repo $WORK/shallow
+cd $WORK/shallow
+exitcode 2 factory check-pr --base origin/main
+stdout '^check-pr: .*shallow-clone'
+
+-- edit --
+changed
+-- repo/README.md --
+# Sample
+-- repo/internal/x.go --
+package x
+-- repo/docs/increments/05-sample/design.md --
+# Increment 05: sample
+-- repo/test/acceptance/05-sample/scenario-05.1.txtar --
+# scenario 05.1: A thing works
+-- repo/.github/workflows/ci.yml --
+name: ci

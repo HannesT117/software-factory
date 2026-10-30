@@ -1,0 +1,47 @@
+# scenario 02.25: Tests first, then code
+# On main, .factory/approval-free-paths has the line internal/**.
+# The tag approved marks the commit that the engineer approved.
+env GIT_AUTHOR_NAME=Agent GIT_AUTHOR_EMAIL=agent@example.com GIT_COMMITTER_NAME=Agent GIT_COMMITTER_EMAIL=agent@example.com
+cd repo
+exec git init -q -b main
+exec git add -A
+exec git commit -q -m base
+
+# Commits up to the approved one change only the test file, later ones only
+# internal/x.go.
+exec git checkout -q -b work main
+cp ../edit test/acceptance/a.txtar
+exec git commit -q -a -m tests
+exec git tag approved
+cp ../edit internal/x.go
+exec git commit -q -a -m code
+exec factory check-pr --base main --approved approved
+stdout '^check-pr: approval not required$'
+
+# A later commit also changes the test file.
+cp ../edit-again test/acceptance/a.txtar
+exec git commit -q -a -m 'tests again'
+! exec factory check-pr --base main --approved approved
+stdout '^check-pr: approval required$'
+
+# The approved commit is not an ancestor of HEAD.
+exec git checkout -q -b other main
+cp ../edit README.md
+exec git commit -q -a -m other
+exec git tag elsewhere
+exec git checkout -q work
+exitcode 2 factory check-pr --base main --approved elsewhere
+stdout '^check-pr: .*not-ancestor'
+
+-- edit --
+changed
+-- edit-again --
+changed again
+-- repo/.factory/approval-free-paths --
+internal/**
+-- repo/README.md --
+# Sample
+-- repo/internal/x.go --
+package x
+-- repo/test/acceptance/a.txtar --
+# scenario 05.1: A thing works
