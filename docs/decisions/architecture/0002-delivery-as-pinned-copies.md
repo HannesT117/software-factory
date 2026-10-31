@@ -77,4 +77,4 @@ Chosen option 1, because the parts are then in the repo for every environment, a
 
 * **Confidence:** medium. The symlink behaviour comes from the Claude Code docs. The release pipeline is built in increment 03.
 * **Revisit when** Claude Code reads `.agents/skills/`, or keeping releases running costs more than it saves.
-* **Sources:** agentskills.io specification; vercel-labs/skills agent paths; Cursor skills docs; Claude Code docs on skills, memory and plugins; Anthropic postmortem 2026-04-23; Swamp source repository; GitHub docs on artifact attestations; Go blog on reproducible builds. Details are in the [research notes](../research/2026-10-factory-basis.md).
+* **Sources:** agentskills.io specification; vercel-labs/skills agent paths; Cursor skills docs; Claude Code docs on skills, memory and plugins; Anthropic postmortem 2026-04-23; Swamp source repository; GitHub docs on artifact attestations; Go blog on reproducible builds. Details are in the [research notes](../../research/2026-10-factory-basis.md).
