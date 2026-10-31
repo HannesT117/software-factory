@@ -34,6 +34,8 @@ Do not write implementation code before the design and tests pull requests are m
 
 Every report starts with one line for each pull request that the agent opened or changed since the last report: its title and its link. Before building a change, the agent weighs its benefit against its cost. It drops a change with little benefit, also one that a review suggested, and names what it dropped in the report. Every report names the kind of each piece of evidence: approved scenario, demonstrated, manual, review, ADR confirmation, agent test (scaffolding), or not verified.
 
+The agent asks the engineer directly, never through a section in a document. A question says what it is about, so that a reader without context understands it, and names the consequences of each option. The agent decides implementation details itself and does not ask about them.
+
 ## Pull requests
 
 With squash merges, the title and description of a pull request become the commit message on `main`. The description gives a reader without context an overview of the change.
@@ -49,7 +51,7 @@ With squash merges, the title and description of a pull request become the commi
   - **Evidence** (required): each piece with its kind (see Reports).
 - The description is self-contained and describes the current state. Before the approval, check that it still matches the diff.
 - One problem per pull request. If the description gets long, split the pull request.
-- Before opening a pull request, look at the open ones. A change that fits the topic of an open pull request goes there.
+- Every plan names the target pull request of each change. First check the topics and path groups of the open pull requests. A change that fits an open pull request goes there. A new pull request names why no open one fits.
 - Notes for the engineer's approval (what to read, decide or run) go into the first comment of the pull request, not into the description.
 - Commits on a work branch use the same title rules. Their body explains what and why, not how.
 
