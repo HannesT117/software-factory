@@ -36,7 +36,7 @@ Process and policy are rules in [principles.md](docs/principles.md):
 
 ## Open
 
-- Setup before the first pull request: agent token, environment `approval`, approval workflow, ruleset for `main`. Steps in [docs/setup/](docs/setup/README.md).
+- Switch to the agent account and code owners, with the CI pull request of increment 02. Steps in [docs/setup/](docs/setup/README.md).
 
 ## Where things are
 
