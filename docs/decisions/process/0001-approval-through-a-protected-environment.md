@@ -1,5 +1,6 @@
 ---
 date: 2026-10-27
+status: superseded by ADR-0002
 ---
 
 # Approvals through a protected GitHub environment
