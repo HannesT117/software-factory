@@ -3,74 +3,49 @@
 ## Goal
 
 - A Go CLI `factory` checks skills, design notes, decision records, acceptance tests and the paths that a pull request changes.
-- **An agent cannot approve.** Each increment has two pull requests: the design note, and the tests with their code. The engineer approves the design note with its scenarios on a protected GitHub environment; the agent token cannot give that approval. The engineer does not approve test files. The pull request with tests and code merges without the engineer when its commits keep their order (first only new test files, then only approval-free paths), the new tests failed at the end of the test phase, and all required checks pass. A commit that changes tests after that makes the pull request wait for the engineer.
-- A pull request that changes design notes or the domain model, or CI or factory config, changes nothing else. A pull request with tests and code changes first only the tests group, then only approval-free paths.
-- Five skills carry the workflow: `designing-increments`, `writing-acceptance-tests`, `reviewing-increments`, `writing-pull-requests` and `writing-commit-messages`. `writing-acceptance-tests` runs in its own session with a fixed prompt. `reviewing-increments` runs in the reviewer, a fresh context with a fixed prompt. `writing-pull-requests` and `writing-commit-messages` follow rule 37 and the section "Pull requests" in `AGENTS.md`.
-- **The skills follow the Agent Skills specification and its guides.** A description says when to use the skill, in terms of what the user wants to achieve, not how the skill works. A body states the goal, the constraints with their reasons, and how the agent checks its own work, for example with a `factory` check. It points to formats, templates and rules instead of copying them, so that it does not go stale. It stays under 500 lines and moves details to `references/` or `assets/`.
-- **Each skill has evals.** `evals/evals.json` in the skill folder holds 2 or 3 realistic tasks with their expected output and assertions, and about 20 trigger queries: half should load the skill, half are near misses, split into a train set and a validation set. When a skill changes, a session runs its evals with and without the skill, or against the previous version. It grades the assertions, measures the trigger rate on the validation queries, and reports pass rate, tokens and time for both. The engineer reviews the outputs. Evals do not run in CI, because they need an agent.
-- `designing-increments` carries the formats of the design note and the domain model as templates. It writes the scenarios for the engineer. Before the design pull request, a fresh context reads only the scenarios and says in its own words what each one means; a scenario that it cannot explain without the rest of the note is rewritten. Before it designs a part, it searches for existing tools. It asks the engineer about terms, context boundaries and dependencies between contexts in rounds of numbered questions. Each question says what it is about and the consequences of each option. It finds facts itself and gives no recommended answers.
-- **The implementing session cannot end without a review.** A mandatory hook starts the reviewer. The reviewer checks the diff against the design note, checks that each test does what its scenario says, runs the demonstrated scenarios, and asks 2 or 3 comprehension questions. It publishes its result for the engineer as a Claude artifact and links it in the pull request. It turns on auto-merge only when it found nothing; otherwise the pull request waits for the engineer.
+- **An agent cannot approve.** Agents act as a machine account with write access and no admin rights. The engineer approves owned paths as code owner, with a personal account. A pull request that changes no owned path merges as soon as its checks pass.
+- Each increment has two pull requests: the design note, and the tests with their code. Tests come first, and `tests-start-red` shows that they failed before the code came.
+- Five skills carry the workflow: `designing-increments`, `writing-acceptance-tests`, `reviewing-increments`, `writing-pull-requests` and `writing-commit-messages`. They follow the Agent Skills specification and its guides, and each has evals that run with and without the skill. `designing-increments` asks the engineer in rounds, without recommended answers, and has a fresh context explain each scenario before the design pull request.
+- A stop hook makes the implementing session start a reviewer in a fresh context. It checks the diff and whether each test does what its scenario says, and its result reaches the engineer as a Claude artifact. It turns on auto-merge only when it found nothing.
+- A model from another vendor reviews both pull requests in the check `cross-review`.
 - The core of the factory imports no adapter (ADR 0001).
-- Two new rules in `docs/principles.md`: a design names the existing tools it checked for each part, and building a part needs a reason; the engineer owns the terms, the context boundaries and the dependencies between contexts, and an agent stops and asks when an architecture check fails.
-- The factory repo uses all of this from increment 03 on.
+- Two new rules in `docs/principles.md`: a design names the existing tools it checked; the engineer owns terms, context boundaries and dependencies between contexts.
 
 ## Out of scope
 
 - `factory install`, releases, the install step for cloud sessions and CI: increment 03
-- an architecture check for a project's own language: increment 03
-- acceptance tests in a project's own format; here, `testscript` tests the factory's own CLI, and `writing-acceptance-tests` and `check-tests` know only that format: increment 03
+- an architecture check and acceptance tests in a project's own language and format: increment 03
 - receipts, the provenance log, holdout scenarios, checks for terms, one glossary per bounded context: later, see [backlog](../../backlog.md)
 - adapters other than Claude Code
 
 ## Sketch
 
-Where does the work stop for the engineer, and what is checked instead?
+Where does the work stop for the engineer?
 
 ```mermaid
 flowchart LR
-  A[Design PR with scenarios] -->|check-design| B{Engineer approves}
+  A[Design PR] -->|check-design, cross-review| B{Engineer approves as code owner}
   B --> C[Tests from own session]
-  C -->|check-tests, tests-start-red| D[Code on the same branch]
-  D -->|test, check-pr, reviewer| E{Order kept?}
+  C -->|tests-start-red| D[Code on the same branch]
+  D -->|test, reviewer, cross-review| E{All checks green?}
   E -->|yes| F[Merge]
-  E -->|no| G{Engineer approves}
+  E -->|blocking finding| G{Engineer approves}
   G --> F
 ```
 
-`check-pr` runs on every pull request. A design note always reaches "Engineer approves", because its path is in a group.
-
 ## Format
-
-This section is the spec for the templates in the skills: `designing-increments` carries the design note and the domain model, `writing-acceptance-tests` carries the acceptance test and the runner.
 
 **Design note**, `docs/increments/<nn>-<slug>/design.md`:
 
 - Line 1 is `# Increment <nn>: <title>`. `<nn>` equals the folder's number.
-- Required headings, exact text, any order: `## Goal`, `## Out of scope`, `## Existing tools`, `## Interface`, `## Scenarios`, `## Evidence`. Other headings are allowed.
-- `## Existing tools` names, for each part that the increment builds, the tools and the authoritative guidance that were checked, such as the official docs of a format or standard, the decision (used, not used, later) and the reason. A part with no tool found names what was searched.
-- The optional heading `## Domain` lists new or changed terms, the bounded contexts that the increment touches, and new dependencies between contexts. A new context or a new dependency between contexts also gets an architecture decision record.
-- Each scenario is written for the engineer. It states behaviour in plain sentences, with a concrete example where it helps. It does not point to other sections of the note and names no exit codes or error codes; the test writer takes those from the Interface.
-- A scenario line matches `^- \*\*scenario (\d{2})\.([1-9]\d*)\*\* \((automated|demonstrated|manual)\) \*\*(.+?)[.?]\*\*`. `<nn>` equals the folder's number. The title is the fourth group. Any other line that starts with `- **scenario` is an error. Lines in fenced code blocks are ignored.
+- Required headings, exact text, any order: `## Goal`, `## Out of scope`, `## Existing tools`, `## Interface`, `## Scenarios`, `## Evidence`. Other headings are allowed, such as `## Domain` for new terms and contexts.
+- `## Existing tools` names, for each part, the tools and the authoritative guidance checked, the decision and the reason.
+- Scenarios are written for the engineer: plain sentences, no references to other sections, no exit or error codes.
+- A scenario line matches `^- \*\*scenario (\d{2})\.([1-9]\d*)\*\* \((automated|demonstrated|manual)\) \*\*(.+?)[.?]\*\*`. `<nn>` equals the folder's number; the title is the fourth group. Any other line that starts with `- **scenario` is an error. Lines in fenced code blocks are ignored.
 
-**Acceptance test**, `test/acceptance/<nn>-<slug>/scenario-<nn>.<n>.txtar`: a `testscript` file, one per automated scenario. Line 1 is `# scenario <nn>.<n>: <title>`, with the title exactly as in the note: same case, without the final period or question mark. Not allowed: `skip`, `stop`, and any condition in square brackets, such as `[net]` or `[darwin]`. Example:
+**Acceptance test**, `test/acceptance/<nn>-<slug>/scenario-<nn>.<n>.txtar`: a `testscript` file per automated scenario. Line 1 is `# scenario <nn>.<n>: <title>`, with the title as in the note, without the final period or question mark. Not allowed: `skip`, `stop`, and conditions in square brackets. One runner, `test/acceptance/acceptance_test.go`, provides the commands `factory` and `exitcode` and the variable `REPO` for the repo root.
 
-```
-# scenario 02.1: A correct skill is accepted
-exec factory validate-skills skills
-stdout '^validate-skills: ok 1 checked$'
-
--- skills/good-skill/SKILL.md --
----
-name: good-skill
-description: Does one thing. Use when testing.
----
-```
-
-How to read one: `exec` runs a command that must succeed. `! exec` runs one that must fail. `exitcode N factory …` runs `factory` and checks the exact exit code. `stdout '…'` and `stderr '…'` check for a line that matches the pattern. `exists path` checks that a file exists. Each `-- path --` starts a given file.
-
-**Runner**, `test/acceptance/acceptance_test.go`: one file runs all test files. The test writer writes it with the tests of this increment. It registers `factory` as a command, adds the command `exitcode` (because `testscript` checks only success or failure, not the exit code), sets `REPO` to the repo root (because each file runs in its own empty folder), and sets `HOME`, `GIT_CONFIG_NOSYSTEM=1` and a fresh temporary folder per file.
-
-**Path groups.** A pull request that changes a path in a group changes no path outside that group. One exception: a pull request may first add test files and change `go.mod` and `go.sum`, and then, in later commits, change only approval-free paths.
+**Path groups.** A pull request that changes a path in a group changes no path outside it. Exception: a pull request may first change test files, `go.mod` and `go.sum`, then only paths outside all groups. A test change after that is `mixed-pr`.
 
 | Group | Paths |
 |---|---|
@@ -78,77 +53,63 @@ How to read one: `exec` runs a command that must succeed. `! exec` runs one that
 | design notes | `docs/increments/*/design.md`, `docs/domain/**` |
 | CI and config | `.github/**`, `.factory/**` |
 
-**Approval-free paths**, `.factory/approval-free-paths`: one path pattern per line, with `*` and `**` as in the path groups. A pull request needs no approval when every path it changes matches a line and none is in a group. A pull request with tests needs none when its commits keep this order: first commits that only add test files or change `go.mod` and `go.sum`, then commits that only change paths that match a line. A change to a test file after that, a change to a test file that already exists on the base, or a path in another group needs the engineer's approval. Without the file, every pull request needs approval.
+**Code owners**, `.github/CODEOWNERS`: the engineer owns `docs/increments/*/design.md`, `docs/domain/`, `docs/decisions/`, `AGENTS.md`, `docs/principles.md`, `.github/` and `.factory/`.
 
-**Domain model**, in the design-notes group. A project without bounded contexts yet has no domain model.
+**Code paths**, `.factory/code-paths`: one path pattern per line. The stop hook and `cross-review` count a change to a matching path, or to the tests group, as code. Without the file, every path outside the groups counts.
 
-- `docs/domain/glossary.md`: line 1 is `# Glossary`. One line per term: `- **<Term>**: <definition>.`, optionally followed by `_Avoid_: <word> (<reason>), <word> (<reason>).`
-- `docs/domain/context-map.md`: line 1 is `# Context map`. One `##` heading per bounded context, with the lines `- Folder: <path>`, `- Responsible for: <text>`, `- Not responsible for: <text>`, and one line `- Depends on: <context> (<pattern>)` per dependency. The patterns are those of DDD context mapping, for example open host service, anticorruption layer or conformist.
+**Domain model**: `docs/domain/glossary.md` and `docs/domain/context-map.md`, in the design-notes group. Their formats are the templates of `designing-increments`.
 
-**Decision record**, `docs/decisions/<category>/<nnnn>-<slug>.md`, in the MADR format. The categories are `architecture` and `process`:
+**Decision record**, `docs/decisions/<architecture or process>/<nnnn>-<slug>.md`, MADR:
 
-- Frontmatter is optional. Allowed fields: `date` (`YYYY-MM-DD`) and `status`. `status` is either `superseded by ADR-<nnnn>`, where record `<nnnn>` exists in the same category, or `deprecated`.
-- The first heading is `# <title>`.
-- Required `##` headings: `Context and Problem Statement`, `Considered Options`, `Decision Outcome`. Also allowed: `Decision Drivers`, `Pros and Cons of the Options`, `More Information`. No other `##` heading.
-- Under `Decision Outcome`, the only `###` headings are `Consequences` and `Confirmation`. Under `Pros and Cons of the Options`, each `###` heading names an option.
-- Lines in fenced code blocks are ignored.
+- Optional frontmatter with `date` (`YYYY-MM-DD`) and `status`: `superseded by ADR-<nnnn>`, where that record exists in the same category, or `deprecated`.
+- First heading `# <title>`. Required `##` headings: `Context and Problem Statement`, `Considered Options`, `Decision Outcome`; also allowed: `Decision Drivers`, `Pros and Cons of the Options`, `More Information`. Under `Decision Outcome`, only `### Consequences` and `### Confirmation`. Lines in fenced code blocks are ignored.
 
-**Skill fields**, from the Agent Skills specification:
-
-- `name`: 1 to 64 characters; lowercase letters, digits and single hyphens; no hyphen at the start or end; equal to the folder name.
-- `description`: 1 to 1024 characters.
-- `compatibility`: at most 500 characters.
-- `metadata`: a map of strings.
-- Other allowed fields: `license`, `allowed-tools`.
-- The fields `name` and `description` and the skill body must not name a specific agent tool: `claude`, `cursor`, `codex`, `copilot` or `gemini`, in any case. The field `compatibility` may name one, as the specification's own example does.
-
-**Frontmatter subset** that `validate-skills` reads: `key: value`, quoted values, `|` and `>` blocks, and one nested map for `metadata`. Anything else is `unsupported-yaml`.
+**Skill fields**: those of the Agent Skills specification, with its limits. In addition, `name` equals the folder name, and `name`, `description` and the body name no agent tool (`claude`, `cursor`, `codex`, `copilot`, `gemini`, any case); `compatibility` may. `validate-skills` reads `key: value`, quoted values, `|` and `>` blocks, and one nested map for `metadata`; anything else is `unsupported-yaml`.
 
 ## Existing tools
 
-| Part | Tools checked | Decision | Reason |
+| Part | Checked | Decision | Reason |
 |---|---|---|---|
-| Design-note format, `check-design`, `designing-increments` | GitHub Spec Kit and OpenSpec (both MIT); Kiro | not used | Spec Kit and OpenSpec would replace only `check-design` and part of one skill. Neither has a merge gate, tests from a separate session, or protected tests. Kiro is its own editor and CLI with its own credits and works with no other agent. |
-| Approval flow | Swamp, extension `@swamp/software-factory` | not used | Every Swamp command except a few, such as `help` and `auth`, needs a swamp-club.com account; CI needs a token from that service. A `human-approval` decision is a record that any process with the CLI can write, so it does not stop an agent. |
-| `validate-skills` | `skills-ref` from agentskills.io | not used | Its README: "This library is intended for demonstration purposes only. It is not meant to be used in production." |
-| `check-adr` | adr-guard (.NET, MIT), adrscope (Rust, MIT) | not used | Each needs another runtime in the CI of every project; `check-adr` ships in the one `factory` binary (ADR 0001). adrscope expects structured MADR with its own frontmatter fields. |
-| `check-pr` path groups | GitHub push rulesets, rule "Restrict file paths" | not used | GitHub offers push rulesets only for private and internal repositories. The factory repo is public. |
-| Review result for the engineer | Claude artifacts | used, in the Claude Code adapter | The engineer's choice. The skill writes a tool-neutral report; the adapter publishes it. |
-| Starting the reviewer | Claude Code hooks of type `agent` | not used | They are experimental, can use only tools like Read, Grep and Glob, and time out after 60 seconds by default, so they cannot run scenarios. |
-| Review in CI | Copilot code review; Opper; GitHub Models | not used | Copilot reviews cost AI credits and are comments only, so they cannot block a merge. GitHub Models was retired on 2026-07-30. A single model call in CI adds little to the acceptance tests. |
-| Tests and code together on `main` | GitHub stacked pull requests | not used | GitHub has no auto-merge for stacks, and the tests pull request of a stack can merge alone and turn `main` red. Public preview since 2026-07-30. |
-| `hook pre-tool-use` | Claude Code `permissions.deny` | not used | "An allow rule can't carve an exception out of a deny rule", so a project deny rule on the tests group would also block the test-writer session. |
-| Acceptance tests | `testscript` from `github.com/rogpeppe/go-internal` (BSD-3-Clause) | used | The Go team's own script engine for testing the `go` command, factored out into a separate module. One readable file per scenario. A test-only dependency, which `AGENTS.md` allows. |
-| Mutation score | Gremlins, go-mutesting | Gremlins used | Made for small Go modules like this one. It is before version 1.0; the score does not block a merge, so a fault in the tool blocks nothing. |
-| Check that the core imports no adapter | go-arch-lint (MIT) | not used | One rule needs only `go list`. go-arch-lint fits a project with several rules. |
-| Writing the skills | Agent Skills specification; agentskills.io guides "Optimizing skill descriptions" and "Evaluating skill output quality"; PostHog, "What nobody tells you about writing skills" | used | The specification defines the format. The guides say how a description triggers a skill and how to measure what a skill adds. PostHog: "Hand-write parts that rarely change, reference parts that drift." |
-| Skill evals | Anthropic `skill-creator` (Apache-2.0) | used, in the Claude Code adapter | It runs the loop from the agentskills.io guide: runs with and without the skill, grading, a benchmark, a viewer for the engineer, and a description optimizer. Its runs need Claude Code; the eval files follow the guide's tool-neutral layout. |
-| Interview in `designing-increments` | skills `grilling` and `domain-modeling` by Matt Pocock (MIT) | idea used, files not used | Their frontmatter has fields outside the allowed skill fields. They give a recommended answer to each question, which the factory leaves out, so that the engineer decides instead of agreeing. |
-| Domain model | Context Mapper (CML, Apache-2.0); ddd-crew Bounded Context Canvas (CC BY-SA 4.0) | later | Context Mapper needs a JDK and checks no TypeScript or Go code. The canvas pays off from the second bounded context. |
+| Design notes and their check | GitHub Spec Kit, OpenSpec, Kiro | not used | They would replace only `check-design`; none protects tests. Kiro works with no other agent. |
+| Approval | GitHub code owners with an agent account; protected environment | code owners | Standard path-based review; the environment cannot tell paths apart. |
+| Approval flow | Swamp | not used | Needs a swamp-club.com account; its approval does not stop an agent. |
+| `validate-skills` | `skills-ref` | not used | "for demonstration purposes only" |
+| `check-adr` | adr-guard, adrscope | not used | Another runtime in every project's CI. |
+| Path groups | GitHub push rulesets | not used | Only for private repos. |
+| Reviewer | Claude Code hooks of type `agent` | not used | Experimental, read-only tools, 60-second timeout. |
+| Review result | Claude artifacts | used, Claude Code adapter | The engineer's choice. |
+| Review by another model | Opper; Codex plugin; Copilot code review; GitHub Models | Opper | Runs in CI out of the agent's reach. The plugin runs in the session; Copilot cannot block; GitHub Models is retired. |
+| Tests and code together | GitHub stacked pull requests | not used | No auto-merge; a tests layer can merge alone. |
+| Guard hook | Claude Code `permissions.deny` | not used | A deny rule cannot leave out the test writer. |
+| Acceptance tests | `testscript` (go-internal) | used | The Go team's engine for CLI tests; test-only dependency. |
+| Mutation score | Gremlins, go-mutesting | Gremlins | Made for small modules; the score does not block. |
+| Core without adapters | go-arch-lint | not used | One rule needs only `go list`. |
+| Writing skills | Agent Skills specification and guides; PostHog | used | Descriptions by user intent; reference parts that drift. |
+| Skill evals | Anthropic `skill-creator` | used, Claude Code adapter | Runs the eval loop of the guide. |
+| Interview | Matt Pocock's `grilling`, `domain-modeling` | idea only | No recommended answers, so the engineer decides. |
+| Domain model | Context Mapper, Bounded Context Canvas | later | From several bounded contexts on. |
 
 ## Interface
 
-Every output line starts with the command name and a colon, for example `check-pr:`. An error line is `<command>: error <where>: <code> <detail>`. `<where>` is a path, or `path:line` when the line is known. The last line is `<command>: ok <n> checked` or `<command>: <n> errors`. Exit codes: 0 ok, 1 errors, 2 usage or environment. All output goes to stdout, also error lines.
+Every output line starts with the command name and a colon. An error line is `<command>: error <where>: <code> <detail>`, where `<where>` is a path or `path:line`. The last line is `<command>: ok <n> checked` or `<command>: <n> errors`. Exit codes: 0 ok, 1 errors, 2 usage or environment. All output goes to stdout.
 
-| Command | Codes |
+| Command | Codes and behaviour |
 |---|---|
 | `factory validate-skills [dir ...]` | `name-mismatch`, `name-format`, `name-too-long`, `description-missing`, `description-too-long`, `compatibility-too-long`, `metadata-not-map`, `unknown-field`, `no-frontmatter`, `unsupported-yaml`, `tool-name` |
 | `factory check-design <increment-dir>` | `bad-title`, `missing-section`, `bad-scenario-line`, `wrong-increment`, `duplicate-id` |
-| `factory check-adr [dir]` | `unknown-category`, `unknown-field`, `bad-date`, `bad-status`, `unknown-adr`, `missing-title`, `missing-section`, `unknown-section`. Checks every `.md` file under `dir`, by default `docs/decisions`. A file outside the folders `architecture` and `process` is `unknown-category`. |
-| `factory check-tests [--base <ref>]` | `missing-test`, `unknown-id`, `title-mismatch`, `forbidden-command`. Reads the design notes from `<ref>`, or from the working tree without `--base`. Reads the test files from the working tree. |
-| `factory check-pr --base <ref>` | `mixed-pr`, with the paths of each group. Reads the commits between the merge base with `<ref>` and `HEAD`. Tests first and approval-free paths after them are not `mixed-pr`. A test change after code, or a change to a test file that exists on `<ref>`, is not `mixed-pr` either; it makes the pull request need approval. Exit 2 with `shallow-clone`. Before the last line, prints `check-pr: approval required` or `check-pr: approval not required`, and, when the pull request has tests, `check-pr: tests end at <commit>` with the last commit of the test phase. Reads `.factory/approval-free-paths` from `<ref>`. |
-| `factory hook stop` | Reads Claude Code hook input for `Stop` on stdin: `stop_hook_active`, `cwd`. Prints a block decision while the latest commit that changes a path on the list of approval-free paths has no review result in `evidence/<nn>-<slug>/review.md` that names that commit. The reason names the step that starts the reviewer. Prints nothing when `stop_hook_active` is true. |
-| `factory hook pre-tool-use` | Reads Claude Code hook input on stdin: `tool_name`, `tool_input.file_path` or `tool_input.notebook_path`, `agent_type`, `agent_id`, `cwd`. Prints a deny decision as JSON for `Write`, `Edit`, `MultiEdit` and `NotebookEdit` on a path in the tests group or the CI-and-config group, and nothing otherwise. Exception: a write under `test/acceptance/` when `agent_type` is `acceptance-test-writer` and `agent_id` is absent, which marks a session started with that agent, not a subagent. |
+| `factory check-adr [dir]` | `unknown-category`, `unknown-field`, `bad-date`, `bad-status`, `unknown-adr`, `missing-title`, `missing-section`, `unknown-section`. Checks every `.md` file under `dir`, by default `docs/decisions`. |
+| `factory check-tests [--base <ref>]` | `missing-test`, `unknown-id`, `title-mismatch`, `forbidden-command`. Reads the design notes from `<ref>`, or from the working tree without `--base`, and the test files from the working tree. |
+| `factory check-pr --base <ref>` | `mixed-pr`, with the paths of each group, over the commits since the merge base. Exit 2 with `shallow-clone`. With test files, prints `check-pr: tests end at <commit>` before the last line. |
+| `factory cross-review --base <ref>` | Sends the changed design note, or the note, the diff and the scenario titles, to the endpoint and the `design` or `code` model in `.factory/cross-review.json`, with the key in `FACTORY_MODEL_KEY`; never the pull request's title or description. Prints `cross-review: finding <blocking or note> <path>: <text>` per finding, then `cross-review: blocking` or `cross-review: ok`. No answer, or one in another form, is `blocking`. |
+| `factory hook stop` | Reads `Stop` input (`stop_hook_active`, `cwd`). Prints a block decision while the latest code commit has no review result in `evidence/<nn>-<slug>/review.md` that names it; the reason names the reviewer step. Prints nothing when `stop_hook_active` is true. |
+| `factory hook pre-tool-use` | Reads `tool_name`, `tool_input.file_path` or `tool_input.notebook_path`, `agent_type`, `agent_id`, `cwd`. Denies `Write`, `Edit`, `MultiEdit` and `NotebookEdit` on the tests group or the CI-and-config group, except a write under `test/acceptance/` with `agent_type` `acceptance-test-writer` and no `agent_id`. |
 
-**CI in the factory repo**, after this increment:
+**CI**, after this increment:
 
-- Workflow `gate` on `pull_request_target`. GitHub then takes the workflow file and the checkout from `main`.
-  - Job `checks` builds `factory` from `main`, fetches the pull request as data, and runs `check-pr`, `check-design` for each changed note and `check-adr`. It runs `check-tests --base main` only when the pull request changes the tests group or an approval-free path, so a design note without tests blocks code, not docs. When `check-pr` names the last commit with tests, the job reads that commit's check results through the REST API and requires that `tests-start-red` passed there. It runs no code from the pull request and has only read permission for checks. Its output `approval` is `not-required` only when all checks pass, `check-pr` prints `approval not required`, `tests-start-red` passed where required, and the head branch is in the repo itself, not in a fork. Otherwise it is `required`.
-  - Job `approval` runs after `checks` with `if: always()`, so it is never skipped; GitHub counts a skipped job as a passed required check. It uses the environment `no-approval`, which has no reviewers, only when the output of `checks` is `not-required`. In every other case, also when `checks` fails or sets no output, it uses the environment `approval`.
-- Workflow `test` on `pull_request` has two jobs:
-  - Job `test` runs `go test ./...`, which includes the acceptance tests. All tests must pass. While a pull request has new test files but not their code, `test` fails, so the pull request cannot merge yet. On a pull request that changes code, the job also mutates the code of `factory` with Gremlins, runs the acceptance tests against each mutant, and reports the mutation score in its summary. The score does not block a merge.
-  - Job `tests-start-red`, not required: on a commit whose changes since the base are only in the tests group, each added test file must fail and every other test must pass.
-- The ruleset on `main` requires `checks`, `approval` and `test`.
+- `checks` on `pull_request`: `check-pr`, `check-design` for each changed note, `check-adr`, and `check-tests --base main` when code or tests change.
+- `test` on `pull_request`: `go test ./...`, plus the mutation score with Gremlins in the summary, which does not block. Job `tests-start-red`: on the commit where the test phase ends, each added test fails and every other test passes.
+- `cross-review` on `pull_request` and `pull_request_review`, with the secret `OPPER_API_KEY`: on a design pull request it comments and passes. With code or tests it waits for a review result for the latest code commit, then stays red on a blocking finding until a code owner approves.
+- Ruleset on `main`: pull requests only, squash merges, code owner review for owned paths, approvals dismissed on push, the four checks from GitHub Actions required, no bypass.
 
 ## Scenarios
 
@@ -172,15 +133,16 @@ Every output line starts with the command name and a colon, for example `check-p
 
 - **scenario 02.8** (automated) **A pull request with one kind of change is accepted.** `factory check-pr` accepts a pull request that changes only a design note, or only test files and `go.mod`, or only paths outside all groups.
 - **scenario 02.9** (automated) **A pull request that mixes kinds of change is rejected.** `factory check-pr` rejects a pull request that changes a test file and a design note, or code and a file under `.github/`. The output names the paths. A clone without its full history is reported as a problem of the environment, not of the pull request.
-- **scenario 02.22** (automated) **Code-only pull requests need no approval.** With `internal/**` on the list of approval-free paths on `main`, `factory check-pr` reports that a pull request that changes only `internal/x.go` needs no approval. It reports that approval is needed for a pull request that also changes `README.md`, when `main` has no such list, and for a list with `**` when the pull request changes a design note.
-- **scenario 02.25** (automated) **Tests first, then code, needs no approval.** With `internal/**` on the list of approval-free paths, a pull request whose first commits only add test files and whose later commits only change `internal/x.go` needs no approval, and `factory check-pr` names the last commit with tests. Approval is needed when a later commit changes a test file again, or when a commit with tests changes a test file that already exists on `main`.
+- **scenario 02.26** (automated) **A blocking finding of the other model is reported.** With a stand-in for the model that reports one blocking finding, `factory cross-review` prints the finding and reports it as blocking. With a stand-in that reports only notes, it prints them and reports no block. When the model cannot be reached, or answers in another form, it reports a block. For a pull request that changes a design note, it asks the model named for `design`; for any other, the model named for `code`.
+- **scenario 02.25** (automated) **Tests come first, then code.** `factory check-pr` accepts a pull request whose first commits only change test files and whose later commits only change `internal/x.go`, and names the last commit with tests. It rejects a pull request in which a later commit changes a test file again.
 
 ### Approval and credentials (manual, in the factory repo)
 
-- **scenario 02.10** (manual) **Only a person approves.** A design note cannot be merged before a required reviewer approves the `approval` job, and each new push needs a new approval. The agent token cannot give that approval. A pull request that brings its own workflow with a fake job named `approval` still cannot be merged, also when its target branch changes to `main` later. A pull request from a fork always waits for a reviewer. A pull request with tests first and then code merges without a reviewer once all checks pass; when a later commit changes a test again, it waits for a reviewer.
-- **scenario 02.11** (manual) **The gate always comes from main.** A pull request that changes the `gate` workflow still runs the version from `main`, and the result shows on the pull request.
-- **scenario 02.12** (manual) **Agent sessions cannot get around the gate.** A local agent session cannot push a change under `.github/workflows/`, cannot read the repo's rulesets, cannot get a GitHub token through `gh auth token` or `git credential fill`, and cannot read `~/.ssh`. A cloud session cannot approve the `approval` job and cannot change the ruleset through the API.
-- **scenario 02.20** (manual) **New tests start red.** On a pull request with new test files and no code yet, `tests-start-red` passes only when each new test fails and every other test passes. Until the code exists, `test` fails, so the pull request cannot merge. When `tests-start-red` failed on the last commit with tests, the pull request waits for a reviewer.
+- **scenario 02.10** (manual) **Only the engineer approves.** A pull request that changes a design note cannot be merged before the engineer approves it as code owner, and a new push needs a new approval. The agent account can neither approve it nor change the ruleset. A pull request that changes only code merges without the engineer once all required checks pass.
+- **scenario 02.27** (manual) **Another model reviews both pull requests.** On a design pull request, and on a pull request with code and a review result, the check `cross-review` posts the findings of a model from another vendor as a comment. On the pull request with code, a blocking finding keeps the check red until the engineer approves the pull request.
+- **scenario 02.11** (manual) **A pull request cannot fake a check.** A pull request that adds its own workflow with a job named `test` that passes at once cannot be merged without the engineer's approval, because `.github/` belongs to the engineer.
+- **scenario 02.12** (manual) **Agent sessions act as the agent account.** A cloud session and a local session push, open pull requests and comment as the agent account. A local session cannot read `~/.ssh`, `~/.config/gh` or the SSH agent.
+- **scenario 02.20** (manual) **New tests start red.** On a pull request that changes test files, `tests-start-red` passes only when each added test failed on the last commit before the code and every other test passed there. `test` fails until the code exists, so the pull request cannot merge earlier.
 - **scenario 02.21** (manual) **The strength of the tests is measured.** A pull request with code shows, in the summary of the job `test`, the share of deliberately broken versions of the code (mutants) that the acceptance tests catch. A low share does not block the merge.
 
 ### Hooks (Claude Code adapter)
@@ -206,24 +168,21 @@ Every output line starts with the command name and a colon, for example `check-p
 
 ## Evidence
 
-- **Approved scenarios:** 02.1 to 02.9, 02.13, 02.14, 02.18, 02.19, 02.22 to 02.25. The engineer approves them in this note; their `testscript` files come from the test-writer session.
+- **Approved scenarios:** 02.1 to 02.9, 02.13, 02.14, 02.18, 02.19, 02.23 to 02.26. The engineer approves them in this note; their `testscript` files come from the test-writer session.
 - **Demonstrated:** 02.15.
-- **Manual:** 02.10, 02.11, 02.12, 02.16, 02.17, 02.20 and 02.21.
+- **Manual:** 02.10, 02.11, 02.12, 02.16, 02.17, 02.20, 02.21 and 02.27.
 - **Measurement, not evidence:** the mutation score from 02.21, recorded in `retro.md`.
 - **ADR confirmation:** 02.14 and 02.23.
 - **Not evidence:** unit tests from the implementing agent.
 
-## Setup before the first pull request
+## Setup
 
-These steps need a person with admin rights on the repo. [docs/setup/README.md](../../setup/README.md) lists them: repo settings, agent token, environment `approval`, approval workflow, ruleset, and the settings for local agent sessions.
-
-After this increment, a CI pull request adds the jobs `checks`, `test` and `tests-start-red`, and makes `checks` and `test` required. It also adds `.factory/approval-free-paths` with the paths of the Go code and `evidence/**`. Skills, docs and adapter settings are not on the list, because they steer the agents.
+[docs/setup/README.md](../../setup/README.md) lists the steps for the engineer. After this increment, a CI pull request adds the workflows, `.github/CODEOWNERS`, `.factory/code-paths` and `.factory/cross-review.json`; the engineer then switches the ruleset and removes the environment `approval`.
 
 ## Limits
 
-- **Bootstrap:** this increment's pull requests run before `factory` exists on `main`. Until the CI pull request, only `approval` is required, and the engineer checks the paths with `git diff --stat`. The engineer reads `check-pr`, `check-tests` and the part of `gate` that reads `tests-start-red` line by line in the review, because they guard all later pull requests.
-- **One account:** agents act under the engineer's GitHub account, and GitHub cannot tell them apart. In local sessions, the guards are the missing token rights (Deployments, Workflows, Administration) and the sandbox. Cloud sessions use the engineer's own credentials through the GitHub proxy and can push workflow files. There the guards are the ruleset, which binds every account, and the approval, which needs a person. Scenario 02.12 checks both.
-- **Guard hook:** it works only in Claude Code, and Bash can get around it. It gives early feedback only.
-- **Merge without approval:** before such a merge, the acceptance tests pass in CI, the order of commits holds, and the reviewer found nothing, also that each test does what its scenario says. The engineer approves the scenarios, not the test files. All sessions act under one account, so nothing hard stops an agent from writing a weak test in the test phase; the reviewer, the mutation score and `tests-start-red` are the guards. The reviewer runs in the implementing session's environment, so its "nothing found" is a strong signal, not proof. The manual scenarios run after the merge; a finding becomes a fix in a new pull request.
-- **Eval cost:** each trigger query runs 3 times, so about 20 queries make about 60 runs per skill. Trigger evals run only when a description changes, and task evals only when a skill's body changes.
-- **Break glass:** the engineer can switch off the ruleset in the settings, for example for an urgent fix while a design note on `main` has no tests yet. The next retro records each use.
+- **Bootstrap:** until the CI pull request, the environment `approval` still gates this increment. The engineer reads `check-pr`, `check-tests` and the workflows line by line, because they guard all later pull requests.
+- **One agent account:** GitHub cannot tell the test writer from the implementing agent. All of the engineer's Claude sessions act as the agent account, also in other projects.
+- **Soft parts:** the guard hook and the reviewer run in the agent's session, and test files are not owned. Tests in CI, `tests-start-red` and `cross-review` are the hard guards; the mutation score only measures.
+- **Review by another model:** it runs no code, and in one study a non-Claude reviewer made Claude's code worse (arXiv 2607.21656). So a finding only holds the merge until the engineer has read it. About 0.05 to 0.70 USD per review.
+- **Break glass:** the engineer can switch off the ruleset; the next retro records each use.
