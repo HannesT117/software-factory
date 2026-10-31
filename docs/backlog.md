@@ -16,4 +16,9 @@ v0 leaves these parts out on purpose. Each part is built when a project that use
 | Decision-model check routing through Opper | a project has enough changes to measure misses |
 | `factory install --watch`: copies factory changes into the project at once | the factory changes often while a project uses it |
 | Architecture model as code, checked against the import graph | a project has at least two packages |
+| A check for the avoided words in the glossary, for example cspell `flagWords` | a rejected word reaches a pull request a second time (rule 4) |
+| A check for terms outside the glossary in the exported names of the domain core; no tool does this, so it is custom code | a term outside the glossary reaches `main` a second time |
+| One glossary and one Bounded Context Canvas (ddd-crew) per bounded context; a new context folder needs an entry in the context map | a project has a second bounded context |
+| Context Mapper for context maps and diagrams | a project has three or more bounded contexts with dependencies, or a team |
+| A pull request comment that lists the changed contexts and terms | the engineer misses a boundary change in a review |
 | A check for pull request titles: length, capital letter, final period, internal numbers | the same title correction is needed a second time (rule 4) |

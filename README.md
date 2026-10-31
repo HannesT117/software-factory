@@ -44,6 +44,7 @@ Process and policy are rules in [principles.md](docs/principles.md):
 
 - [docs/principles.md](docs/principles.md): every rule, its source, what it depends on, how it is enforced, and when to re-check it.
 - [docs/research/2026-10-factory-basis.md](docs/research/2026-10-factory-basis.md): the sources behind the rules. Reference only, not required reading.
+- [docs/research/2026-10-domain-design-with-agents.md](docs/research/2026-10-domain-design-with-agents.md): the sources behind the domain model and the architecture checks. Reference only, not required reading.
 - [docs/decisions/](docs/decisions/): the ADRs.
 - [docs/increments/](docs/increments/): one folder per increment, with its design note, review, evidence and retro.
 - [docs/backlog.md](docs/backlog.md): parts that are built when a project needs them.
