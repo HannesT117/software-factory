@@ -1,0 +1,46 @@
+# scenario 02.5: Matching tests are accepted
+# The note has two automated scenarios, one demonstrated and one manual.
+# Each test title is the scenario title without its final period or
+# question mark.
+cd repo
+exec git init -q -b main
+exec factory check-tests
+stdout '^check-tests: ok \d+ checked$'
+
+-- repo/docs/increments/05-sample/design.md --
+# Increment 05: sample
+
+## Goal
+
+- The sample tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Scenarios
+
+- **scenario 05.1** (automated) **A thing works.** Given a thing, the tool accepts it.
+- **scenario 05.2** (automated) **Does another thing work?** Given another thing, the tool accepts it.
+- **scenario 05.3** (demonstrated) **The demo runs.** A separate session runs it.
+- **scenario 05.4** (manual) **A person checks it.** The engineer runs it.
+
+## Evidence
+
+- Approved scenarios: 05.1 and 05.2.
+-- repo/test/acceptance/05-sample/scenario-05.1.txtar --
+# scenario 05.1: A thing works
+exec sample run thing
+stdout '^sample: ok$'
+-- repo/test/acceptance/05-sample/scenario-05.2.txtar --
+# scenario 05.2: Does another thing work
+exec sample run another
+stdout '^sample: ok$'

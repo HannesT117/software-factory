@@ -1,0 +1,79 @@
+# scenario 02.13: Only the test writer may write tests
+# Each input file is the hook input for one tool call. The project is
+# /home/engineer/project.
+
+# Write, Edit, MultiEdit and NotebookEdit on the tests group and on the
+# CI-and-config group are denied.
+stdin write-test.json
+exec factory hook pre-tool-use
+stdout '"permissionDecision"\s*:\s*"deny"'
+stdin edit-go-mod.json
+exec factory hook pre-tool-use
+stdout '"permissionDecision"\s*:\s*"deny"'
+stdin multiedit-go-sum.json
+exec factory hook pre-tool-use
+stdout '"permissionDecision"\s*:\s*"deny"'
+stdin notebookedit-github.json
+exec factory hook pre-tool-use
+stdout '"permissionDecision"\s*:\s*"deny"'
+stdin write-factory.json
+exec factory hook pre-tool-use
+stdout '"permissionDecision"\s*:\s*"deny"'
+stdin edit-workflow.json
+exec factory hook pre-tool-use
+stdout '"permissionDecision"\s*:\s*"deny"'
+
+# A session started as acceptance-test-writer may write to test/acceptance/.
+stdin writer-test.json
+exec factory hook pre-tool-use
+! stdout .
+
+# Not so a subagent of that session, another agent type, or a write to
+# go.mod by the test writer.
+stdin writer-subagent-test.json
+exec factory hook pre-tool-use
+stdout '"permissionDecision"\s*:\s*"deny"'
+stdin reviewer-test.json
+exec factory hook pre-tool-use
+stdout '"permissionDecision"\s*:\s*"deny"'
+stdin writer-go-mod.json
+exec factory hook pre-tool-use
+stdout '"permissionDecision"\s*:\s*"deny"'
+
+# A path outside the groups is not protected.
+stdin write-code.json
+exec factory hook pre-tool-use
+! stdout .
+
+-- write-test.json --
+{"session_id":"s1","transcript_path":"/home/engineer/.transcripts/s1.jsonl","cwd":"/home/engineer/project","hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"file_path":"/home/engineer/project/test/acceptance/05-sample/scenario-05.1.txtar","content":"changed\n"}}
+
+-- edit-go-mod.json --
+{"session_id":"s1","transcript_path":"/home/engineer/.transcripts/s1.jsonl","cwd":"/home/engineer/project","hook_event_name":"PreToolUse","tool_name":"Edit","tool_input":{"file_path":"/home/engineer/project/go.mod","old_string":"a","new_string":"b"}}
+
+-- multiedit-go-sum.json --
+{"session_id":"s1","transcript_path":"/home/engineer/.transcripts/s1.jsonl","cwd":"/home/engineer/project","hook_event_name":"PreToolUse","tool_name":"MultiEdit","tool_input":{"file_path":"/home/engineer/project/go.sum","edits":[{"old_string":"a","new_string":"b"}]}}
+
+-- notebookedit-github.json --
+{"session_id":"s1","transcript_path":"/home/engineer/.transcripts/s1.jsonl","cwd":"/home/engineer/project","hook_event_name":"PreToolUse","tool_name":"NotebookEdit","tool_input":{"notebook_path":"/home/engineer/project/.github/notebook.ipynb","new_source":"print(1)"}}
+
+-- write-factory.json --
+{"session_id":"s1","transcript_path":"/home/engineer/.transcripts/s1.jsonl","cwd":"/home/engineer/project","hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"file_path":"/home/engineer/project/.factory/approval-free-paths","content":"changed\n"}}
+
+-- edit-workflow.json --
+{"session_id":"s1","transcript_path":"/home/engineer/.transcripts/s1.jsonl","cwd":"/home/engineer/project","hook_event_name":"PreToolUse","tool_name":"Edit","tool_input":{"file_path":"/home/engineer/project/.github/workflows/gate.yml","old_string":"a","new_string":"b"}}
+
+-- writer-subagent-test.json --
+{"session_id":"s1","transcript_path":"/home/engineer/.transcripts/s1.jsonl","cwd":"/home/engineer/project","hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"file_path":"/home/engineer/project/test/acceptance/05-sample/scenario-05.1.txtar","content":"changed\n"},"agent_id":"a1","agent_type":"acceptance-test-writer"}
+
+-- reviewer-test.json --
+{"session_id":"s1","transcript_path":"/home/engineer/.transcripts/s1.jsonl","cwd":"/home/engineer/project","hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"file_path":"/home/engineer/project/test/acceptance/05-sample/scenario-05.1.txtar","content":"changed\n"},"agent_type":"increment-reviewer"}
+
+-- writer-go-mod.json --
+{"session_id":"s1","transcript_path":"/home/engineer/.transcripts/s1.jsonl","cwd":"/home/engineer/project","hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"file_path":"/home/engineer/project/go.mod","content":"changed\n"},"agent_type":"acceptance-test-writer"}
+
+-- writer-test.json --
+{"session_id":"s1","transcript_path":"/home/engineer/.transcripts/s1.jsonl","cwd":"/home/engineer/project","hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"file_path":"/home/engineer/project/test/acceptance/05-sample/scenario-05.1.txtar","content":"changed\n"},"agent_type":"acceptance-test-writer"}
+
+-- write-code.json --
+{"session_id":"s1","transcript_path":"/home/engineer/.transcripts/s1.jsonl","cwd":"/home/engineer/project","hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"file_path":"/home/engineer/project/internal/x.go","content":"changed\n"}}

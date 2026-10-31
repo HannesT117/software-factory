@@ -1,0 +1,153 @@
+# scenario 02.4: Each mistake in a design note is reported
+# Each note breaks one rule. The error line names the code with the line
+# number. A missing section has no line of its own, so its line number is
+# optional.
+
+exitcode 1 factory check-design docs/increments/06-bad-title
+stdout '^check-design: error \S*06-bad-title/design\.md:1: bad-title( |$)'
+
+exitcode 1 factory check-design docs/increments/07-missing-section
+stdout '^check-design: error \S*07-missing-section/design\.md(:\d+)?: missing-section( |$)'
+
+exitcode 1 factory check-design docs/increments/08-bad-scenario-line
+stdout '^check-design: error \S*08-bad-scenario-line/design\.md:22: bad-scenario-line( |$)'
+
+exitcode 1 factory check-design docs/increments/09-wrong-increment
+stdout '^check-design: error \S*09-wrong-increment/design\.md:22: wrong-increment( |$)'
+
+exitcode 1 factory check-design docs/increments/10-duplicate-id
+stdout '^check-design: error \S*10-duplicate-id/design\.md:22: duplicate-id( |$)'
+
+-- docs/increments/06-bad-title/design.md --
+# Bad title
+
+## Goal
+
+- The sample tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Scenarios
+
+- **scenario 06.1** (automated) **A thing works.** Given a thing, the tool accepts it.
+
+## Evidence
+
+- Approved scenarios: 06.1.
+
+-- docs/increments/07-missing-section/design.md --
+# Increment 07: missing section
+
+## Goal
+
+- The sample tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Scenarios
+
+- **scenario 07.1** (automated) **A thing works.** Given a thing, the tool accepts it.
+
+-- docs/increments/08-bad-scenario-line/design.md --
+# Increment 08: bad scenario line
+
+## Goal
+
+- The sample tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Scenarios
+
+- **scenario 08.1** (automated) **A thing works.** Given a thing, the tool accepts it.
+- **scenario 08.2** (automatic) **Another thing works.** Given another thing, the tool accepts it.
+
+## Evidence
+
+- Approved scenarios: 08.1.
+
+-- docs/increments/09-wrong-increment/design.md --
+# Increment 09: wrong increment
+
+## Goal
+
+- The sample tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Scenarios
+
+- **scenario 09.1** (automated) **A thing works.** Given a thing, the tool accepts it.
+- **scenario 06.2** (automated) **Another thing works.** Given a thing, the tool accepts it.
+
+## Evidence
+
+- Approved scenarios: 09.1.
+
+-- docs/increments/10-duplicate-id/design.md --
+# Increment 10: duplicate id
+
+## Goal
+
+- The sample tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Scenarios
+
+- **scenario 10.1** (automated) **A thing works.** Given a thing, the tool accepts it.
+- **scenario 10.1** (manual) **Another thing works.** Given a thing, the tool accepts it.
+
+## Evidence
+
+- Approved scenarios: 10.1.

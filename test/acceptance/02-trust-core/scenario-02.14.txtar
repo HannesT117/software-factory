@@ -1,0 +1,10 @@
+# scenario 02.14: The factory's skills are valid and name no agent tool
+exec factory validate-skills $REPO/core/skills
+stdout '^validate-skills: ok \d+ checked$'
+
+# The five skills of the workflow are among them.
+exists $REPO/core/skills/designing-increments/SKILL.md
+exists $REPO/core/skills/writing-acceptance-tests/SKILL.md
+exists $REPO/core/skills/reviewing-increments/SKILL.md
+exists $REPO/core/skills/writing-pull-requests/SKILL.md
+exists $REPO/core/skills/writing-commit-messages/SKILL.md

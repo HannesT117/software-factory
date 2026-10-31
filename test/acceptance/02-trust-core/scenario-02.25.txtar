@@ -1,0 +1,58 @@
+# scenario 02.25: Tests first, then code, needs no approval
+# On main, .factory/approval-free-paths has the line internal/**, and the
+# test file test/acceptance/a.txtar exists. Fixed names, dates and hash
+# format make each commit hash the same on every run, so the test can name
+# the last commit with tests.
+env GIT_AUTHOR_NAME=Agent GIT_AUTHOR_EMAIL=agent@example.com GIT_COMMITTER_NAME=Agent GIT_COMMITTER_EMAIL=agent@example.com
+env 'GIT_AUTHOR_DATE=@1767225600 +0000' 'GIT_COMMITTER_DATE=@1767225600 +0000'
+cd repo
+exec git init -q -b main --object-format=sha1
+exec git add -A
+exec git commit -q -m base
+
+# Two commits add test files, and a later commit changes only internal/x.go.
+exec git checkout -q -b work main
+mkdir test/acceptance/05-sample
+cp ../first-test test/acceptance/05-sample/scenario-05.1.txtar
+exec git add test
+exec git commit -q -m 'add first test'
+cp ../second-test test/acceptance/05-sample/scenario-05.2.txtar
+exec git add test
+exec git commit -q -m 'add second test'
+exec git rev-parse HEAD
+stdout '^d3fb7f3676c8fcfcbad39f1b074468889e67725d$'
+cp ../edit internal/x.go
+exec git commit -q -a -m code
+exec factory check-pr --base main
+stdout '^check-pr: approval not required$'
+stdout '^check-pr: tests end at d3fb7f3\w*$'
+
+# A later commit changes a test file again.
+cp ../edit test/acceptance/05-sample/scenario-05.1.txtar
+exec git commit -q -a -m 'change first test'
+exec factory check-pr --base main
+stdout '^check-pr: approval required$'
+
+# The commit with tests changes a test file that already exists on main.
+exec git checkout -q -b existing-test main
+cp ../edit test/acceptance/a.txtar
+exec git commit -q -a -m 'change existing test'
+cp ../edit internal/x.go
+exec git commit -q -a -m code
+exec factory check-pr --base main
+stdout '^check-pr: approval required$'
+
+-- edit --
+changed
+-- first-test --
+# scenario 05.1: A thing works
+-- second-test --
+# scenario 05.2: A second thing works
+-- repo/.factory/approval-free-paths --
+internal/**
+-- repo/README.md --
+# Sample
+-- repo/internal/x.go --
+package x
+-- repo/test/acceptance/a.txtar --
+# scenario 04.1: An older thing works

@@ -4,16 +4,17 @@ Read `README.md` first. It is the entry point and shows the status. The factory 
 
 ## Workflow: every increment follows these steps
 
-An increment is one unit of work in three pull requests. Each increment has a folder `docs/increments/<nn>-<slug>/`. The format of a design note and of an acceptance test, and the path groups, are fixed in `docs/increments/02-trust-core/design.md`, section Format.
+An increment is one unit of work in two pull requests: the design note, and the tests with their code. Each increment has a folder `docs/increments/<nn>-<slug>/`. The format of a design note and of an acceptance test, the path groups and the approval-free paths are fixed in `docs/increments/02-trust-core/design.md`, section Format. The skills are in `core/skills/`; the Claude Code hooks and agents are in `adapters/claude-code/`.
 
-1. **Design pull request.** Write `design.md` with goal, scope, interface and scenarios. Each scenario names its verification kind. `factory check-design` must pass. The pull request changes only the design note. Stop. The engineer approves and merges it.
-2. **Tests pull request.** The engineer starts a separate session as `acceptance-test-writer`, with its fixed prompt and the skill `writing-acceptance-tests`. It writes one `testscript` file per automated scenario and sees only the design note on `main` and the public interface. `factory check-tests` must pass. The pull request changes only the tests group. Stop. The engineer approves and merges it.
-3. **Implementation pull request.** The implementing agent writes the code until the tests pass. The pull request changes no path in a group. Stop and ask if a test looks wrong.
-4. **Review.** The engineer starts a separate session as `increment-reviewer`, with the skill `reviewing-increments`. It reads the design note and the diff against `main`. It writes `review.md` into the implementation pull request: findings on special cases, test detection, work outside the scenarios, and changed docs that contain their own history or elements outside their format, then 2 or 3 comprehension questions, at least one about debugging. The engineer answers there before the reviewer explains.
-5. **Demonstration.** Demonstrated scenarios run in a separate session, and their recordings go to `evidence/`. The engineer runs the manual scenarios.
-6. **Retro and summary.** Write `retro.md`: metrics, agent version, corrections, and every point that concerns the factory. From increment 04 on, `factory feedback` prints a prefilled issue link for each factory point, and the engineer submits it. Then a summary of at most 10 lines. Stop. The engineer approves and squash-merges.
+1. **Design pull request.** With the skill `designing-increments`, write `design.md` with goal, scope, existing tools, interface and scenarios, and update the domain model when terms or contexts change. Each scenario is written for the engineer and names its verification kind. A fresh context explains each scenario in its own words before the pull request. `factory check-design` must pass. The pull request changes only the design-notes group. Stop. The engineer approves and merges it.
+2. **Tests.** The engineer starts a separate session as `acceptance-test-writer`, with its fixed prompt and the skill `writing-acceptance-tests`. On the increment's branch, it writes one `testscript` file per automated scenario and sees only the design note on `main` and the public interface. `factory check-tests --base main` must pass, each new test must fail, and every other test must pass. Its commits change only the tests group. The engineer does not approve the test files; the reviewer checks them.
+3. **Code.** The implementing agent continues on the same branch and in the same pull request. It writes the code until the tests pass. Its commits change no path in a group. Stop and ask if a test looks wrong.
+4. **Review.** The stop hook keeps the implementing session from ending until a review result names the latest code commit. The session then starts the subagent `increment-reviewer` with the skill `reviewing-increments`. It reads the design note and the diff against `main`, and writes `evidence/<nn>-<slug>/review.md`: findings on special cases, test detection, work outside the scenarios, tests that do not do what their scenario says, and changed docs that contain their own history or elements outside their format, then 2 or 3 comprehension questions, at least one about debugging. It publishes the result for the engineer and links it in the pull request. The engineer answers there before the reviewer explains.
+5. **Merge.** The pull request merges without the engineer only when its commits keep their order (first only new test files, then only approval-free paths), `tests-start-red` passed on the last commit with tests, all required checks pass, and the reviewer found nothing. Otherwise it waits for the engineer's approval.
+6. **Demonstration.** Demonstrated scenarios run in a separate session, and their recordings go to `evidence/`. The engineer runs the manual scenarios.
+7. **Retro and summary.** Write `retro.md`: metrics, agent version, corrections, and every point that concerns the factory. From increment 04 on, `factory feedback` prints a prefilled issue link for each factory point, and the engineer submits it. Then a summary of at most 10 lines.
 
-Do not write implementation code before the design and tests pull requests are merged.
+Do not write implementation code before the design note is on `main` and its tests are committed on the branch.
 
 ## Verification kinds
 
@@ -23,7 +24,7 @@ Do not write implementation code before the design and tests pull requests are m
 
 ## The implementing agent never
 
-- changes a path in a group: acceptance tests, the test runner, `go.mod`, `go.sum`, anything under `.github/` or `.factory/`, or a design note on `main`
+- changes a path in a group: acceptance tests, the test runner, `go.mod`, `go.sum`, anything under `.github/` or `.factory/`, a design note, or the domain model under `docs/domain/`
 - writes code that detects a test run, or that hard-codes test cases
 - uses the engineer's own credentials, or reads `~/.ssh`, `~/.config/gh` or the SSH agent. Agents use their own fine-grained token.
 - approves or merges a pull request
@@ -52,6 +53,7 @@ With squash merges, the title and description of a pull request become the commi
 - Before opening a pull request, look at the open ones. A change that fits the topic of an open pull request goes there.
 - Notes for the engineer's approval (what to read, decide or run) go into the first comment of the pull request, not into the description.
 - Commits on a work branch use the same title rules. Their body explains what and why, not how.
+- The skills `writing-pull-requests` and `writing-commit-messages` carry these rules.
 
 ## Source of truth and push
 

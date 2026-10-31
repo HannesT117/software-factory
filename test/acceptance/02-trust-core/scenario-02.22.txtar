@@ -1,0 +1,58 @@
+# scenario 02.22: Code-only pull requests need no approval
+# Each case is a branch from main that changes the listed paths. Between the
+# cases, main changes its list of approval-free paths.
+env GIT_AUTHOR_NAME=Agent GIT_AUTHOR_EMAIL=agent@example.com GIT_COMMITTER_NAME=Agent GIT_COMMITTER_EMAIL=agent@example.com
+cd repo
+exec git init -q -b main
+exec git add -A
+exec git commit -q -m base
+
+# The list on main has the line internal/**: only internal/x.go
+exec git checkout -q -b code main
+cp ../edit internal/x.go
+exec git commit -q -a -m code
+exec factory check-pr --base main
+stdout '^check-pr: approval not required$'
+
+# The list on main has the line internal/**: internal/x.go and README.md
+exec git checkout -q -b code-and-readme main
+cp ../edit internal/x.go
+cp ../edit README.md
+exec git commit -q -a -m 'code and readme'
+exec factory check-pr --base main
+stdout '^check-pr: approval required$'
+
+# main has no list: only internal/x.go
+exec git checkout -q main
+exec git rm -q .factory/approval-free-paths
+exec git commit -q -m 'remove the list'
+exec git checkout -q -b code-without-list main
+cp ../edit internal/x.go
+exec git commit -q -a -m code
+exec factory check-pr --base main
+stdout '^check-pr: approval required$'
+
+# The list on main has the line **: only a design note
+exec git checkout -q main
+mkdir .factory
+cp ../all-free .factory/approval-free-paths
+exec git add .factory
+exec git commit -q -m 'list with **'
+exec git checkout -q -b note main
+cp ../edit docs/increments/05-sample/design.md
+exec git commit -q -a -m note
+exec factory check-pr --base main
+stdout '^check-pr: approval required$'
+
+-- edit --
+changed
+-- all-free --
+**
+-- repo/.factory/approval-free-paths --
+internal/**
+-- repo/README.md --
+# Sample
+-- repo/internal/x.go --
+package x
+-- repo/docs/increments/05-sample/design.md --
+# Increment 05: sample

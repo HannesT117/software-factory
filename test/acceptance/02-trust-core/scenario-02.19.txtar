@@ -1,0 +1,151 @@
+# scenario 02.19: Each mistake in a decision record is reported
+# Each record breaks one rule. The error line names the code with the line
+# number. A missing title, a missing section and a wrong folder have no line
+# of their own, so their line number is optional.
+exitcode 1 factory check-adr docs/decisions
+stdout '^check-adr: error \S*architecture/0001-unknown-field\.md:2: unknown-field( |$)'
+stdout '^check-adr: error \S*architecture/0002-bad-date\.md:2: bad-date( |$)'
+stdout '^check-adr: error \S*architecture/0003-bad-status\.md:2: bad-status( |$)'
+stdout '^check-adr: error \S*architecture/0004-unknown-adr\.md:2: unknown-adr( |$)'
+stdout '^check-adr: error \S*process/0001-missing-title\.md(:\d+)?: missing-title( |$)'
+stdout '^check-adr: error \S*process/0002-missing-section\.md(:\d+)?: missing-section( |$)'
+stdout '^check-adr: error \S*process/0003-unknown-section\.md:7: unknown-section( |$)'
+stdout '^check-adr: error \S*design/0001-unknown-category\.md(:\d+)?: unknown-category( |$)'
+stdout '^check-adr: \d+ errors$'
+
+-- docs/decisions/architecture/0001-unknown-field.md --
+---
+author: engineer
+---
+# Unknown field
+
+## Context and Problem Statement
+
+The factory needs a decision.
+
+## Considered Options
+
+* Option A
+* Option B
+
+## Decision Outcome
+
+Chosen option: "Option A", because it is simple.
+
+-- docs/decisions/architecture/0002-bad-date.md --
+---
+date: 30.10.2026
+---
+# Bad date
+
+## Context and Problem Statement
+
+The factory needs a decision.
+
+## Considered Options
+
+* Option A
+* Option B
+
+## Decision Outcome
+
+Chosen option: "Option A", because it is simple.
+
+-- docs/decisions/architecture/0003-bad-status.md --
+---
+status: accepted
+---
+# Bad status
+
+## Context and Problem Statement
+
+The factory needs a decision.
+
+## Considered Options
+
+* Option A
+* Option B
+
+## Decision Outcome
+
+Chosen option: "Option A", because it is simple.
+
+-- docs/decisions/architecture/0004-unknown-adr.md --
+---
+status: superseded by ADR-0099
+---
+# Unknown ADR
+
+## Context and Problem Statement
+
+The factory needs a decision.
+
+## Considered Options
+
+* Option A
+* Option B
+
+## Decision Outcome
+
+Chosen option: "Option A", because it is simple.
+
+-- docs/decisions/process/0001-missing-title.md --
+## Context and Problem Statement
+
+The factory needs a decision.
+
+## Considered Options
+
+* Option A
+* Option B
+
+## Decision Outcome
+
+Chosen option: "Option A", because it is simple.
+
+-- docs/decisions/process/0002-missing-section.md --
+# Missing section
+
+## Context and Problem Statement
+
+The factory needs a decision.
+
+## Decision Outcome
+
+Chosen option: "Option A", because it is simple.
+
+-- docs/decisions/process/0003-unknown-section.md --
+# Unknown section
+
+## Context and Problem Statement
+
+The factory needs a decision.
+
+## Status
+
+Accepted.
+
+## Considered Options
+
+* Option A
+* Option B
+
+## Decision Outcome
+
+Chosen option: "Option A", because it is simple.
+
+-- docs/decisions/design/0001-unknown-category.md --
+# Unknown category
+
+## Context and Problem Statement
+
+The factory needs a decision.
+
+## Considered Options
+
+* Option A
+* Option B
+
+## Decision Outcome
+
+Chosen option: "Option A", because it is simple.

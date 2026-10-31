@@ -1,0 +1,42 @@
+# scenario 02.3: A complete design note is accepted
+# The note has the required headings in another order, one other heading,
+# and a scenario-like line in a fenced code block, which is ignored.
+exec factory check-design docs/increments/05-sample
+stdout '^check-design: ok \d+ checked$'
+
+-- docs/increments/05-sample/design.md --
+# Increment 05: sample
+
+## Goal
+
+- The sample tool works.
+
+## Scenarios
+
+- **scenario 05.1** (automated) **A thing works.** Given a thing, the tool accepts it.
+- **scenario 05.2** (demonstrated) **Does the demo run?** A separate session runs it.
+- **scenario 05.3** (manual) **A person checks it.** The engineer runs it.
+
+## Out of scope
+
+- Everything else.
+
+## Sketch
+
+```
+- **scenario is not a scenario line in a code block
+```
+
+## Existing tools
+
+| Part | Tools checked | Decision | Reason |
+|---|---|---|---|
+| sample tool | none found; searched for sample tools | not used | nothing found |
+
+## Interface
+
+- `sample run`
+
+## Evidence
+
+- Approved scenarios: 05.1.

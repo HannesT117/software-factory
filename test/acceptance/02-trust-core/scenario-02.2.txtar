@@ -1,0 +1,85 @@
+# scenario 02.2: Each mistake in a skill is reported
+# Each skill breaks one rule. The error line names the code for its file.
+exitcode 1 factory validate-skills skills
+stdout '^validate-skills: error \S*wrong-folder/SKILL\.md(:\d+)?: name-mismatch( |$)'
+stdout '^validate-skills: error \S*bad--name/SKILL\.md(:\d+)?: name-format( |$)'
+stdout '^validate-skills: error \S*this-skill-name-has-more-than-sixty-four-characters-so-it-fails-x/SKILL\.md(:\d+)?: name-too-long( |$)'
+stdout '^validate-skills: error \S*no-description/SKILL\.md(:\d+)?: description-missing( |$)'
+stdout '^validate-skills: error \S*long-description/SKILL\.md(:\d+)?: description-too-long( |$)'
+stdout '^validate-skills: error \S*long-compatibility/SKILL\.md(:\d+)?: compatibility-too-long( |$)'
+stdout '^validate-skills: error \S*metadata-string/SKILL\.md(:\d+)?: metadata-not-map( |$)'
+stdout '^validate-skills: error \S*extra-field/SKILL\.md(:\d+)?: unknown-field( |$)'
+stdout '^validate-skills: error \S*no-frontmatter/SKILL\.md(:\d+)?: no-frontmatter( |$)'
+stdout '^validate-skills: error \S*yaml-list/SKILL\.md(:\d+)?: unsupported-yaml( |$)'
+stdout '^validate-skills: error \S*names-a-tool/SKILL\.md(:\d+)?: tool-name( |$)'
+stdout '^validate-skills: \d+ errors$'
+
+-- skills/wrong-folder/SKILL.md --
+---
+name: other-name
+description: Does one thing. Use when testing.
+---
+
+-- skills/bad--name/SKILL.md --
+---
+name: bad--name
+description: Does one thing. Use when testing.
+---
+
+-- skills/this-skill-name-has-more-than-sixty-four-characters-so-it-fails-x/SKILL.md --
+---
+name: this-skill-name-has-more-than-sixty-four-characters-so-it-fails-x
+description: Does one thing. Use when testing.
+---
+
+-- skills/no-description/SKILL.md --
+---
+name: no-description
+---
+
+-- skills/long-description/SKILL.md --
+---
+name: long-description
+description: Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing.
+---
+
+-- skills/long-compatibility/SKILL.md --
+---
+name: long-compatibility
+description: Does one thing. Use when testing.
+compatibility: Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs.
+---
+
+-- skills/metadata-string/SKILL.md --
+---
+name: metadata-string
+description: Does one thing. Use when testing.
+metadata: owner engineer
+---
+
+-- skills/extra-field/SKILL.md --
+---
+name: extra-field
+description: Does one thing. Use when testing.
+author: engineer
+---
+
+-- skills/no-frontmatter/SKILL.md --
+# No frontmatter
+
+Does one thing. Use when testing.
+
+-- skills/yaml-list/SKILL.md --
+---
+name: yaml-list
+description: Does one thing. Use when testing.
+license:
+  - MIT
+  - Apache-2.0
+---
+
+-- skills/names-a-tool/SKILL.md --
+---
+name: names-a-tool
+description: Does one thing in Claude Code. Use when testing.
+---

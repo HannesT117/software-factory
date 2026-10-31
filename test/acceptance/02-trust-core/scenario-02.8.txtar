@@ -1,0 +1,43 @@
+# scenario 02.8: A pull request with one kind of change is accepted
+# Each case is a branch from main that changes the listed paths.
+env GIT_AUTHOR_NAME=Agent GIT_AUTHOR_EMAIL=agent@example.com GIT_COMMITTER_NAME=Agent GIT_COMMITTER_EMAIL=agent@example.com
+cd repo
+exec git init -q -b main
+exec git add -A
+exec git commit -q -m base
+
+# Only a design note
+exec git checkout -q -b note main
+cp ../edit docs/increments/05-sample/design.md
+exec git commit -q -a -m note
+exec factory check-pr --base main
+stdout '^check-pr: ok \d+ checked$'
+
+# Only a test file and go.mod
+exec git checkout -q -b tests main
+cp ../edit test/acceptance/05-sample/scenario-05.1.txtar
+cp ../edit go.mod
+exec git commit -q -a -m tests
+exec factory check-pr --base main
+stdout '^check-pr: ok \d+ checked$'
+
+# Only paths outside all groups
+exec git checkout -q -b code main
+cp ../edit README.md
+cp ../edit internal/x.go
+exec git commit -q -a -m code
+exec factory check-pr --base main
+stdout '^check-pr: ok \d+ checked$'
+
+-- edit --
+changed
+-- repo/README.md --
+# Sample
+-- repo/internal/x.go --
+package x
+-- repo/docs/increments/05-sample/design.md --
+# Increment 05: sample
+-- repo/test/acceptance/05-sample/scenario-05.1.txtar --
+# scenario 05.1: A thing works
+-- repo/go.mod --
+module example.com/sample
