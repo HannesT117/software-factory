@@ -1,17 +1,19 @@
 # Setup
 
-These steps need a person with admin rights on the repo, because the agent token has no Administration or Workflows rights. Do them once per repo, in this order.
+These steps need the engineer's personal account with admin rights on the repo. Do them once per repo, in this order. Options and reasons: [process decision 0002](../decisions/process/0002-approval-through-code-owners-and-an-agent-account.md).
 
 1. **Repo settings, before the first merge.** Settings → General → Pull Requests:
    - "Allow squash merging": on, with the default commit message "Pull request title and description".
    - "Allow merge commits" and "Allow rebase merging": off.
    - "Allow auto-merge": on.
    - "Automatically delete head branches": on.
-2. **Agent token.** Create a fine-grained token for the repos that agents work in: Contents and Pull requests write, nothing else.
-3. **Environment.** Settings → Environments → New environment `approval`. Required reviewers: the people who approve pull requests. "Prevent self-review": off, because the agent token belongs to the approver's account. "Allow administrators to bypass configured protection rules": off.
-4. **Approval workflow.** Copy `.github/workflows/approval.yml` from the factory repo to the same path in the repo, open a pull request, and merge it. In the factory repo itself, the file is already there. The workflow must be on `main` before the ruleset requires its check.
-5. **Ruleset.** Settings → Rules → Rulesets → Import a ruleset → `ruleset.json`. Check that the required check `approval` has GitHub Actions as its source. GitHub offers that source only after the job has run once: if it is missing, approve the job on one pull request first. Add the required check only after the workflow on `main` runs without errors, or no pull request can pass it, also not the one that fixes the workflow.
-6. **Local agent sessions.** Before the first one: in the Claude Code user settings, deny reading `~/.ssh`, `~/.config/gh` and the SSH agent socket, both in the sandbox and as permission rules for the Read tool, because the sandbox covers only Bash. Set `allowUnsandboxedCommands: false`, and give git the agent token. `gh` and git can keep tokens in the system keychain: from an agent session, `gh auth token` and `git credential fill` must both fail. Increment 02 adds a template for this.
-7. **Cloud sessions.** Connect GitHub through the Claude GitHub App. Do not use `/web-setup`: it sends the local `gh` token to cloud sessions, and a token with the `repo` scope can approve the job `approval`.
+2. **Agent account.** Create a GitHub account for agents, with its own email and two-factor authentication. GitHub allows one free machine account next to a personal account, used only for automated tasks. Settings → Collaborators → invite it with the role Write, never Admin.
+3. **Code owners.** Copy `.github/CODEOWNERS` from the factory repo, put the engineer's personal account in it, and merge it. The engineer then owns design notes, the domain model, decision records, `AGENTS.md`, `docs/principles.md`, `.github/` and `.factory/`.
+4. **Workflows.** Copy the workflows `checks`, `test` and `cross-review` from `.github/workflows/` of the factory repo, and `.factory/cross-review.json`. Settings → Secrets and variables → Actions → add `OPPER_API_KEY`.
+5. **Ruleset.** Settings → Rules → Rulesets → Import a ruleset → `ruleset.json`. Add the required checks only after their workflows ran on `main` without errors, or no pull request can pass them, also not the one that fixes a workflow. Check that each required check has GitHub Actions as its source; GitHub offers that source only after the check has run once.
+6. **Cloud sessions.** At `https://claude.ai/connect-github`, connect the agent account, not the personal one, and install the Claude GitHub App on the repo. All Claude sessions of the engineer then act as the agent account, also in other projects, so the agent account needs access to each of those repos. Do not use `/web-setup`: it sends the local `gh` token to cloud sessions.
+7. **Local agent sessions.** Before the first one: in the Claude Code user settings, deny reading `~/.ssh`, `~/.config/gh` and the SSH agent socket, both in the sandbox and as permission rules for the Read tool, because the sandbox covers only Bash. Set `allowUnsandboxedCommands: false`. Give git and `gh` a token (classic) of the agent account with the `repo` scope; a fine-grained token cannot be used on a repo where its account is only a collaborator. From an agent session, `gh api user` must return the agent account. Increment 02 adds a template for these settings.
 
-To check: a pull request shows the job `approval` as waiting, and the merge button stays blocked until the engineer approves.
+To check: a pull request that changes a design note waits for the engineer's review as code owner, and a pull request that changes only code merges once its checks pass.
+
+A repo that still uses the environment of [process decision 0001](../decisions/process/0001-approval-through-a-protected-environment.md) switches after step 5: delete `.github/workflows/approval.yml` and the environment `approval`.

@@ -23,7 +23,7 @@ v0, increment 02 of 04.
 |---|---|
 | [architecture 0001](docs/decisions/architecture/0001-go-cli-with-thin-adapters.md) | The factory tooling is a Go CLI with thin adapters per agent tool. |
 | [architecture 0002](docs/decisions/architecture/0002-delivery-as-pinned-copies.md) | Projects get committed copies of the factory's parts and pin the version. |
-| [process 0001](docs/decisions/process/0001-approval-through-a-protected-environment.md) | A person approves each pull request on a protected GitHub environment. |
+| [process 0002](docs/decisions/process/0002-approval-through-code-owners-and-an-agent-account.md) | Agents act as their own GitHub account; the engineer approves owned paths as code owner. |
 
 Decision records use the [MADR](https://adr.github.io/madr/) format, with one folder per category: `architecture` for architecture decisions, `process` for process decisions that had real alternatives. A record on `main` is in force: the engineer accepts it by merging its pull request. The table lists only records in force. Superseded and deprecated records stay in their folder.
 
@@ -38,7 +38,7 @@ Process and policy are rules in [principles.md](docs/principles.md):
 ## Open
 
 - Review of ADRs 0001 and 0002, and of the increment 02 design note with its open questions
-- Setup before the first pull request: agent token, environment `approval`, approval workflow, ruleset for `main`. Steps in [docs/setup/](docs/setup/README.md).
+- Switch to the agent account and code owners, with the CI pull request of increment 02. Steps in [docs/setup/](docs/setup/README.md).
 
 ## Where things are
 

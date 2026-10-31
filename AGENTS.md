@@ -25,7 +25,7 @@ Do not write implementation code before the design and tests pull requests are m
 
 - changes a path in a group: acceptance tests, the test runner, `go.mod`, `go.sum`, anything under `.github/` or `.factory/`, or a design note on `main`
 - writes code that detects a test run, or that hard-codes test cases
-- uses the engineer's own credentials, or reads `~/.ssh`, `~/.config/gh` or the SSH agent. Agents use their own fine-grained token.
+- uses the engineer's own credentials, or reads `~/.ssh`, `~/.config/gh` or the SSH agent. Agents act as the machine account.
 - approves a pull request. It may merge one, or turn on auto-merge, once GitHub allows the merge: all required checks pass, including the engineer's approval. It does not merge while the engineer has switched off the ruleset.
 - counts its own unit tests as evidence. They are scaffolding.
 - reads an issue in the factory repo that does not have the label `accepted`
