@@ -65,6 +65,8 @@ flowchart LR
 
 **Allowed hosts**, `.factory/allowed-hosts`: one host per line; a leading `*.` matches every subdomain.
 
+**Cross-review config**, `.factory/cross-review.json`: `{"endpoint": "<base URL of an OpenAI-compatible API>", "models": {"design": "<model id>", "code": "<model id>"}}`.
+
 **Code paths**, `.factory/code-paths`: one path pattern per line. The stop hook and `cross-review` count a change to a matching path, or to the tests group, as code. Without the file, every path outside the groups counts.
 
 **Domain model**: `docs/domain/glossary.md` and `docs/domain/context-map.md`, in the design-notes group. Their formats are the templates of `designing-increments`.
@@ -74,7 +76,21 @@ flowchart LR
 - Optional frontmatter with `date` (`YYYY-MM-DD`) and `status`: `superseded by ADR-<nnnn>`, where that record exists in the same category, or `deprecated`.
 - First heading `# <title>`. Required `##` headings: `Context and Problem Statement`, `Considered Options`, `Decision Outcome`; also allowed: `Decision Drivers`, `Pros and Cons of the Options`, `More Information`. Under `Decision Outcome`, only `### Consequences` and `### Confirmation`. Lines in fenced code blocks are ignored.
 
-**Skill fields**: the rules of the validator of `authoring-skills`, `core/skills/authoring-skills/scripts/quick_validate.py`, the one source for skill rules (ADR 0001). It checks the fields of the Agent Skills specification with their limits, and in addition that `name` equals the folder name and holds no reserved word, that `description` holds no angle brackets, and that a skill has one `SKILL.md`. With `--forbid-tool-names`, `name`, `description` and the body name no agent tool (`claude`, `cursor`, `codex`, `copilot`, `gemini`, any case); `compatibility` may. Its warnings follow the skill authoring best practices.
+**Skill fields**: the rules of the validator of `authoring-skills`, `core/skills/authoring-skills/scripts/quick_validate.py`, the one source for skill rules (ADR 0001). It checks the fields of the Agent Skills specification with their limits, and in addition that `name` equals the folder name and holds neither reserved word, `anthropic` or `claude`, that `description` holds no angle brackets, and that no second `SKILL.md` lies below the skill folder, outside `evals/`, `__pycache__` and `node_modules`. With `--forbid-tool-names`, `name`, `description` and the body name no agent tool (`claude`, `cursor`, `codex`, `copilot`, `gemini`, any case); `compatibility` may.
+
+**Skill warnings** follow the skill authoring best practices. Text in code blocks, inline code and quotes does not count, and files under `agents/`, the prompts for subagents, are left out of the voice checks.
+
+| Warning | When |
+|---|---|
+| `name-not-gerund` | The first word of `name` does not end in `ing`. |
+| `description-voice` | The description says "you", "I", "we", "the user", "the engineer" or "the developer", or starts with "Use this skill". |
+| `body-too-long` | The body of `SKILL.md` has more than 500 lines. |
+| `unlinked-reference` | A Markdown file of the skill links a Markdown file that `SKILL.md` does not link. |
+| `missing-contents` | A Markdown file other than `SKILL.md` has more than 100 lines and no heading `Contents` in its first 30 lines. |
+| `reader-voice` | A Markdown file says "you" or "your", or "the user", "the engineer" or "the developer". |
+| `path-style` | A path with backslashes, or an absolute path of one machine, such as `/home/…`, `/Users/…`, `/root/…` or `C:\…`. |
+| `time-phrase` | A phrase that goes stale, such as "before 2025" or "as of March 2026". |
+| `agent-term` | A Markdown file calls the agent that runs the skill "the assistant", "the AI" or "Claude" instead of "the agent"; "Claude" followed by a product word, as in "Claude Code", does not count. |
 
 ## Existing tools
 
@@ -115,7 +131,7 @@ Every output line starts with the command name and a colon. An error line is `<c
 | `factory check-tests [--base <ref>]` | `missing-test`, `unknown-id`, `title-mismatch`, `forbidden-command`, `replaced-test`. A replaced scenario needs no test. Reads the design notes from `<ref>`, or from the working tree without `--base`, and the test files from the working tree. |
 | `factory check-pr --base <ref>` | `mixed-pr`, with the paths of each group, over the commits since the merge base. Exit 2 with `shallow-clone`. With test files, prints `check-pr: tests end at <commit>` before the last line. When a design note changes, also `unanswered-question` for each question without an answer in a review result. |
 | `factory scenarios` | Reads all design notes under `docs/increments/`. Prints `scenarios: <id> <kind> <title>` for each scenario that no note replaces. |
-| `factory cross-review --base <ref>` | Sends the changed design note, or the note, the diff and the scenario titles, to the endpoint and the `design` or `code` model in `.factory/cross-review.json`, with the key in `FACTORY_MODEL_KEY`; never the pull request's title or description. Prints `cross-review: finding <blocking or note> <path>: <text>` per finding, then `cross-review: blocking` or `cross-review: ok`. No answer, or one in another form, is `blocking`. |
+| `factory cross-review --base <ref>` | Sends the changed design note, or the note, the diff and the scenario titles, to the endpoint and the `design` or `code` model in `.factory/cross-review.json`, with the key in `FACTORY_MODEL_KEY`; never the pull request's title or description. The request is `POST <endpoint>/chat/completions` with the header `Authorization: Bearer <key>` and a body with `model` and `messages`: a system message with the review instructions and a user message with the content. The answer is a chat completion whose first choice has as its message content the JSON `{"findings": [{"severity": "blocking" or "note", "path": "<path>", "text": "<text>"}]}`; an empty list means no findings. Prints `cross-review: finding <blocking or note> <path>: <text>` per finding, then `cross-review: blocking` or `cross-review: ok`. No answer, a refused connection, a status other than 200, or an answer in another form is `blocking`. |
 | `factory hook stop` | Reads `Stop` input (`stop_hook_active`, `cwd`). Prints a block decision while the latest code commit has no review result in `evidence/<nn>-<slug>/review.md` that names it; the reason names the reviewer step. Prints nothing when `stop_hook_active` is true. |
 | `factory hook pre-tool-use` | Reads `tool_name`, `tool_input.file_path` or `tool_input.notebook_path`, `agent_type`, `agent_id`, `cwd`, `transcript_path`. Denies `Write`, `Edit`, `MultiEdit` and `NotebookEdit` on the tests group or the CI-and-config group, except a write under `test/acceptance/` with `agent_type` `acceptance-test-writer` and no `agent_id`. Unless the environment variable `FACTORY_SESSION` is `design`, also denies `WebSearch`, and `WebFetch` when the host of `tool_input.url` is not in `.factory/allowed-hosts`; without the file, no host is listed. Also denies `Write`, `Edit` and `MultiEdit` on a file of a skill, that is a `SKILL.md` or a file below a folder with a `SKILL.md`, until the session has loaded the skill `authoring-skills`, and the reason names the skill. The session has loaded it when its transcript (JSON lines) holds a `tool_use` of `Skill` with `input.skill` equal to `authoring-skills`, or a `tool_use` of `Read` of a file `SKILL.md` in a folder `authoring-skills`. |
 
