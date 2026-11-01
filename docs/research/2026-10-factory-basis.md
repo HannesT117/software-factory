@@ -83,8 +83,8 @@ Labels:
 | GitHub docs, artifact attestations (via review) | Build provenance logged in Sigstore's public instance for public repos (SLSA Build Level 2). Attestations "are not a guarantee that an artifact is secure". | Releases with attestations and a pinned checksum (ADR 0002). |
 | Go blog, reproducible builds (via review) | `go build -trimpath` with `CGO_ENABLED=0` gives reproducible binaries. | Build flags in ADR 0002. |
 | Cursor docs, skills (via review; vendor) | Cursor also loads `.claude/skills/`. | A consequence in ADR 0002. |
-| Anthropic `skill-creator`, Apache License 2.0 (read) | Its `quick_validate.py` checks the Agent Skills fields; the skill `authoring-skills` derives from it and adds warnings for the skill authoring best practices. | Option 1 in ADR 0003: the one source for skill rules. |
-| Compared on 2026-11-01: `factory validate-skills` and `quick_validate.py` of `authoring-skills` | They differ in five rules: only the first checks the folder name and agent tool names; only the second checks reserved words, angle brackets in the description, and one `SKILL.md` per skill. | Decision driver in ADR 0003. |
+| Anthropic `skill-creator`, Apache License 2.0 (read) | Its `quick_validate.py` checks the Agent Skills fields; the skill `authoring-skills` derives from it and adds warnings for the skill authoring best practices. | The one source for skill rules in ADR 0001. |
+| Compared on 2026-11-01: `factory validate-skills` and `quick_validate.py` of `authoring-skills` | They differ in five rules: only the first checks the folder name and agent tool names; only the second checks reserved words, angle brackets in the description, and one `SKILL.md` per skill. | Decision driver in ADR 0001. |
 
 ## Pull request descriptions
 
