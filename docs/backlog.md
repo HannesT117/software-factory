@@ -22,3 +22,5 @@ v0 leaves these parts out on purpose. Each part is built when a project that use
 | Context Mapper for context maps and diagrams | a project has three or more bounded contexts with dependencies, or a team |
 | A pull request comment that lists the changed contexts and terms | the engineer misses a boundary change in a review |
 | A check for pull request titles: length, capital letter, final period, internal numbers | the same title correction is needed a second time (rule 4) |
+| A security scan before the reviewer, where a new finding waits for the engineer; the reviewer checks new inputs and trust boundaries | the first project that takes input from outside or adds packages |
+| Rollouts: the reviewer writes a plan per pull request with risks, intended effect, signals to watch and missing instrumentation; after a deploy, a job compares the signals with the time before, writes the result into the pull request, and starts a fix session on a regression; the retro shows change fail rate and time to restore; later, ramps through feature flags | the first project that deploys |
