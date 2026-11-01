@@ -1,5 +1,6 @@
 ---
 date: 2026-10-27
+status: superseded by ADR-0003
 ---
 
 # Factory tooling as a Go CLI with thin adapters per agent tool
