@@ -21,7 +21,7 @@ v0, increment 02 of 04.
 
 | Record | Decision |
 |---|---|
-| [architecture 0001](docs/decisions/architecture/0001-go-cli-with-thin-adapters.md) | The factory tooling is a Go CLI with thin adapters per agent tool. |
+| [architecture 0003](docs/decisions/architecture/0003-go-cli-with-one-source-for-skill-rules.md) | The factory tooling is a Go CLI with thin adapters per agent tool; the rules for skills live only in the validator of the skill `authoring-skills`, which the CLI runs. |
 | [architecture 0002](docs/decisions/architecture/0002-delivery-as-pinned-copies.md) | Projects get committed copies of the factory's parts and pin the version. |
 | [process 0002](docs/decisions/process/0002-approval-through-code-owners-and-an-agent-account.md) | Agents act as their own GitHub account; the engineer approves owned paths as code owner. |
 
