@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: fixes-validator-findings
+expected_outcome: |
+  The skill passes the validator in strict mode, or each remaining warning is named with a reason;
+  the description and body are in the third person, and the time phrase is gone. The agent asks the
+  person before it renames the skill, because a rename changes how the skill is called.
+context:
+  scaffold_script: place-files.sh

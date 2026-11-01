@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: tests-and-code-apart
+expected_outcome: |
+  The new test file and the code go into separate commits, the test first.
+context:
+  scaffold_script: place-files.sh

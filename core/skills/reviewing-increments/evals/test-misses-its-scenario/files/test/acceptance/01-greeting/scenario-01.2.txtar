@@ -1,0 +1,2 @@
+# scenario 01.2: A missing name is an error
+! exec greet

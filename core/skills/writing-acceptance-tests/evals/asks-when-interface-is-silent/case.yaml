@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: asks-when-interface-is-silent
+expected_outcome: |
+  The run writes the tests that the Interface supports, and asks the person how the output for a
+  long name looks, because the Interface does not fix it. It does not invent the shortened form.
+context:
+  scaffold_script: place-files.sh

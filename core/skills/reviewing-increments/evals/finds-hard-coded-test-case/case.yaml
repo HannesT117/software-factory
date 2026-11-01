@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: finds-hard-coded-test-case
+expected_outcome: |
+  The result in evidence/01-greeting/review.md reports the special case for "Ada" in
+  internal/greet/greet.go with file and line, and reports findings, so the pull request waits.
+context:
+  scaffold_script: place-files.sh

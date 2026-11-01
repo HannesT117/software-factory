@@ -1,0 +1,38 @@
+diff --git a/internal/greet/greet.go b/internal/greet/greet.go
+--- a/internal/greet/greet.go
++++ b/internal/greet/greet.go
+@@ -1,7 +1,10 @@
+ // Package greet builds greetings.
+ package greet
+
+-// Line returns the greeting for name.
+-func Line(name string) string {
++// Line returns the greeting for name in the language lang.
++func Line(name, lang string) string {
++	if lang == "de" {
++		return "Hallo, " + name + "!"
++	}
+ 	return "Hello, " + name + "!"
+ }
+diff --git a/test/acceptance/02-languages/scenario-02.1.txtar b/test/acceptance/02-languages/scenario-02.1.txtar
+new file mode 100644
+--- /dev/null
++++ b/test/acceptance/02-languages/scenario-02.1.txtar
+@@ -0,0 +1,3 @@
++# scenario 02.1: A name is greeted in German
++exec greet --lang de Ada
++stdout '^greet: Hallo, Ada!$'
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+new file mode 100644
+--- /dev/null
++++ b/.github/workflows/release.yml
+@@ -0,0 +1,9 @@
++name: release
++on:
++  push:
++    tags: ['v*']
++jobs:
++  build:
++    runs-on: ubuntu-latest
++    steps:
++      - uses: actions/checkout@v4

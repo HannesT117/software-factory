@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: test-misses-its-scenario
+expected_outcome: |
+  The result reports that the test of scenario 01.2 checks only that greet fails, not that it says
+  the name is missing.
+context:
+  scaffold_script: place-files.sh

@@ -1,0 +1,42 @@
+[
+  {
+    "query": "The stop hook blocked: the latest code commit has no review result. Run the review.",
+    "should_trigger": true
+  },
+  {
+    "query": "Review the pull request of increment 03 against its design note before it merges.",
+    "should_trigger": true
+  },
+  {
+    "query": "Check whether the tests of this increment really test what the scenarios say, and write the review.",
+    "should_trigger": true
+  },
+  {
+    "query": "The code for the export increment is done. Do the fresh-context review with comprehension questions.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write evidence/04-export/review.md for the branch.",
+    "should_trigger": true
+  },
+  {
+    "query": "Review my design note draft for unclear scenarios before I open the PR.",
+    "should_trigger": false
+  },
+  {
+    "query": "Do a security review of the auth module.",
+    "should_trigger": false
+  },
+  {
+    "query": "Answer the comprehension questions in the review of increment 02.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write the pull request description for the review result.",
+    "should_trigger": false
+  },
+  {
+    "query": "Fix the findings from the last review in internal/export.",
+    "should_trigger": false
+  }
+]
