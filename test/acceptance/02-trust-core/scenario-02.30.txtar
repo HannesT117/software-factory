@@ -1,0 +1,52 @@
+# scenario 02.30: Only a design session reads the open web
+# The project lists go.dev and every subdomain of github.com. The hook
+# denies a call with a deny or block decision.
+exec sh -c 'for f in *.json; do sed "s|@WORK@|$(pwd)|g" "$f" > "$f.new" && mv "$f.new" "$f"; done'
+exec git init -q project
+cd project
+
+# Outside a design session: no web search, and pages only from listed hosts.
+env FACTORY_SESSION=
+stdin ../search.json
+exec factory hook pre-tool-use
+stdout '"permissionDecision"\s*:\s*"deny"|"decision"\s*:\s*"block"'
+stdin ../fetch-unlisted.json
+exec factory hook pre-tool-use
+stdout '"permissionDecision"\s*:\s*"deny"|"decision"\s*:\s*"block"'
+stdin ../fetch-suffix.json
+exec factory hook pre-tool-use
+stdout '"permissionDecision"\s*:\s*"deny"|"decision"\s*:\s*"block"'
+stdin ../fetch-listed-prefix.json
+exec factory hook pre-tool-use
+stdout '"permissionDecision"\s*:\s*"deny"|"decision"\s*:\s*"block"'
+stdin ../fetch-listed.json
+exec factory hook pre-tool-use
+! stdout '"deny"|"block"'
+stdin ../fetch-subdomain.json
+exec factory hook pre-tool-use
+! stdout '"deny"|"block"'
+
+# In a design session, both are allowed.
+env FACTORY_SESSION=design
+stdin ../search.json
+exec factory hook pre-tool-use
+! stdout '"deny"|"block"'
+stdin ../fetch-unlisted.json
+exec factory hook pre-tool-use
+! stdout '"deny"|"block"'
+
+-- project/.factory/allowed-hosts --
+go.dev
+*.github.com
+-- search.json --
+{"session_id":"s1","transcript_path":"@WORK@/s1.jsonl","cwd":"@WORK@/project","hook_event_name":"PreToolUse","tool_name":"WebSearch","tool_input":{"query":"testscript conditions"}}
+-- fetch-unlisted.json --
+{"session_id":"s1","transcript_path":"@WORK@/s1.jsonl","cwd":"@WORK@/project","hook_event_name":"PreToolUse","tool_name":"WebFetch","tool_input":{"url":"https://unknown.example.com/page","prompt":"Summarize the page."}}
+-- fetch-suffix.json --
+{"session_id":"s1","transcript_path":"@WORK@/s1.jsonl","cwd":"@WORK@/project","hook_event_name":"PreToolUse","tool_name":"WebFetch","tool_input":{"url":"https://notgithub.com/page","prompt":"Summarize the page."}}
+-- fetch-listed-prefix.json --
+{"session_id":"s1","transcript_path":"@WORK@/s1.jsonl","cwd":"@WORK@/project","hook_event_name":"PreToolUse","tool_name":"WebFetch","tool_input":{"url":"https://go.dev.example.com/page","prompt":"Summarize the page."}}
+-- fetch-listed.json --
+{"session_id":"s1","transcript_path":"@WORK@/s1.jsonl","cwd":"@WORK@/project","hook_event_name":"PreToolUse","tool_name":"WebFetch","tool_input":{"url":"https://go.dev/doc/","prompt":"Summarize the page."}}
+-- fetch-subdomain.json --
+{"session_id":"s1","transcript_path":"@WORK@/s1.jsonl","cwd":"@WORK@/project","hook_event_name":"PreToolUse","tool_name":"WebFetch","tool_input":{"url":"https://api.github.com/repos","prompt":"Summarize the page."}}

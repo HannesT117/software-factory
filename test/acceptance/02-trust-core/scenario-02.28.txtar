@@ -1,0 +1,58 @@
+# scenario 02.28: A design waits for answers to earlier questions
+# On main, the review of increment 04 has two questions. Question 1, on
+# line 5, has an answer after an empty line. Question 2, on line 9, has no
+# answer. The error names the review and the question, by its line or by
+# its number.
+env GIT_AUTHOR_NAME=Agent GIT_AUTHOR_EMAIL=agent@example.com GIT_COMMITTER_NAME=Agent GIT_COMMITTER_EMAIL=agent@example.com
+cd repo
+exec git init -q -b main
+exec git add -A
+exec git commit -q -m base
+
+# A pull request that changes a design note is rejected.
+exec git checkout -q -b note main
+cp ../edit docs/increments/05-sample/design.md
+exec git commit -q -a -m note
+exitcode 1 factory check-pr --base main
+stdout '^check-pr: error \S*evidence/04-older/review\.md(:9: unanswered-question( |$)|(:\d+)?: unanswered-question .*\b2\b)'
+! stdout 'review\.md:5: '
+stdout '^check-pr: \d+ errors$'
+
+# Once question 2 has an answer on main, the same change is accepted.
+exec git checkout -q main
+cp ../answered evidence/04-older/review.md
+exec git commit -q -a -m answer
+exec git checkout -q -b note-after-answer main
+cp ../edit docs/increments/05-sample/design.md
+exec git commit -q -a -m note
+exec factory check-pr --base main
+stdout '^check-pr: ok \d+ checked$'
+! stdout ': error '
+
+-- edit --
+changed
+-- answered --
+# Review of increment 04
+
+## Questions
+
+- **question 1** Why does the check read the base branch?
+
+  - **answer** The branch of the pull request can change the file.
+
+- **question 2** How does the engineer find a failing check?
+  - **answer** By the error line with its code.
+-- repo/README.md --
+# Sample
+-- repo/docs/increments/05-sample/design.md --
+# Increment 05: sample
+-- repo/evidence/04-older/review.md --
+# Review of increment 04
+
+## Questions
+
+- **question 1** Why does the check read the base branch?
+
+  - **answer** The branch of the pull request can change the file.
+
+- **question 2** How does the engineer find a failing check?

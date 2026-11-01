@@ -1,0 +1,277 @@
+# scenario 02.4: Each mistake in a design note is reported
+# Each note breaks one rule. Each run is rejected, and its error line names
+# the code with the line. A missing section has no line of its own, so its
+# line number is optional. The note 05-sample is correct; it is the earlier
+# increment that the notes 11 and 12 look up.
+
+exitcode 1 factory check-design docs/increments/06-bad-title
+stdout '^check-design: error \S*06-bad-title/design\.md:1: bad-title( |$)'
+stdout '^check-design: \d+ errors$'
+
+exitcode 1 factory check-design docs/increments/07-missing-section
+stdout '^check-design: error \S*07-missing-section/design\.md(:\d+)?: missing-section( |$)'
+
+exitcode 1 factory check-design docs/increments/08-bad-scenario-line
+stdout '^check-design: error \S*08-bad-scenario-line/design\.md:30: bad-scenario-line( |$)'
+
+exitcode 1 factory check-design docs/increments/09-wrong-increment
+stdout '^check-design: error \S*09-wrong-increment/design\.md:30: wrong-increment( |$)'
+
+# The id 10.1 is on lines 29 and 30.
+exitcode 1 factory check-design docs/increments/10-duplicate-id
+stdout '^check-design: error \S*10-duplicate-id/design\.md:(29|30): duplicate-id( |$)'
+
+exitcode 1 factory check-design docs/increments/11-bad-replaced-line
+stdout '^check-design: error \S*11-bad-replaced-line/design\.md:33: bad-replaced-line( |$)'
+
+# The note replaces 05.7, and the note of increment 05 has only 05.1.
+exitcode 1 factory check-design docs/increments/12-unknown-scenario
+stdout '^check-design: error \S*12-unknown-scenario/design\.md:33: unknown-scenario( |$)'
+
+-- docs/increments/06-bad-title/design.md --
+# Bad title
+
+## Goal
+
+- The sample tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 06.1.
+
+## Scenarios
+
+- **scenario 06.1** (automated) **A thing works.** Given a thing, the tool accepts it.
+-- docs/increments/07-missing-section/design.md --
+# Increment 07: missing section
+
+## Goal
+
+- The sample tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Scenarios
+
+- **scenario 07.1** (automated) **A thing works.** Given a thing, the tool accepts it.
+-- docs/increments/08-bad-scenario-line/design.md --
+# Increment 08: bad scenario line
+
+## Goal
+
+- The sample tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 08.1.
+
+## Scenarios
+
+- **scenario 08.1** (automated) **A thing works.** Given a thing, the tool accepts it.
+- **scenario 08.2** (automatic) **Another thing works.** Given a thing, the tool accepts it.
+-- docs/increments/09-wrong-increment/design.md --
+# Increment 09: wrong increment
+
+## Goal
+
+- The sample tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 09.1.
+
+## Scenarios
+
+- **scenario 09.1** (automated) **A thing works.** Given a thing, the tool accepts it.
+- **scenario 06.2** (automated) **Another thing works.** Given a thing, the tool accepts it.
+-- docs/increments/10-duplicate-id/design.md --
+# Increment 10: duplicate id
+
+## Goal
+
+- The sample tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 10.1.
+
+## Scenarios
+
+- **scenario 10.1** (automated) **A thing works.** Given a thing, the tool accepts it.
+- **scenario 10.1** (manual) **Another thing works.** Given a thing, the tool accepts it.
+-- docs/increments/11-bad-replaced-line/design.md --
+# Increment 11: bad replaced line
+
+## Goal
+
+- The sample tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 11.1.
+
+## Scenarios
+
+- **scenario 11.1** (automated) **A thing works.** Given a thing, the tool accepts it.
+
+## Replaced scenarios
+
+- 5.1: The tool now accepts every thing.
+-- docs/increments/12-unknown-scenario/design.md --
+# Increment 12: unknown scenario
+
+## Goal
+
+- The sample tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 12.1.
+
+## Scenarios
+
+- **scenario 12.1** (automated) **A thing works.** Given a thing, the tool accepts it.
+
+## Replaced scenarios
+
+- 05.7: The tool now accepts every thing.
+-- docs/increments/05-sample/design.md --
+# Increment 05: sample
+
+## Goal
+
+- The sample tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 05.1.
+
+## Scenarios
+
+- **scenario 05.1** (automated) **A thing works.** Given a thing, the tool accepts it.
