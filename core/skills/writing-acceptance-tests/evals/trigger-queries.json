@@ -1,0 +1,42 @@
+[
+  {
+    "query": "The design note for increment 05 is merged. Write its acceptance tests.",
+    "should_trigger": true
+  },
+  {
+    "query": "Turn the automated scenarios of the approved note into testscript files.",
+    "should_trigger": true
+  },
+  {
+    "query": "Scenario 03.2 was replaced by a later note; update the acceptance tests.",
+    "should_trigger": true
+  },
+  {
+    "query": "Start the test-writer work for the export feature; the code does not exist yet.",
+    "should_trigger": true
+  },
+  {
+    "query": "check-tests reports missing-test for scenario 04.3; add the test.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write unit tests for the parser in internal/report.",
+    "should_trigger": false
+  },
+  {
+    "query": "The acceptance test for 02.4 fails after my change; fix the code.",
+    "should_trigger": false
+  },
+  {
+    "query": "Design the scenarios for the next increment.",
+    "should_trigger": false
+  },
+  {
+    "query": "Review whether each test of increment 03 does what its scenario says.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write the commit message for the new test files.",
+    "should_trigger": false
+  }
+]

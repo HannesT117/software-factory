@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: approval-notes-in-first-comment
+expected_outcome: |
+  What the person must decide and read goes into a separate first comment; the description holds
+  only the self-contained account of the change.
+context:
+  scaffold_script: place-files.sh

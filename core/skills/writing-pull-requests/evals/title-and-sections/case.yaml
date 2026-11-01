@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: title-and-sections
+expected_outcome: |
+  pr.md has a short imperative title without ids and a description with Summary, What changes,
+  Merge risk and Evidence, in this order; Merge risk names the door type and the undo; Evidence names kinds.
+context:
+  scaffold_script: place-files.sh

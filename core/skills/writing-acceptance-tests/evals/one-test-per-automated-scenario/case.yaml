@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: one-test-per-automated-scenario
+expected_outcome: |
+  Exactly one testscript file per automated scenario under test/acceptance/01-greeting/,
+  none for the manual scenario. Line 1 of each file carries the scenario title. The test for 01.2
+  checks exit code 2 and the error line by the pattern the Interface fixes.
+context:
+  scaffold_script: place-files.sh

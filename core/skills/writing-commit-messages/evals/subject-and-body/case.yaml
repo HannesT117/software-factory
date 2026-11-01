@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: subject-and-body
+expected_outcome: |
+  One commit whose subject is an imperative sentence of at most 50 characters without ids or final
+  period, and whose body says what changes and why.
+context:
+  scaffold_script: place-files.sh

@@ -1,0 +1,34 @@
+authoring-skills
+
+Derived from Anthropic's "skill-creator" skill, licensed under the Apache
+License, Version 2.0 (see LICENSE.txt).
+
+Changes to the original:
+
+- SKILL.md rewritten in the declarative third person ("the agent", "the person"),
+  without the name of any harness, app or model, shortened, and extended with:
+  grounding a skill in the project's sources on the default branch, pointing
+  instead of copying, a trace table for domain rules, template rules, naming
+  and description rules from Anthropic's skill authoring best practices,
+  testing on several models, and precedence over skill-creator where the two
+  differ.
+- New reference files: references/testing.md (the test loop, moved out of
+  SKILL.md), references/description-tuning.md, references/environments.md,
+  references/best-practices.md (checklist).
+- references/schemas.md and agents/*.md: tables of contents added;
+  references/schemas.md rewritten in the third person.
+- The runner for description tuning (run_eval.py, run_loop.py,
+  improve_description.py, generate_report.py, utils.py) moved out of the
+  skill into the factory's adapter for the harness whose command-line tool
+  it calls.
+- scripts/quick_validate.py: rewritten around findings with codes; reports
+  every error instead of the first; the name must equal the folder name;
+  reserved words in the name; --codes for one grep-able line per finding,
+  --forbid-tool-names for names of agent tools, and --strict; warnings for
+  non-gerund names, descriptions not in the third person, body length,
+  Markdown files reachable only through a reference file, missing tables
+  of contents, second-person voice, other terms for the agent, backslash
+  and absolute paths, and time-sensitive phrases.
+- scripts/check_sources.py: new. Compares a skill with the repository it
+  describes on a git ref.
+- Name references to skill-creator changed to authoring-skills in docstrings.

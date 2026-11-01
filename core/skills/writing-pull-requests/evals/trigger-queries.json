@@ -1,0 +1,42 @@
+[
+  {
+    "query": "Open a pull request for this branch.",
+    "should_trigger": true
+  },
+  {
+    "query": "The diff of PR 41 changed since I wrote its description; update it.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write the PR title and body for the export feature.",
+    "should_trigger": true
+  },
+  {
+    "query": "Does this change fit into one of the open pull requests, or does it need its own?",
+    "should_trigger": true
+  },
+  {
+    "query": "Prepare the squash-merge message for the branch feature/export.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write the commit message for the staged changes.",
+    "should_trigger": false
+  },
+  {
+    "query": "Review pull request 41 against its design note.",
+    "should_trigger": false
+  },
+  {
+    "query": "Reply to the review comments on PR 41.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write the design note for the next increment.",
+    "should_trigger": false
+  },
+  {
+    "query": "Rebase the branch onto main.",
+    "should_trigger": false
+  }
+]

@@ -1,0 +1,42 @@
+[
+  {
+    "query": "Commit this.",
+    "should_trigger": true
+  },
+  {
+    "query": "Commit the new test files and the code; they are both ready.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write a good message for the staged changes.",
+    "should_trigger": true
+  },
+  {
+    "query": "Split the working tree into sensible commits.",
+    "should_trigger": true
+  },
+  {
+    "query": "Amend the last commit message before I push; it says 'fix stuff'.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write the pull request description for this branch.",
+    "should_trigger": false
+  },
+  {
+    "query": "Squash-merge pull request 41.",
+    "should_trigger": false
+  },
+  {
+    "query": "Revert the last commit on main.",
+    "should_trigger": false
+  },
+  {
+    "query": "Explain what the last five commits changed.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write the release notes for version 0.3.",
+    "should_trigger": false
+  }
+]

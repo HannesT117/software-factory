@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: splits-two-topics
+expected_outcome: |
+  The run notices two unrelated topics, German greetings and a release workflow, and proposes two
+  pull requests instead of one title joined with "and".
+context:
+  scaffold_script: place-files.sh
