@@ -5,13 +5,14 @@
 - A Go CLI `factory` checks skills, design notes, decision records, acceptance tests and the paths that a pull request changes.
 - **An agent cannot approve.** Agents act as a machine account with write access and no admin rights. The engineer approves owned paths as code owner, with a personal account. A pull request that changes no owned path merges as soon as its checks pass.
 - Each increment has two pull requests: the design note, and the tests with their code. Tests come first, and `tests-start-red` shows that they failed before the code came.
-- Five skills carry the workflow: `designing-increments`, `writing-acceptance-tests`, `reviewing-increments`, `writing-pull-requests` and `writing-commit-messages`. They follow the Agent Skills specification and its guides, and each has evals that run with and without the skill. `designing-increments` asks the engineer in rounds, without recommended answers, and has a fresh context explain each scenario before the design pull request. It starts with the open comprehension questions of earlier reviews, and explains the gaps after the engineer has answered.
+- Six skills carry the workflow: `designing-increments`, `writing-acceptance-tests`, `reviewing-increments`, `writing-pull-requests`, `writing-commit-messages`, and `authoring-skills` for work on skills. They follow the Agent Skills specification and its guides, and each has evals that run with and without the skill. `designing-increments` asks the engineer in rounds, without recommended answers, and has a fresh context explain each scenario before the design pull request. It starts with the open comprehension questions of earlier reviews, and explains the gaps after the engineer has answered.
+- Agents write and change skills only with `authoring-skills`. `AGENTS.md` says so, and the guard hook refuses changes to the files of a skill until the session has loaded it. Its validator is the one source for skill rules, and `factory validate-skills` runs it (ADR 0003).
 - A stop hook makes the implementing session start a reviewer in a fresh context. It checks the diff and whether each test does what its scenario says, and its result reaches the engineer as a Claude artifact. It turns on auto-merge only when it found nothing.
 - A model from another vendor reviews both pull requests in the check `cross-review`.
 - A design pull request waits until the engineer has answered every comprehension question of earlier reviews.
 - A later increment can replace a scenario of an earlier one. `factory scenarios` lists the scenarios in force.
 - Only a design session reads the open web. Other sessions reach only listed hosts, so text from an unknown page cannot steer the code or its review.
-- The core of the factory imports no adapter (ADR 0001).
+- The core of the factory imports no adapter (ADR 0003).
 - Three new rules in `docs/principles.md`: a design names the existing tools it checked; the engineer owns terms, context boundaries and dependencies between contexts; `AGENTS.md` holds only rules that no check enforces, and its evals run on every model change. `AGENTS.md` is cut to match.
 
 ## Out of scope
@@ -73,7 +74,7 @@ flowchart LR
 - Optional frontmatter with `date` (`YYYY-MM-DD`) and `status`: `superseded by ADR-<nnnn>`, where that record exists in the same category, or `deprecated`.
 - First heading `# <title>`. Required `##` headings: `Context and Problem Statement`, `Considered Options`, `Decision Outcome`; also allowed: `Decision Drivers`, `Pros and Cons of the Options`, `More Information`. Under `Decision Outcome`, only `### Consequences` and `### Confirmation`. Lines in fenced code blocks are ignored.
 
-**Skill fields**: those of the Agent Skills specification, with its limits. In addition, `name` equals the folder name, and `name`, `description` and the body name no agent tool (`claude`, `cursor`, `codex`, `copilot`, `gemini`, any case); `compatibility` may. `validate-skills` reads `key: value`, quoted values, `|` and `>` blocks, and one nested map for `metadata`; anything else is `unsupported-yaml`.
+**Skill fields**: the rules of the validator of `authoring-skills`, `core/skills/authoring-skills/scripts/quick_validate.py`, the one source for skill rules (ADR 0003). It checks the fields of the Agent Skills specification with their limits, and in addition that `name` equals the folder name and holds no reserved word, that `description` holds no angle brackets, and that a skill has one `SKILL.md`. With `--forbid-tool-names`, `name`, `description` and the body name no agent tool (`claude`, `cursor`, `codex`, `copilot`, `gemini`, any case); `compatibility` may. Its warnings follow the skill authoring best practices.
 
 ## Existing tools
 
@@ -82,7 +83,7 @@ flowchart LR
 | Design notes and their check | GitHub Spec Kit, OpenSpec, Kiro | not used | They would replace only `check-design`; none protects tests. Kiro works with no other agent. |
 | Approval | GitHub code owners with an agent account; protected environment | code owners | Standard path-based review; the environment cannot tell paths apart. |
 | Approval flow | Swamp | not used | Needs a swamp-club.com account; its approval does not stop an agent. |
-| `validate-skills` | `skills-ref` | not used | "for demonstration purposes only" |
+| `validate-skills` | `skills-ref`; validator of Anthropic `skill-creator` | `skill-creator`, extended in `authoring-skills` | `skills-ref` is "for demonstration purposes only"; one source for skill rules (ADR 0003). |
 | `check-adr` | adr-guard, adrscope | not used | Another runtime in every project's CI. |
 | Path groups | GitHub push rulesets | not used | Only for private repos. |
 | Reviewer | Claude Code hooks of type `agent` | not used | Experimental, read-only tools, 60-second timeout. |
@@ -93,8 +94,9 @@ flowchart LR
 | Acceptance tests | `testscript` (go-internal) | used | The Go team's engine for CLI tests; test-only dependency. |
 | Mutation score | Gremlins, go-mutesting | Gremlins | Made for small modules; the score does not block. |
 | Core without adapters | go-arch-lint | not used | One rule needs only `go list`. |
-| Writing skills | Agent Skills specification and guides; PostHog | used | Descriptions by user intent; reference parts that drift. |
-| Skill evals | Anthropic `skill-creator` | used, Claude Code adapter | Runs the eval loop of the guide. |
+| Writing skills | Agent Skills specification and guides; PostHog; Anthropic `skill-creator` | `skill-creator`, as `authoring-skills` | Descriptions by user intent; reference parts that drift. Rewritten without the name of a harness; its runner for description tuning lives in the Claude Code adapter. |
+| Skill evals | Anthropic `skill-creator` | used, through `authoring-skills` | Runs the eval loop of the guide. |
+| Loading the skill for skills | skill descriptions; `AGENTS.md`; Claude Code hooks with `transcript_path` | all three | A description cannot guarantee loading; `AGENTS.md` reaches every harness; the hook only Claude Code. |
 | Interview | Matt Pocock's `grilling`, `domain-modeling` | idea only | No recommended answers, so the engineer decides. |
 | Domain model | Context Mapper, Bounded Context Canvas | later | From several bounded contexts on. |
 | Replaced scenarios | OpenSpec delta specs (ADDED, MODIFIED, REMOVED) | idea only | OpenSpec keeps the current behaviour in its own specs folder; here `factory scenarios` reads it from the notes. |
@@ -106,7 +108,8 @@ Every output line starts with the command name and a colon. An error line is `<c
 
 | Command | Codes and behaviour |
 |---|---|
-| `factory validate-skills [dir ...]` | `name-mismatch`, `name-format`, `name-too-long`, `description-missing`, `description-too-long`, `compatibility-too-long`, `metadata-not-map`, `unknown-field`, `no-frontmatter`, `unsupported-yaml`, `tool-name` |
+| `factory validate-skills [dir ...]` | Runs the validator of `authoring-skills`, which the binary carries, with `python3` and `--forbid-tool-names` on each folder with a `SKILL.md` under `dir`, and prints its findings with its own prefix. Errors: `no-frontmatter`, `invalid-yaml`, `unknown-field`, `name-format`, `name-too-long`, `name-mismatch`, `reserved-word`, `description-missing`, `description-too-long`, `description-brackets`, `compatibility-too-long`, `metadata-not-map`, `extra-skill-file`, `tool-name`. Warnings, `<command>: warning <where>: <code> <detail>`, leave the exit code unchanged: `name-not-gerund`, `description-voice`, `body-too-long`, `unlinked-reference`, `missing-contents`, `reader-voice`, `path-style`, `time-phrase`, `agent-term`. Exit 2 with `no-python` when Python 3.10 or later with PyYAML is missing. |
+| `python -m scripts.quick_validate <skill-dir> [--codes] [--forbid-tool-names] [--strict]`, in `core/skills/authoring-skills` | With `--codes`, prints each finding as a line of this Interface with the prefix `quick_validate`, with the codes of `validate-skills`. Exit 1 with an error, or with a warning under `--strict`. |
 | `factory check-design <increment-dir>` | `bad-title`, `missing-section`, `bad-scenario-line`, `wrong-increment`, `duplicate-id`, `bad-replaced-line`, `unknown-scenario`. Looks up replaced scenarios in the notes of earlier increments beside `<increment-dir>`. |
 | `factory check-adr [dir]` | `unknown-category`, `unknown-field`, `bad-date`, `bad-status`, `unknown-adr`, `missing-title`, `missing-section`, `unknown-section`. Checks every `.md` file under `dir`, by default `docs/decisions`. |
 | `factory check-tests [--base <ref>]` | `missing-test`, `unknown-id`, `title-mismatch`, `forbidden-command`, `replaced-test`. A replaced scenario needs no test. Reads the design notes from `<ref>`, or from the working tree without `--base`, and the test files from the working tree. |
@@ -114,12 +117,12 @@ Every output line starts with the command name and a colon. An error line is `<c
 | `factory scenarios` | Reads all design notes under `docs/increments/`. Prints `scenarios: <id> <kind> <title>` for each scenario that no note replaces. |
 | `factory cross-review --base <ref>` | Sends the changed design note, or the note, the diff and the scenario titles, to the endpoint and the `design` or `code` model in `.factory/cross-review.json`, with the key in `FACTORY_MODEL_KEY`; never the pull request's title or description. Prints `cross-review: finding <blocking or note> <path>: <text>` per finding, then `cross-review: blocking` or `cross-review: ok`. No answer, or one in another form, is `blocking`. |
 | `factory hook stop` | Reads `Stop` input (`stop_hook_active`, `cwd`). Prints a block decision while the latest code commit has no review result in `evidence/<nn>-<slug>/review.md` that names it; the reason names the reviewer step. Prints nothing when `stop_hook_active` is true. |
-| `factory hook pre-tool-use` | Reads `tool_name`, `tool_input.file_path` or `tool_input.notebook_path`, `agent_type`, `agent_id`, `cwd`. Denies `Write`, `Edit`, `MultiEdit` and `NotebookEdit` on the tests group or the CI-and-config group, except a write under `test/acceptance/` with `agent_type` `acceptance-test-writer` and no `agent_id`. Unless the environment variable `FACTORY_SESSION` is `design`, also denies `WebSearch`, and `WebFetch` when the host of `tool_input.url` is not in `.factory/allowed-hosts`; without the file, no host is listed. |
+| `factory hook pre-tool-use` | Reads `tool_name`, `tool_input.file_path` or `tool_input.notebook_path`, `agent_type`, `agent_id`, `cwd`, `transcript_path`. Denies `Write`, `Edit`, `MultiEdit` and `NotebookEdit` on the tests group or the CI-and-config group, except a write under `test/acceptance/` with `agent_type` `acceptance-test-writer` and no `agent_id`. Unless the environment variable `FACTORY_SESSION` is `design`, also denies `WebSearch`, and `WebFetch` when the host of `tool_input.url` is not in `.factory/allowed-hosts`; without the file, no host is listed. Also denies `Write`, `Edit` and `MultiEdit` on a file of a skill, that is a `SKILL.md` or a file below a folder with a `SKILL.md`, until the session has loaded the skill `authoring-skills`; the adapter reads that from the transcript, and the reason names the skill. |
 
 **CI**, after this increment:
 
 - `checks` on `pull_request`: `check-pr`, `check-design` for each changed note, `check-adr`, and `check-tests --base main` when code or tests change.
-- `test` on `pull_request`: `go vet ./...` and `go test ./...`, plus the mutation score with Gremlins in the summary, which does not block. Job `tests-start-red`: on the commit where the test phase ends, each added test fails and every other test passes.
+- `test` on `pull_request`: `go vet ./...` and `go test ./...`, plus the mutation score with Gremlins in the summary, which does not block. It needs Python 3.10 or later with PyYAML, for `validate-skills`. Job `tests-start-red`: on the commit where the test phase ends, each added test fails and every other test passes.
 - `cross-review` on `pull_request` and `pull_request_review`, with the secret `OPPER_API_KEY`: on a design pull request it comments and passes. With code or tests it waits for a review result for the latest code commit, then stays red on a blocking finding until a code owner approves.
 - Ruleset on `main`: pull requests only, squash merges, code owner review for owned paths, approvals dismissed on push, the four checks from GitHub Actions required on a branch that is up to date with `main`, no bypass.
 
@@ -129,6 +132,8 @@ Every output line starts with the command name and a colon. An error line is `<c
 
 - **scenario 02.1** (automated) **A correct skill is accepted.** `factory validate-skills` accepts a skill whose fields all follow the Agent Skills rules.
 - **scenario 02.2** (automated) **Each mistake in a skill is reported.** For every mistake that the skill check knows, such as a name that differs from the folder name or a missing description, a skill with exactly that mistake is rejected. The output names the file and the mistake.
+- **scenario 02.31** (automated) **Deviations from the best practices are warnings.** For each deviation that the skill check warns about, such as a name that is not a gerund or a body that addresses the reader as "you", a skill with exactly that deviation gets a warning that names the file and the deviation, and the skill is still accepted.
+- **scenario 02.32** (automated) **The skill check and the skill for skills agree.** For a skill with a mistake, `factory validate-skills` and the validator of `authoring-skills` report the same mistake. Without Python, `factory validate-skills` reports a problem of the environment, not of the skill.
 
 ### Design note check
 
@@ -163,10 +168,11 @@ Every output line starts with the command name and a colon. An error line is `<c
 - **scenario 02.13** (automated) **Only the test writer may write tests.** The guard hook refuses edits to test files and to files under `.github/` and `.factory/`. Only a session started as `acceptance-test-writer` may write test files.
 - **scenario 02.24** (automated) **An implementing session cannot end without a review.** When the latest code commit has no review result yet, the stop hook keeps the session from ending and names the step that starts the reviewer. With a review result for that commit, it lets the session end. It never blocks twice in a row, so a session cannot loop forever.
 - **scenario 02.30** (automated) **Only a design session reads the open web.** Outside a design session, the guard hook refuses a web search, and a page from a host that is not on the list of allowed hosts. It allows a page from a listed host. In a design session, it allows both.
+- **scenario 02.33** (automated) **Skills change only with the skill for skills.** The guard hook refuses an edit to a file of a skill in a session that has not loaded `authoring-skills`, and names that skill. Once the session has loaded it, the hook allows the edit. Edits outside skills are not affected.
 
 ### Skills
 
-- **scenario 02.14** (automated) **The factory's skills are valid and name no agent tool.** `factory validate-skills` accepts all skills under `core/skills` in the repo (ADR 0001 confirmation).
+- **scenario 02.14** (automated) **The factory's skills are valid and name no agent tool.** `factory validate-skills` accepts all skills under `core/skills` in the repo (ADR 0003 confirmation).
 - **scenario 02.15** (demonstrated) **Each skill helps more than it costs.** For each skill, its evals run with and without the skill. The report shows, for both, the share of passed assertions, the tokens and the time, and the trigger rate of the description on the validation queries. The engineer reviews the outputs.
 - **scenario 02.16** (manual) **The skills help in real use.** Over increment 03 and the first two increments of a project that uses the factory, `retro.md` counts the test writer's questions, tests changed after review, review findings, and the engineer's interventions. For each design note, the engineer records yes or no, with a reason: was the note clear enough for the test writer?
 - **scenario 02.17** (manual) **The review is readable.** For increment 02 itself, the reviewer's result lists its findings on special cases, code that detects a test run, work outside the scenarios, tests that do not do what their scenario says, and docs with their own history or with elements outside their format. It ends with 2 or 3 comprehension questions and the engineer's answers. The engineer opens it as a Claude artifact from the link in the pull request.
@@ -177,7 +183,7 @@ Every output line starts with the command name and a colon. An error line is `<c
 
 ### Architecture of the factory
 
-- **scenario 02.23** (automated) **The core uses no adapter.** No Go package outside `adapters/` and `cmd/` depends on a package under `adapters/` (ADR 0001 confirmation).
+- **scenario 02.23** (automated) **The core uses no adapter.** No Go package outside `adapters/` and `cmd/` depends on a package under `adapters/` (ADR 0003 confirmation).
 
 ### Decision record check
 
@@ -186,7 +192,7 @@ Every output line starts with the command name and a colon. An error line is `<c
 
 ## Evidence
 
-- **Approved scenarios:** 02.1 to 02.9, 02.13, 02.14, 02.18, 02.19, 02.23 to 02.26, 02.28 to 02.30. The engineer approves them in this note; their `testscript` files come from the test-writer session.
+- **Approved scenarios:** 02.1 to 02.9, 02.13, 02.14, 02.18, 02.19, 02.23 to 02.26, 02.28 to 02.33. The engineer approves them in this note; their `testscript` files come from the test-writer session.
 - **Demonstrated:** 02.15.
 - **Manual:** 02.10, 02.11, 02.12, 02.16, 02.17, 02.20, 02.21 and 02.27.
 - **Measurement, not evidence:** the mutation score from 02.21, recorded in `retro.md`.
@@ -206,6 +212,7 @@ Every output line starts with the command name and a colon. An error line is `<c
 
 - **Bootstrap:** until the CI pull request, the environment `approval` still gates this increment. The engineer reads `check-pr`, `check-tests` and the workflows line by line, because they guard all later pull requests.
 - **One agent account:** GitHub cannot tell the test writer from the implementing agent. All of the engineer's Claude sessions act as the agent account, also in other projects.
-- **Soft parts:** the guard hook and the reviewer run in the agent's session, and test files are not owned. `FACTORY_SESSION` is set by whoever starts the session. Tests in CI, `tests-start-red`, `cross-review` and the network access of cloud environments are the hard guards; the mutation score only measures.
+- **Python:** `factory validate-skills` needs Python 3.10 or later with PyYAML wherever it runs, CI included (ADR 0003).
+- **Soft parts:** the guard hook, with its reading of the transcript, and the reviewer run in the agent's session, and test files are not owned. `FACTORY_SESSION` is set by whoever starts the session. Tests in CI, `tests-start-red`, `cross-review` and the network access of cloud environments are the hard guards; the mutation score only measures.
 - **Review by another model:** it runs no code, and in one study a non-Claude reviewer made Claude's code worse (arXiv 2607.21656). So a finding only holds the merge until the engineer has read it. About 0.05 to 0.70 USD per review.
 - **Break glass:** the engineer can switch off the ruleset; the next retro records each use.
