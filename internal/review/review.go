@@ -45,13 +45,22 @@ func Pending(root string) (string, error) {
 			break
 		}
 	}
-	hashes, err := repo.Lines("rev-list", "--first-parent", rangeArg)
+	lines, err := repo.Lines("rev-list", "--first-parent", "--parents", rangeArg)
 	if err != nil {
 		return "", err
 	}
 
-	for _, h := range hashes {
-		ps, err := repo.Paths("diff-tree", "--root", "-r", "-m", "--first-parent", "--name-only", "--no-renames", "--no-commit-id", "-z", h)
+	for _, line := range lines {
+		// A commit counts with the paths it changes against its first
+		// parent, so that a merge from main brings in no code of its own.
+		fields := strings.Fields(line)
+		h := fields[0]
+		var ps []string
+		if len(fields) == 1 {
+			ps, err = repo.Paths("diff-tree", "--root", "-r", "--name-only", "--no-renames", "--no-commit-id", "-z", h)
+		} else {
+			ps, err = repo.Paths("diff", "--name-only", "--no-renames", "-z", fields[1], h)
+		}
 		if err != nil {
 			return "", err
 		}
