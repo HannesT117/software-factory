@@ -1,0 +1,124 @@
+# scenario 02.2: Each mistake in a skill is reported
+# Each folder under cases/ holds one skill with exactly one mistake. Each
+# run is rejected, and its error line names the file and the code.
+
+exitcode 1 factory validate-skills cases/no-frontmatter
+stdout '^validate-skills: error \S*cases/no-frontmatter/checking-frontmatter/SKILL\.md(:\d+)?: no-frontmatter( |$)'
+stdout '^validate-skills: \d+ errors$'
+
+exitcode 1 factory validate-skills cases/invalid-yaml
+stdout '^validate-skills: error \S*cases/invalid-yaml/checking-yaml/SKILL\.md(:\d+)?: invalid-yaml( |$)'
+
+exitcode 1 factory validate-skills cases/unknown-field
+stdout '^validate-skills: error \S*cases/unknown-field/checking-fields/SKILL\.md(:\d+)?: unknown-field( |$)'
+
+exitcode 1 factory validate-skills cases/name-format
+stdout '^validate-skills: error \S*cases/name-format/checking--names/SKILL\.md(:\d+)?: name-format( |$)'
+
+exitcode 1 factory validate-skills cases/name-too-long
+stdout '^validate-skills: error \S*cases/name-too-long/checking-a-name-that-has-more-than-sixty-four-characters-so-it-fails/SKILL\.md(:\d+)?: name-too-long( |$)'
+
+exitcode 1 factory validate-skills cases/name-mismatch
+stdout '^validate-skills: error \S*cases/name-mismatch/checking-folders/SKILL\.md(:\d+)?: name-mismatch( |$)'
+
+exitcode 1 factory validate-skills cases/reserved-word
+stdout '^validate-skills: error \S*cases/reserved-word/helping-anthropic/SKILL\.md(:\d+)?: reserved-word( |$)'
+
+exitcode 1 factory validate-skills cases/description-missing
+stdout '^validate-skills: error \S*cases/description-missing/checking-descriptions/SKILL\.md(:\d+)?: description-missing( |$)'
+
+exitcode 1 factory validate-skills cases/description-too-long
+stdout '^validate-skills: error \S*cases/description-too-long/checking-lengths/SKILL\.md(:\d+)?: description-too-long( |$)'
+
+exitcode 1 factory validate-skills cases/description-brackets
+stdout '^validate-skills: error \S*cases/description-brackets/checking-brackets/SKILL\.md(:\d+)?: description-brackets( |$)'
+
+exitcode 1 factory validate-skills cases/compatibility-too-long
+stdout '^validate-skills: error \S*cases/compatibility-too-long/checking-compatibility/SKILL\.md(:\d+)?: compatibility-too-long( |$)'
+
+exitcode 1 factory validate-skills cases/metadata-not-map
+stdout '^validate-skills: error \S*cases/metadata-not-map/checking-metadata/SKILL\.md(:\d+)?: metadata-not-map( |$)'
+
+# The second SKILL.md lies in a subfolder. Its own fields are correct.
+exitcode 1 factory validate-skills cases/extra-skill-file
+stdout '^validate-skills: error \S*cases/extra-skill-file/checking-extras/\S*SKILL\.md(:\d+)?: extra-skill-file( |$)'
+
+exitcode 1 factory validate-skills cases/tool-name
+stdout '^validate-skills: error \S*cases/tool-name/naming-tools/SKILL\.md(:\d+)?: tool-name( |$)'
+
+-- cases/no-frontmatter/checking-frontmatter/SKILL.md --
+# Checking frontmatter
+
+Checks one thing. Use when testing.
+-- cases/invalid-yaml/checking-yaml/SKILL.md --
+---
+name: checking-yaml
+description: "Checks one thing. Use when testing.
+---
+-- cases/unknown-field/checking-fields/SKILL.md --
+---
+name: checking-fields
+description: Checks one thing. Use when testing.
+author: engineer
+---
+-- cases/name-format/checking--names/SKILL.md --
+---
+name: checking--names
+description: Checks one thing. Use when testing.
+---
+-- cases/name-too-long/checking-a-name-that-has-more-than-sixty-four-characters-so-it-fails/SKILL.md --
+---
+name: checking-a-name-that-has-more-than-sixty-four-characters-so-it-fails
+description: Checks one thing. Use when testing.
+---
+-- cases/name-mismatch/checking-folders/SKILL.md --
+---
+name: checking-other-names
+description: Checks one thing. Use when testing.
+---
+-- cases/reserved-word/helping-anthropic/SKILL.md --
+---
+name: helping-anthropic
+description: Checks one thing. Use when testing.
+---
+-- cases/description-missing/checking-descriptions/SKILL.md --
+---
+name: checking-descriptions
+---
+-- cases/description-too-long/checking-lengths/SKILL.md --
+---
+name: checking-lengths
+description: Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing. Use when testing. Checks one thing.
+---
+-- cases/description-brackets/checking-brackets/SKILL.md --
+---
+name: checking-brackets
+description: Checks one <thing>. Use when testing.
+---
+-- cases/compatibility-too-long/checking-compatibility/SKILL.md --
+---
+name: checking-compatibility
+description: Checks one thing. Use when testing.
+compatibility: Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs git. Needs.
+---
+-- cases/metadata-not-map/checking-metadata/SKILL.md --
+---
+name: checking-metadata
+description: Checks one thing. Use when testing.
+metadata: owner engineer
+---
+-- cases/extra-skill-file/checking-extras/SKILL.md --
+---
+name: checking-extras
+description: Checks one thing. Use when testing.
+---
+-- cases/extra-skill-file/checking-extras/checking-nested/SKILL.md --
+---
+name: checking-nested
+description: Checks one thing. Use when testing.
+---
+-- cases/tool-name/naming-tools/SKILL.md --
+---
+name: naming-tools
+description: Checks one thing in Claude Code. Use when testing.
+---
