@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: points-to-the-source
+expected_outcome: |
+  A new skill under .agents/skills/ whose SKILL.md points to docs/branches.md for the rules instead of
+  copying them, with a third-person description that says what the skill does and when the agent
+  uses it, which passes the validator, and a trace table shown to the person.
+context:
+  scaffold_script: place-files.sh

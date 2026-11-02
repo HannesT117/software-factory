@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: runs-tests-before-commit
+expected_outcome: |
+  The run executes the project's tests before it commits.
+context:
+  scaffold_script: place-files.sh

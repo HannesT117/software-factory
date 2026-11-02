@@ -1,0 +1,42 @@
+[
+  {
+    "query": "Write a skill that teaches the agent our code review checklist.",
+    "should_trigger": true
+  },
+  {
+    "query": "The skill designing-increments triggers too often; tune its description.",
+    "should_trigger": true
+  },
+  {
+    "query": "Turn the steps we just did for the release into a skill.",
+    "should_trigger": true
+  },
+  {
+    "query": "Run the evals of writing-pull-requests with and without the skill.",
+    "should_trigger": true
+  },
+  {
+    "query": "Fix the warnings that the skill validator reports for reviewing-increments.",
+    "should_trigger": true
+  },
+  {
+    "query": "Add a rule to AGENTS.md that agents run go vet before every commit.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write a pre-commit hook that runs the tests.",
+    "should_trigger": false
+  },
+  {
+    "query": "Set up an MCP server for our issue tracker.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write the design note for the next increment.",
+    "should_trigger": false
+  },
+  {
+    "query": "Package the CLI as a release with checksums.",
+    "should_trigger": false
+  }
+]

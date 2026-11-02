@@ -1,0 +1,107 @@
+# scenario 02.33: Skills change only with the skill for skills
+# The project has the skill core/skills/checking-things. Each input file is
+# the hook input for one tool call; its transcript is one of three:
+# - none.jsonl has loaded another skill, read another SKILL.md and names
+#   authoring-skills only in text
+# - skill.jsonl has loaded authoring-skills with the tool Skill
+# - read.jsonl has read the SKILL.md of authoring-skills
+# The hook denies a call with a deny or block decision.
+exec sh -c 'for f in *.json transcripts/*.jsonl; do sed "s|@WORK@|$(pwd)|g" "$f" > "$f.new" && mv "$f.new" "$f"; done'
+exec git init -q project
+cd project
+
+# Not loaded: changes to the files of a skill are denied, and the reason
+# names authoring-skills.
+stdin ../none-edit-skill.json
+exec factory hook pre-tool-use
+stdout '"permissionDecision"\s*:\s*"deny"|"decision"\s*:\s*"block"'
+stdout 'authoring-skills'
+stdin ../none-write-reference.json
+exec factory hook pre-tool-use
+stdout '"permissionDecision"\s*:\s*"deny"|"decision"\s*:\s*"block"'
+stdout 'authoring-skills'
+stdin ../none-multiedit-script.json
+exec factory hook pre-tool-use
+stdout '"permissionDecision"\s*:\s*"deny"|"decision"\s*:\s*"block"'
+stdout 'authoring-skills'
+stdin ../none-write-new-skill.json
+exec factory hook pre-tool-use
+stdout '"permissionDecision"\s*:\s*"deny"|"decision"\s*:\s*"block"'
+stdout 'authoring-skills'
+
+# Not loaded: edits outside skills are allowed, also in core/skills itself.
+stdin ../none-write-code.json
+exec factory hook pre-tool-use
+! stdout '"deny"|"block"'
+stdin ../none-edit-skills-readme.json
+exec factory hook pre-tool-use
+! stdout '"deny"|"block"'
+
+# Loaded with the tool Skill: changes to the files of a skill are allowed.
+stdin ../skill-edit-skill.json
+exec factory hook pre-tool-use
+! stdout '"deny"|"block"'
+stdin ../skill-write-reference.json
+exec factory hook pre-tool-use
+! stdout '"deny"|"block"'
+stdin ../skill-write-new-skill.json
+exec factory hook pre-tool-use
+! stdout '"deny"|"block"'
+
+# Loaded by reading its SKILL.md: changes are allowed.
+stdin ../read-edit-skill.json
+exec factory hook pre-tool-use
+! stdout '"deny"|"block"'
+
+-- project/core/skills/README.md --
+# Skills
+-- project/core/skills/checking-things/SKILL.md --
+---
+name: checking-things
+description: Checks one thing. Use when testing.
+---
+# Checking things
+-- project/core/skills/checking-things/scripts/run.py --
+print("check")
+-- project/core/skills/authoring-skills/SKILL.md --
+---
+name: authoring-skills
+description: Writes skills. Use when a skill changes.
+---
+# Authoring skills
+-- project/core/skills/writing-pull-requests/SKILL.md --
+---
+name: writing-pull-requests
+description: Writes pull requests. Use when a pull request opens.
+---
+# Writing pull requests
+-- transcripts/none.jsonl --
+{"type":"user","sessionId":"s1","message":{"role":"user","content":"Change the skill checking-things. Load authoring-skills first."}}
+{"type":"assistant","sessionId":"s1","message":{"role":"assistant","content":[{"type":"text","text":"I load authoring-skills."},{"type":"tool_use","id":"toolu_01","name":"Skill","input":{"skill":"writing-pull-requests"}}]}}
+{"type":"assistant","sessionId":"s1","message":{"role":"assistant","content":[{"type":"tool_use","id":"toolu_02","name":"Read","input":{"file_path":"@WORK@/project/core/skills/writing-pull-requests/SKILL.md"}}]}}
+-- transcripts/skill.jsonl --
+{"type":"user","sessionId":"s2","message":{"role":"user","content":"Change the skill checking-things."}}
+{"type":"assistant","sessionId":"s2","message":{"role":"assistant","content":[{"type":"tool_use","id":"toolu_01","name":"Skill","input":{"skill":"authoring-skills"}}]}}
+-- transcripts/read.jsonl --
+{"type":"user","sessionId":"s3","message":{"role":"user","content":"Change the skill checking-things."}}
+{"type":"assistant","sessionId":"s3","message":{"role":"assistant","content":[{"type":"tool_use","id":"toolu_01","name":"Read","input":{"file_path":"@WORK@/project/core/skills/authoring-skills/SKILL.md"}}]}}
+-- none-edit-skill.json --
+{"session_id":"s1","transcript_path":"@WORK@/transcripts/none.jsonl","cwd":"@WORK@/project","hook_event_name":"PreToolUse","tool_name":"Edit","tool_input":{"file_path":"@WORK@/project/core/skills/checking-things/SKILL.md","old_string":"one","new_string":"two"}}
+-- none-write-reference.json --
+{"session_id":"s1","transcript_path":"@WORK@/transcripts/none.jsonl","cwd":"@WORK@/project","hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"file_path":"@WORK@/project/core/skills/checking-things/references/guide.md","content":"# Guide\n"}}
+-- none-multiedit-script.json --
+{"session_id":"s1","transcript_path":"@WORK@/transcripts/none.jsonl","cwd":"@WORK@/project","hook_event_name":"PreToolUse","tool_name":"MultiEdit","tool_input":{"file_path":"@WORK@/project/core/skills/checking-things/scripts/run.py","edits":[{"old_string":"check","new_string":"run"}]}}
+-- none-write-new-skill.json --
+{"session_id":"s1","transcript_path":"@WORK@/transcripts/none.jsonl","cwd":"@WORK@/project","hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"file_path":"@WORK@/project/core/skills/new-skill/SKILL.md","content":"---\nname: new-skill\n---\n"}}
+-- none-write-code.json --
+{"session_id":"s1","transcript_path":"@WORK@/transcripts/none.jsonl","cwd":"@WORK@/project","hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"file_path":"@WORK@/project/internal/x.go","content":"package x\n"}}
+-- none-edit-skills-readme.json --
+{"session_id":"s1","transcript_path":"@WORK@/transcripts/none.jsonl","cwd":"@WORK@/project","hook_event_name":"PreToolUse","tool_name":"Edit","tool_input":{"file_path":"@WORK@/project/core/skills/README.md","old_string":"Skills","new_string":"All skills"}}
+-- skill-edit-skill.json --
+{"session_id":"s2","transcript_path":"@WORK@/transcripts/skill.jsonl","cwd":"@WORK@/project","hook_event_name":"PreToolUse","tool_name":"Edit","tool_input":{"file_path":"@WORK@/project/core/skills/checking-things/SKILL.md","old_string":"one","new_string":"two"}}
+-- skill-write-reference.json --
+{"session_id":"s2","transcript_path":"@WORK@/transcripts/skill.jsonl","cwd":"@WORK@/project","hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"file_path":"@WORK@/project/core/skills/checking-things/references/guide.md","content":"# Guide\n"}}
+-- skill-write-new-skill.json --
+{"session_id":"s2","transcript_path":"@WORK@/transcripts/skill.jsonl","cwd":"@WORK@/project","hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"file_path":"@WORK@/project/core/skills/new-skill/SKILL.md","content":"---\nname: new-skill\n---\n"}}
+-- read-edit-skill.json --
+{"session_id":"s3","transcript_path":"@WORK@/transcripts/read.jsonl","cwd":"@WORK@/project","hook_event_name":"PreToolUse","tool_name":"Edit","tool_input":{"file_path":"@WORK@/project/core/skills/checking-things/SKILL.md","old_string":"one","new_string":"two"}}

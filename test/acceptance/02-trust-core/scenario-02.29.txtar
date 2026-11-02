@@ -1,0 +1,173 @@
+# scenario 02.29: A later increment can replace a scenario
+# In repo/, the note of 06 replaces 05.1. In other/, the note of 07
+# replaces 05.8, which does not exist.
+cd repo
+exec git init -q -b main
+
+# 05.1 needs no test.
+exec factory check-tests
+stdout '^check-tests: ok \d+ checked$'
+! stdout ': error '
+
+# The list of scenarios in force leaves out 05.1 and keeps every other kind.
+exec factory scenarios
+stdout '^scenarios: 05\.2 automated A second thing works$'
+stdout '^scenarios: 05\.3 manual A person checks it$'
+stdout '^scenarios: 06\.1 automated A better thing works$'
+stdout '^scenarios: 06\.2 demonstrated Does the demo run$'
+! stdout '^scenarios: 05\.1 '
+
+# A test file for 05.1 that is still there is rejected.
+cp ../old-test test/acceptance/05-sample/scenario-05.1.txtar
+exitcode 1 factory check-tests
+stdout '^check-tests: error .*(05\.1\D.*: replaced-test|: replaced-test .*05\.1(\D|$))'
+
+# The design check accepts the note of 06 and rejects the note of 07.
+exec factory check-design docs/increments/06-later
+stdout '^check-design: ok \d+ checked$'
+cd $WORK/other
+exitcode 1 factory check-design docs/increments/07-wrong
+stdout '^check-design: error \S*07-wrong/design\.md:\d+: unknown-scenario( |$)'
+
+-- repo/docs/increments/05-sample/design.md --
+# Increment 05: sample
+
+## Goal
+
+- The sample tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 05.1 and 05.2.
+
+## Scenarios
+
+- **scenario 05.1** (automated) **A thing works.** Given a thing, the tool accepts it.
+- **scenario 05.2** (automated) **A second thing works.** Given a thing, the tool accepts it.
+- **scenario 05.3** (manual) **A person checks it.** Given a thing, the tool accepts it.
+-- repo/docs/increments/06-later/design.md --
+# Increment 06: later
+
+## Goal
+
+- The sample tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 06.1.
+
+## Scenarios
+
+- **scenario 06.1** (automated) **A better thing works.** Given a thing, the tool accepts it.
+- **scenario 06.2** (demonstrated) **Does the demo run?** Given a thing, the tool accepts it.
+
+## Replaced scenarios
+
+- 05.1: The better thing replaces the thing.
+-- repo/test/acceptance/05-sample/scenario-05.2.txtar --
+# scenario 05.2: A second thing works
+exec sample run second
+-- repo/test/acceptance/06-later/scenario-06.1.txtar --
+# scenario 06.1: A better thing works
+exec sample run better
+-- old-test --
+# scenario 05.1: A thing works
+exec sample run thing
+-- other/docs/increments/05-sample/design.md --
+# Increment 05: sample
+
+## Goal
+
+- The sample tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 05.1 and 05.2.
+
+## Scenarios
+
+- **scenario 05.1** (automated) **A thing works.** Given a thing, the tool accepts it.
+- **scenario 05.2** (automated) **A second thing works.** Given a thing, the tool accepts it.
+- **scenario 05.3** (manual) **A person checks it.** Given a thing, the tool accepts it.
+-- other/docs/increments/07-wrong/design.md --
+# Increment 07: wrong
+
+## Goal
+
+- The sample tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 07.1.
+
+## Scenarios
+
+- **scenario 07.1** (automated) **A new thing works.** Given a thing, the tool accepts it.
+
+## Replaced scenarios
+
+- 05.8: The new thing replaces a thing that never existed.

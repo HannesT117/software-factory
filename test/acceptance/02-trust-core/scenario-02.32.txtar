@@ -1,0 +1,39 @@
+# scenario 02.32: The skill check and the skill for skills agree
+# Each skill has one mistake. The factory command and the validator that
+# comes with authoring-skills report the same code for the same file.
+env PYTHONDONTWRITEBYTECODE=1
+
+exitcode 1 factory validate-skills skills/tool-name
+stdout '^validate-skills: error \S*naming-tools/SKILL\.md(:\d+)?: tool-name( |$)'
+cd $REPO/core/skills/authoring-skills
+exitcode 1 python3 -m scripts.quick_validate $WORK/skills/tool-name/naming-tools --codes --forbid-tool-names
+stdout '^quick_validate: error \S*naming-tools/SKILL\.md(:\d+)?: tool-name( |$)'
+
+cd $WORK
+exitcode 1 factory validate-skills skills/name-mismatch
+stdout '^validate-skills: error \S*checking-folders/SKILL\.md(:\d+)?: name-mismatch( |$)'
+cd $REPO/core/skills/authoring-skills
+exitcode 1 python3 -m scripts.quick_validate $WORK/skills/name-mismatch/checking-folders --codes --forbid-tool-names
+stdout '^quick_validate: error \S*checking-folders/SKILL\.md(:\d+)?: name-mismatch( |$)'
+
+# Without Python on PATH, the factory command reports a problem of the
+# environment and no mistake of the skill. bin/ holds only a copy of the
+# factory command.
+cd $WORK
+mkdir bin
+exec sh -c 'cp "$(command -v factory)" bin/factory'
+env PATH=$WORK/bin
+exitcode 2 factory validate-skills skills/tool-name
+stdout '^validate-skills: .*\bno-python\b'
+! stdout ': tool-name( |$)'
+
+-- skills/tool-name/naming-tools/SKILL.md --
+---
+name: naming-tools
+description: Checks one thing in Claude Code. Use when testing.
+---
+-- skills/name-mismatch/checking-folders/SKILL.md --
+---
+name: checking-other-names
+description: Checks one thing. Use when testing.
+---

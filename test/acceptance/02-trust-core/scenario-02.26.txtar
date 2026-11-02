@@ -1,0 +1,208 @@
+# scenario 02.26: A blocking finding of the other model is reported
+# standin.py is the stand-in for the model. It listens on a free port of
+# 127.0.0.1, writes repo/.factory/cross-review.json with its endpoint and
+# the models design-model and code-model, and then creates the file ready.
+# For each request with the right key, it writes the model to the file
+# model and answers with the content of the file answer as the message.
+env PYTHONDONTWRITEBYTECODE=1
+env FACTORY_MODEL_KEY=test-key
+env GIT_AUTHOR_NAME=Agent GIT_AUTHOR_EMAIL=agent@example.com GIT_COMMITTER_NAME=Agent GIT_COMMITTER_EMAIL=agent@example.com
+cp answer-blocking answer
+# The stand-in fails when it is stopped; the last case stops it.
+! exec python3 standin.py &standin&
+exec sh -c 'n=0; while [ ! -f ready ]; do n=$((n+1)); [ $n -gt 100 ] && exit 1; sleep 0.1; done'
+
+# On main, the repo has the config, a design note and code.
+cd repo
+exec git init -q -b main
+exec git add -A
+exec git commit -q -m base
+
+# A pull request with code.
+exec git checkout -q -b code main
+cp ../edit internal/x.go
+exec git commit -q -a -m code
+exitcode 1 factory cross-review --base main
+stdout '^cross-review: finding blocking internal/x\.go: The loop never ends\.$'
+stdout '^cross-review: blocking$'
+! stdout '^cross-review: ok$'
+grep '^code-model$' ../model
+
+# Only notes: no block.
+cp ../answer-notes ../answer
+exec factory cross-review --base main
+stdout '^cross-review: finding note internal/x\.go: The name x says little\.$'
+stdout '^cross-review: ok$'
+! stdout '^cross-review: blocking$'
+
+# An answer in another form is a block.
+cp ../answer-prose ../answer
+exitcode 1 factory cross-review --base main
+stdout '^cross-review: blocking$'
+! stdout '^cross-review: ok$'
+
+# A status other than 200, here for a wrong key, is a block.
+cp ../answer-notes ../answer
+env FACTORY_MODEL_KEY=wrong-key
+exitcode 1 factory cross-review --base main
+stdout '^cross-review: blocking$'
+! stdout '^cross-review: ok$'
+env FACTORY_MODEL_KEY=test-key
+
+# A config that the pull request changes does not count: the command
+# reads the config of the base, and still reaches the stand-in.
+exec git checkout -q -b redirect code
+cp ../config-elsewhere .factory/cross-review.json
+exec git commit -q -a -m redirect
+rm ../model
+exec factory cross-review --base main
+stdout '^cross-review: ok$'
+grep '^code-model$' ../model
+exec git checkout -q code
+
+# Without the key, or with an empty key, that is a problem of the
+# environment.
+exitcode 2 env -u FACTORY_MODEL_KEY factory cross-review --base main
+stdout '^cross-review: error \S*: no-key( |$)'
+stdout '^cross-review: 1 errors\n\z'
+! stdout '^cross-review: (ok|blocking)$'
+env FACTORY_MODEL_KEY=
+exitcode 2 factory cross-review --base main
+stdout '^cross-review: error \S*: no-key( |$)'
+stdout '^cross-review: 1 errors\n\z'
+! stdout '^cross-review: (ok|blocking)$'
+env FACTORY_MODEL_KEY=test-key
+
+# Without the config on the base, that is a problem of the environment,
+# also when the pull request brings a config of its own.
+exec git checkout -q -b no-config main
+exec git rm -q .factory/cross-review.json
+exec git commit -q -m 'no config'
+exec git checkout -q -b on-no-config no-config
+mkdir .factory
+cp ../config-elsewhere .factory/cross-review.json
+cp ../edit internal/x.go
+exec git add -A
+exec git commit -q -m code
+exitcode 2 factory cross-review --base no-config
+stdout '^cross-review: error \S*: no-config( |$)'
+stdout '^cross-review: 1 errors\n\z'
+! stdout '^cross-review: (ok|blocking)$'
+
+# A config on the base that is not in its format is the same problem.
+exec git checkout -q -b bad-config main
+cp ../edit .factory/cross-review.json
+exec git commit -q -a -m 'bad config'
+exec git checkout -q -b on-bad-config bad-config
+cp ../edit internal/x.go
+exec git commit -q -a -m code
+exitcode 2 factory cross-review --base bad-config
+stdout '^cross-review: error \S*: no-config( |$)'
+stdout '^cross-review: 1 errors\n\z'
+! stdout '^cross-review: (ok|blocking)$'
+
+# A pull request that changes a design note asks the design model.
+exec git checkout -q -b note main
+cp ../edit docs/increments/05-sample/design.md
+exec git commit -q -a -m note
+cp ../answer-notes ../answer
+rm ../model
+exec factory cross-review --base main
+stdout '^cross-review: ok$'
+grep '^design-model$' ../model
+
+# When the model cannot be reached, that is a block.
+kill standin
+wait standin
+exitcode 1 factory cross-review --base main
+stdout '^cross-review: blocking$'
+! stdout '^cross-review: ok$'
+
+-- edit --
+changed
+-- config-elsewhere --
+{"endpoint": "http://127.0.0.1:1/v1", "models": {"design": "other-model", "code": "other-model"}}
+-- answer-blocking --
+{"findings": [{"severity": "blocking", "path": "internal/x.go", "text": "The loop never ends."}, {"severity": "note", "path": "internal/x.go", "text": "The name x says little."}]}
+-- answer-notes --
+{"findings": [{"severity": "note", "path": "internal/x.go", "text": "The name x says little."}]}
+-- answer-prose --
+The change looks good to me.
+-- repo/README.md --
+# Sample
+-- repo/internal/x.go --
+package x
+-- repo/docs/increments/05-sample/design.md --
+# Increment 05: sample
+-- standin.py --
+import http.server
+import json
+import os
+
+KEY = "Bearer test-key"
+
+
+def read_body(handler):
+    if handler.headers.get("Transfer-Encoding", "").lower() == "chunked":
+        body = b""
+        while True:
+            size = int(handler.rfile.readline().strip().split(b";")[0], 16)
+            if size == 0:
+                handler.rfile.readline()
+                return body
+            body += handler.rfile.read(size)
+            handler.rfile.readline()
+    return handler.rfile.read(int(handler.headers.get("Content-Length", "0")))
+
+
+class Handler(http.server.BaseHTTPRequestHandler):
+    def do_POST(self):
+        body = read_body(self)
+        if self.path != "/v1/chat/completions":
+            return self.reply(404, {"error": "unknown path " + self.path})
+        if self.headers.get("Authorization") != KEY:
+            return self.reply(401, {"error": "wrong key"})
+        try:
+            request = json.loads(body)
+            roles = [m["role"] for m in request["messages"]]
+            model = request["model"]
+        except (ValueError, KeyError, TypeError):
+            return self.reply(400, {"error": "bad request"})
+        if "system" not in roles or "user" not in roles:
+            return self.reply(400, {"error": "needs a system and a user message"})
+        with open("model", "w") as f:
+            f.write(model + "\n")
+        with open("answer") as f:
+            content = f.read()
+        self.reply(200, {
+            "id": "chatcmpl-1",
+            "object": "chat.completion",
+            "model": model,
+            "choices": [{
+                "index": 0,
+                "message": {"role": "assistant", "content": content},
+                "finish_reason": "stop",
+            }],
+        })
+
+    def reply(self, status, data):
+        out = json.dumps(data).encode()
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(out)))
+        self.end_headers()
+        self.wfile.write(out)
+
+    def log_message(self, *args):
+        pass
+
+
+server = http.server.HTTPServer(("127.0.0.1", 0), Handler)
+os.makedirs("repo/.factory", exist_ok=True)
+with open("repo/.factory/cross-review.json", "w") as f:
+    json.dump({
+        "endpoint": "http://127.0.0.1:%d/v1" % server.server_address[1],
+        "models": {"design": "design-model", "code": "code-model"},
+    }, f)
+open("ready", "w").close()
+server.serve_forever()

@@ -1,0 +1,156 @@
+# scenario 02.31: Deviations from the best practices are warnings
+# Each folder under w/ holds one skill with exactly one deviation. Without
+# --strict, the skill gets a warning that names the file and the code, and
+# it is accepted. With --strict, it is rejected.
+
+# Long files are written here, so that this file stays short.
+exec sh -c 'i=0; while [ $i -lt 501 ]; do i=$((i+1)); echo "Step $i runs the check."; done >> w/body-too-long/checking-length/SKILL.md'
+exec sh -c 'i=0; while [ $i -lt 120 ]; do i=$((i+1)); echo "Step $i runs the check."; done >> w/missing-contents/checking-contents/reference.md'
+
+exec factory validate-skills w/name-not-gerund
+stdout '^validate-skills: warning \S*w/name-not-gerund/pdf-helper/SKILL\.md(:\d+)?: name-not-gerund( |$)'
+stdout '^validate-skills: ok \d+ checked$'
+exitcode 1 factory validate-skills --strict w/name-not-gerund
+stdout ': name-not-gerund( |$)'
+stdout '^validate-skills: \d+ errors$'
+
+exec factory validate-skills w/description-voice
+stdout '^validate-skills: warning \S*w/description-voice/checking-voice/SKILL\.md(:\d+)?: description-voice( |$)'
+stdout '^validate-skills: ok \d+ checked$'
+exitcode 1 factory validate-skills --strict w/description-voice
+stdout ': description-voice( |$)'
+stdout '^validate-skills: \d+ errors$'
+
+exec factory validate-skills w/body-too-long
+stdout '^validate-skills: warning \S*w/body-too-long/checking-length/SKILL\.md(:\d+)?: body-too-long( |$)'
+stdout '^validate-skills: ok \d+ checked$'
+exitcode 1 factory validate-skills --strict w/body-too-long
+stdout ': body-too-long( |$)'
+stdout '^validate-skills: \d+ errors$'
+
+# SKILL.md links guide.md, and guide.md links details.md. The warning may
+# name either file of the skill.
+exec factory validate-skills w/unlinked-reference
+stdout '^validate-skills: warning \S*w/unlinked-reference/checking-links/\S+\.md(:\d+)?: unlinked-reference( |$)'
+stdout '^validate-skills: ok \d+ checked$'
+exitcode 1 factory validate-skills --strict w/unlinked-reference
+stdout ': unlinked-reference( |$)'
+stdout '^validate-skills: \d+ errors$'
+
+exec factory validate-skills w/missing-contents
+stdout '^validate-skills: warning \S*w/missing-contents/checking-contents/reference\.md(:\d+)?: missing-contents( |$)'
+stdout '^validate-skills: ok \d+ checked$'
+exitcode 1 factory validate-skills --strict w/missing-contents
+stdout ': missing-contents( |$)'
+stdout '^validate-skills: \d+ errors$'
+
+exec factory validate-skills w/reader-voice
+stdout '^validate-skills: warning \S*w/reader-voice/checking-readers/SKILL\.md(:\d+)?: reader-voice( |$)'
+stdout '^validate-skills: ok \d+ checked$'
+exitcode 1 factory validate-skills --strict w/reader-voice
+stdout ': reader-voice( |$)'
+stdout '^validate-skills: \d+ errors$'
+
+exec factory validate-skills w/path-style
+stdout '^validate-skills: warning \S*w/path-style/checking-paths/SKILL\.md(:\d+)?: path-style( |$)'
+stdout '^validate-skills: ok \d+ checked$'
+exitcode 1 factory validate-skills --strict w/path-style
+stdout ': path-style( |$)'
+stdout '^validate-skills: \d+ errors$'
+
+exec factory validate-skills w/time-phrase
+stdout '^validate-skills: warning \S*w/time-phrase/checking-dates/SKILL\.md(:\d+)?: time-phrase( |$)'
+stdout '^validate-skills: ok \d+ checked$'
+exitcode 1 factory validate-skills --strict w/time-phrase
+stdout ': time-phrase( |$)'
+stdout '^validate-skills: \d+ errors$'
+
+exec factory validate-skills w/agent-term
+stdout '^validate-skills: warning \S*w/agent-term/checking-terms/SKILL\.md(:\d+)?: agent-term( |$)'
+stdout '^validate-skills: ok \d+ checked$'
+exitcode 1 factory validate-skills --strict w/agent-term
+stdout ': agent-term( |$)'
+stdout '^validate-skills: \d+ errors$'
+
+-- w/name-not-gerund/pdf-helper/SKILL.md --
+---
+name: pdf-helper
+description: Checks one thing. Use when testing.
+---
+# PDF helper
+
+Run the check once.
+-- w/description-voice/checking-voice/SKILL.md --
+---
+name: checking-voice
+description: I check one thing. Use when testing.
+---
+# Checking voice
+
+Run the check once.
+-- w/body-too-long/checking-length/SKILL.md --
+---
+name: checking-length
+description: Checks one thing. Use when testing.
+---
+# Checking length
+
+-- w/unlinked-reference/checking-links/SKILL.md --
+---
+name: checking-links
+description: Checks one thing. Use when testing.
+---
+# Checking links
+
+Read [the guide](guide.md) first.
+-- w/unlinked-reference/checking-links/guide.md --
+# Guide
+
+The [details](details.md) list each step.
+-- w/unlinked-reference/checking-links/details.md --
+# Details
+
+Run the check once.
+-- w/missing-contents/checking-contents/SKILL.md --
+---
+name: checking-contents
+description: Checks one thing. Use when testing.
+---
+# Checking contents
+
+Read [the reference](reference.md) first.
+-- w/missing-contents/checking-contents/reference.md --
+# Reference
+
+-- w/reader-voice/checking-readers/SKILL.md --
+---
+name: checking-readers
+description: Checks one thing. Use when testing.
+---
+# Checking readers
+
+You run the check once.
+-- w/path-style/checking-paths/SKILL.md --
+---
+name: checking-paths
+description: Checks one thing. Use when testing.
+---
+# Checking paths
+
+Run scripts\check.py once.
+-- w/time-phrase/checking-dates/SKILL.md --
+---
+name: checking-dates
+description: Checks one thing. Use when testing.
+---
+# Checking dates
+
+As of March 2026, the check runs once.
+-- w/agent-term/checking-terms/SKILL.md --
+---
+name: checking-terms
+description: Checks one thing. Use when testing.
+---
+# Checking terms
+
+The assistant runs the check once.

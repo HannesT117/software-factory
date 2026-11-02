@@ -1,0 +1,42 @@
+[
+  {
+    "query": "Let's start the next increment: the tool should export its report as JSON.",
+    "should_trigger": true
+  },
+  {
+    "query": "We need a spec for the retry logic before anyone writes tests.",
+    "should_trigger": true
+  },
+  {
+    "query": "I left comments on the design note; please rework the scenarios.",
+    "should_trigger": true
+  },
+  {
+    "query": "What would the scenarios be for adding a --dry-run flag? Plan it so the test writer can work from it.",
+    "should_trigger": true
+  },
+  {
+    "query": "Plan the next piece of work: bounded contexts for billing and accounts need to be split.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write the acceptance tests for the design note that was just merged.",
+    "should_trigger": false
+  },
+  {
+    "query": "Review the pull request of increment 04 against its design note.",
+    "should_trigger": false
+  },
+  {
+    "query": "Fix the failing check-design run in CI; it reports a bad scenario line in the old note.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write an architecture decision record for switching from SQLite to Postgres.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write the pull request description for the design note I just finished.",
+    "should_trigger": false
+  }
+]

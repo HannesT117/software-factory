@@ -1,0 +1,12 @@
+Runner for description tuning of the skill authoring-skills, for Claude Code
+
+Derived from Anthropic's "skill-creator" skill, licensed under the Apache
+License, Version 2.0 (see LICENSE.txt).
+
+Changes to the original:
+
+- Moved out of the skill into the factory's Claude Code adapter, because it
+  calls the `claude` command-line tool.
+- scripts/improve_description.py: asks for third-person descriptions instead
+  of the imperative.
+- Name references to skill-creator changed to authoring-skills in docstrings.

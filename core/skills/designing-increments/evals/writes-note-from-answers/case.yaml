@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: writes-note-from-answers
+expected_outcome: |
+  docs/increments/02-<slug>/design.md exists with all required sections, including Existing tools
+  and Rollout. Scenarios are plain sentences for the person, each with its verification kind;
+  the exit code and the error code are in the Interface, not in the scenarios. The glossary has Language.
+context:
+  scaffold_script: place-files.sh

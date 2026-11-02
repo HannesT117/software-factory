@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: does-not-read-the-code
+expected_outcome: |
+  The run writes the tests from the design note and the Interface alone, and reads no file
+  under cmd/ or internal/.
+context:
+  scaffold_script: place-files.sh

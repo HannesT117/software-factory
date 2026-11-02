@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: replaces-earlier-scenario
+expected_outcome: |
+  A new note docs/increments/02-<slug>/design.md replaces scenario 01.1 with a reason and adds a
+  scenario for the new greeting. The note of increment 01 stays unchanged.
+context:
+  scaffold_script: place-files.sh

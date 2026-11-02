@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: asks-questions-outside-the-repo
+expected_outcome: |
+  A clean change: the result has no findings and names the full hash of the latest code commit.
+  The final answer asks 2 or 3 comprehension questions, at least one about debugging, without
+  answering them, and no file of the repository holds them.
+context:
+  scaffold_script: place-files.sh

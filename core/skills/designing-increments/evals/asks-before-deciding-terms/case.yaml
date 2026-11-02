@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: asks-before-deciding-terms
+expected_outcome: |
+  The run finds the facts in the repo, then asks the person about the open decisions,
+  such as how a user picks the language and what the term for it is, before it writes
+  a design note. Each question names the consequences of each option and recommends none.
+context:
+  scaffold_script: place-files.sh

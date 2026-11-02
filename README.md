@@ -4,7 +4,7 @@ This repo is a software factory: the system around coding agents that decides wh
 
 - **Engineer:** the human who owns a project.
 - **Agent:** a coding agent that works in it, with its own restricted token.
-- **Increment:** one unit of work in three pull requests: design note, tests from a separate session, implementation with a review from a separate session, demonstration and retro. The engineer approves each pull request on GitHub, and agents cannot. [AGENTS.md](AGENTS.md) describes the steps.
+- **Increment:** one unit of work in two pull requests: the design note, then the tests from a separate session with their code, a review from a separate session, demonstration and retro. The engineer approves owned paths, such as design notes, on GitHub, and agents cannot. [AGENTS.md](AGENTS.md) describes the steps.
 
 ## Status
 
@@ -13,9 +13,9 @@ v0, increment 02 of 04.
 | Increment | Content | State |
 |---|---|---|
 | 01 Basis | this page, principles, research notes, ADRs 0001 and 0002 | done |
-| 02 Trust core | Go CLI with checks for skills, design notes, ADRs, tests and pull request paths; an agent account, with the engineer approving owned paths as code owner; a reviewer that a hook starts, and a review by a model of another vendor; skills with evals; guard hook | [design note](docs/increments/02-trust-core/design.md) approved; tests and code in progress |
-| 03 Install and distribution | `factory install`; the binary through releases with attestations or through `go install …@vX.Y.Z` (open); install in cloud and CI; for the project's language: an architecture check, a linter with the project's own rules, each with test cases and a message that names the fix (for TypeScript: oxlint, ESLint or ast-grep for own rules, and dependency-cruiser, open), a ratchet on lint warnings and complexity, and acceptance tests in the project's own format; lint configuration and rules, manifests and lockfiles owned by the engineer | planned |
-| 04 Handover and feedback loop | a coordinator session that starts the test writer after a design note merges and the implementing session after the tests are approved; retro per increment, which counts wrong answers to comprehension questions and turns a correction seen twice into a lint rule; `factory check-retro`, `factory feedback` (prefilled issue links for the factory repo), version updates, end-to-end test | planned |
+| 02 Trust core | Go CLI with checks for skills, design notes, ADRs, tests and pull request paths; an agent account, with the engineer approving owned paths as code owner; a reviewer that a hook starts, and a review by a model of another vendor; skills with evals; guard hook | [design note](docs/increments/02-trust-core/design.md) approved; tests, code and skills in review; CI pull request next |
+| 03 Install and distribution | `factory install`; the binary through releases with attestations or through `go install …@vX.Y.Z` (open); install in cloud and CI; for the project's language: an architecture check, a linter with the project's own rules, each with test cases and a message that names the fix (for TypeScript: oxlint, ESLint or ast-grep for own rules, and dependency-cruiser, open), a ratchet on lint warnings and complexity, and acceptance tests in the project's own format; lint configuration and rules, manifests and lockfiles owned by the engineer; a block in the project's `AGENTS.md` that makes `authoring-skills` the skill for skills and lets agents start subagents and sessions on their own | planned |
+| 04 Handover and feedback loop | a coordinator session that starts the test writer after a design note merges and the implementing session after the tests are pushed; retro per increment, which turns a correction seen twice into a lint rule; `factory check-retro`, `factory feedback` (prefilled issue links for the factory repo), version updates, end-to-end test | planned |
 
 ## Decisions
 
@@ -34,6 +34,7 @@ Process and policy are rules in [principles.md](docs/principles.md):
 - order of work, test writer, protected paths, agent token, checks from `main`, feedback to the factory: rules 27–35
 - docs show the current state and follow their format: rule 36
 - pull request descriptions: rule 37
+- existing tools, the domain model and the scope of `AGENTS.md`: rules 39–41
 
 ## Open
 
