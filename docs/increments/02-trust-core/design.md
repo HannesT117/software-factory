@@ -5,11 +5,10 @@
 - A Go CLI `factory` checks skills, design notes, decision records, acceptance tests and the paths that a pull request changes.
 - **An agent cannot approve.** Agents act as a machine account with write access and no admin rights. The engineer approves owned paths as code owner, with a personal account. A pull request that changes no owned path merges as soon as its checks pass.
 - Each increment has two pull requests: the design note, and the tests with their code. Tests come first, and `tests-start-red` shows that they failed before the code came.
-- Six skills carry the workflow: `designing-increments`, `writing-acceptance-tests`, `reviewing-increments`, `writing-pull-requests`, `writing-commit-messages`, and `authoring-skills` for work on skills. They follow the Agent Skills specification and its guides, and each has evals that run with and without the skill. `designing-increments` asks the engineer in rounds, without recommended answers, and has a fresh context explain each scenario before the design pull request. It starts with the open comprehension questions of earlier reviews, and explains the gaps after the engineer has answered.
+- Six skills carry the workflow: `designing-increments`, `writing-acceptance-tests`, `reviewing-increments`, `writing-pull-requests`, `writing-commit-messages`, and `authoring-skills` for work on skills. They follow the Agent Skills specification and its guides, and each has evals that run with and without the skill. `designing-increments` asks the engineer in rounds, without recommended answers, and has a fresh context explain each scenario before the design pull request.
 - Agents write and change skills only with `authoring-skills`. `AGENTS.md` says so, and the guard hook refuses changes to the files of a skill until the session has loaded it. Its validator is the one source for skill rules, and `factory validate-skills` runs it (ADR 0001).
-- A stop hook makes the implementing session start a reviewer in a fresh context. It checks the diff and whether each test does what its scenario says, and its result reaches the engineer as a Claude artifact. It turns on auto-merge only when it found nothing.
+- A stop hook makes the implementing session start a reviewer in a fresh context. It checks the diff and whether each test does what its scenario says, and its result reaches the engineer as a Claude artifact. It turns on auto-merge only when it found nothing. In the chat of the session that ran the review, it asks the engineer 2 or 3 comprehension questions and explains the gaps after the answers; questions and answers stay out of the repo.
 - A model from another vendor reviews both pull requests in the check `cross-review`.
-- A design pull request waits until the engineer has answered every comprehension question of earlier reviews.
 - A later increment can replace a scenario of an earlier one. `factory scenarios` lists the scenarios in force.
 - Only a design session reads the open web. Other sessions reach only listed hosts, so text from an unknown page cannot steer the code or its review.
 - The core of the factory imports no adapter (ADR 0001).
@@ -28,7 +27,7 @@ Where does the work stop for the engineer?
 
 ```mermaid
 flowchart LR
-  A[Design PR] -->|check-design, answers, cross-review| B{Engineer approves as code owner}
+  A[Design PR] -->|check-design, cross-review| B{Engineer approves as code owner}
   B --> C[Tests from own session]
   C -->|tests-start-red| D[Code on the same branch]
   D -->|test, reviewer, cross-review| E{All checks green?}
@@ -61,7 +60,7 @@ flowchart LR
 
 **Code owners**, `.github/CODEOWNERS`: the engineer owns `docs/increments/*/design.md`, `docs/domain/`, `docs/decisions/`, `AGENTS.md`, `docs/principles.md`, `go.mod`, `go.sum`, `.github/` and `.factory/`.
 
-**Review result**, `evidence/<nn>-<slug>/review.md`: a comprehension question is a line that matches `^- \*\*question (\d+)\*\* \S`. It is answered when the next line that is not empty matches `^  - \*\*answer\*\* \S`.
+**Review result**, `evidence/<nn>-<slug>/review.md`: the reviewer's findings and the full hash of the reviewed commit, without comprehension questions or answers.
 
 **Allowed hosts**, `.factory/allowed-hosts`: one host per line; a leading `*.` matches every subdomain.
 
@@ -129,7 +128,7 @@ Every output line starts with the command name and a colon. An error line is `<c
 | `factory check-design <increment-dir>` | `bad-title`, `missing-section`, `bad-scenario-line`, `wrong-increment`, `duplicate-id`, `bad-replaced-line`, `unknown-scenario`. Looks up replaced scenarios in the notes of earlier increments beside `<increment-dir>`. |
 | `factory check-adr [dir]` | `unknown-category`, `unknown-field`, `bad-date`, `bad-status`, `unknown-adr`, `missing-title`, `missing-section`, `unknown-section`. Checks every `.md` file under `dir`, by default `docs/decisions`. |
 | `factory check-tests [--base <ref>]` | `missing-test`, `unknown-id`, `title-mismatch`, `forbidden-command`, `replaced-test`. A replaced scenario needs no test. Reads the design notes from `<ref>`, or from the working tree without `--base`, and the test files from the working tree. |
-| `factory check-pr --base <ref>` | `mixed-pr`, with the paths of each group, over the commits since the merge base. Exit 2 with `shallow-clone`. With test files, prints `check-pr: tests end at <commit>` before the last line. When a design note changes, also `unanswered-question` for each question without an answer in a review result. |
+| `factory check-pr --base <ref>` | `mixed-pr`, with the paths of each group, over the commits since the merge base. Exit 2 with `shallow-clone`. With test files, prints `check-pr: tests end at <commit>` before the last line. |
 | `factory scenarios` | Reads all design notes under `docs/increments/`. Prints `scenarios: <id> <kind> <title>` for each scenario that no note replaces. |
 | `factory cross-review --base <ref>` | Sends the changed design note, or the note, the diff and the scenario titles, to the endpoint and the `design` or `code` model in `.factory/cross-review.json`, with the key in `FACTORY_MODEL_KEY`; never the pull request's title or description. The request is `POST <endpoint>/chat/completions` with the header `Authorization: Bearer <key>` and a body with `model` and `messages`: a system message with the review instructions and a user message with the content. The answer is a chat completion whose first choice has as its message content the JSON `{"findings": [{"severity": "blocking" or "note", "path": "<path>", "text": "<text>"}]}`; an empty list means no findings. Prints `cross-review: finding <blocking or note> <path>: <text>` per finding, then `cross-review: blocking` or `cross-review: ok`. No answer, a refused connection, a status other than 200, or an answer in another form is `blocking`. |
 | `factory hook stop` | Reads `Stop` input (`stop_hook_active`, `cwd`). Prints a block decision while the latest code commit has no review result in `evidence/<nn>-<slug>/review.md` that names it; the reason names the reviewer step. Prints nothing when `stop_hook_active` is true. |
@@ -167,7 +166,6 @@ Every output line starts with the command name and a colon. An error line is `<c
 - **scenario 02.8** (automated) **A pull request with one kind of change is accepted.** `factory check-pr` accepts a pull request that changes only a design note, or only test files and `go.mod`, or only paths outside all groups.
 - **scenario 02.9** (automated) **A pull request that mixes kinds of change is rejected.** `factory check-pr` rejects a pull request that changes a test file and a design note, or code and a file under `.github/`. The output names the paths. A clone without its full history is reported as a problem of the environment, not of the pull request.
 - **scenario 02.26** (automated) **A blocking finding of the other model is reported.** With a stand-in for the model that reports one blocking finding, `factory cross-review` prints the finding and reports it as blocking. With a stand-in that reports only notes, it prints them and reports no block. When the model cannot be reached, or answers in another form, it reports a block. For a pull request that changes a design note, it asks the model named for `design`; for any other, the model named for `code`.
-- **scenario 02.28** (automated) **A design waits for answers to earlier questions.** `factory check-pr` rejects a pull request that changes a design note while a review in the repo has a comprehension question without an answer. The output names the review and the question. When every question has an answer, it accepts the pull request.
 - **scenario 02.25** (automated) **Tests come first, then code.** `factory check-pr` accepts a pull request whose first commits only change test files and whose later commits only change `internal/x.go`, and names the last commit with tests. It rejects a pull request in which a later commit changes a test file again.
 
 ### Approval and credentials (manual, in the factory repo)
@@ -191,7 +189,7 @@ Every output line starts with the command name and a colon. An error line is `<c
 - **scenario 02.14** (automated) **The factory's skills are valid and name no agent tool.** `factory validate-skills --strict` accepts all skills under `core/skills` in the repo: none has a mistake, such as the name of an agent tool, or a warning (ADR 0001 confirmation).
 - **scenario 02.15** (demonstrated) **Each skill helps more than it costs.** For each skill, its evals run with and without the skill. The report shows, for both, the share of passed assertions, the tokens and the time, and the trigger rate of the description on the validation queries. The engineer reviews the outputs.
 - **scenario 02.16** (manual) **The skills help in real use.** Over increment 03 and the first two increments of a project that uses the factory, `retro.md` counts the test writer's questions, tests changed after review, review findings, and the engineer's interventions. For each design note, the engineer records yes or no, with a reason: was the note clear enough for the test writer?
-- **scenario 02.17** (manual) **The review is readable.** For increment 02 itself, the reviewer's result lists its findings on special cases, code that detects a test run, work outside the scenarios, tests that do not do what their scenario says, and docs with their own history or with elements outside their format. It ends with 2 or 3 comprehension questions and the engineer's answers. The engineer opens it as a Claude artifact from the link in the pull request.
+- **scenario 02.17** (manual) **The review is readable.** For increment 02 itself, the reviewer's result lists its findings on special cases, code that detects a test run, work outside the scenarios, tests that do not do what their scenario says, and docs with their own history or with elements outside their format. The reviewer links it in the pull request with the code, and the engineer opens it there as a Claude artifact. In the chat of the session that ran the review, the reviewer asks 2 or 3 comprehension questions, at least one about where to look when a part fails, and explains the gaps only after the engineer has answered. No file and no commit message in the repo holds the questions or the answers.
 
 ### Scenarios over time
 
@@ -208,7 +206,7 @@ Every output line starts with the command name and a colon. An error line is `<c
 
 ## Evidence
 
-- **Approved scenarios:** 02.1 to 02.9, 02.13, 02.14, 02.18, 02.19, 02.23 to 02.26, 02.28 to 02.33. The engineer approves them in this note; their `testscript` files come from the test-writer session.
+- **Approved scenarios:** 02.1 to 02.9, 02.13, 02.14, 02.18, 02.19, 02.23 to 02.26, 02.29 to 02.33. The engineer approves them in this note; their `testscript` files come from the test-writer session.
 - **Demonstrated:** 02.15.
 - **Manual:** 02.10, 02.11, 02.12, 02.16, 02.17, 02.20, 02.21 and 02.27.
 - **Measurement, not evidence:** the mutation score from 02.21, recorded in `retro.md`.
