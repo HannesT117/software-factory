@@ -18,7 +18,7 @@
 
 - `factory install`, releases, the install step for cloud sessions and CI: increment 03
 - an architecture check, lint rules and acceptance tests in a project's own language and format: increment 03
-- receipts, the provenance log, holdout scenarios, checks for terms, one glossary per bounded context: later, see [backlog](../../backlog.md)
+- receipts, the provenance log, holdout scenarios, checks for terms, one glossary per bounded context, a mutation score of the acceptance tests: later, see [backlog](../../backlog.md)
 - adapters other than Claude Code
 
 ## Sketch
@@ -107,7 +107,7 @@ flowchart LR
 | Tests and code together | GitHub stacked pull requests | not used | No auto-merge; a tests layer can merge alone. |
 | Guard hook | Claude Code `permissions.deny` | not used | A deny rule cannot leave out the test writer. |
 | Acceptance tests | `testscript` (go-internal) | used | The Go team's engine for CLI tests; test-only dependency. |
-| Mutation score | Gremlins, go-mutesting | Gremlins | Made for small modules; the score does not block. |
+| Mutation score | Gremlins, go-mutesting | later | Both mutate only code that the coverage of the tests reaches; the acceptance tests run a separately built binary, so neither sees coverage. |
 | Core without adapters | go-arch-lint | not used | One rule needs only `go list`. |
 | Writing skills | Agent Skills specification and guides; PostHog; Anthropic `skill-creator` | `skill-creator`, as `authoring-skills` | Descriptions by user intent; reference parts that drift. Rewritten without the name of a harness; its runner for description tuning lives in the Claude Code adapter. |
 | Skill evals | Anthropic `skill-creator` | used, through `authoring-skills` | Runs the eval loop of the guide. |
@@ -137,8 +137,8 @@ Every output line starts with the command name and a colon. An error line is `<c
 **CI**, after this increment:
 
 - `checks` on `pull_request`: `check-pr`, `check-design` for each changed note, `check-adr`, and `check-tests --base main` when code or tests change.
-- `test` on `pull_request`: `go vet ./...` and `go test ./...`, plus the mutation score with Gremlins in the summary, which does not block. It needs Python 3.10 or later with PyYAML, for `validate-skills`. Job `tests-start-red`: on the commit where the test phase ends, each added test fails and every other test passes.
-- `cross-review` on `pull_request` and `pull_request_review`, with the secret `OPPER_API_KEY`: on a design pull request it comments and passes. With code or tests it waits for a review result for the latest code commit, then stays red on a blocking finding until a code owner approves.
+- `test` on `pull_request`: `go vet ./...` and `go test ./...`. It needs Python 3.10 or later with PyYAML, for `validate-skills`. Job `tests-start-red`: on the commit where the test phase ends, each added test fails and every other test passes.
+- `cross-review` on `pull_request_target` and `pull_request_review`. Only the run on `pull_request_target` has the secret `OPPER_API_KEY`: it takes the workflow and the `factory` binary from `main` and reads the pull request only as git data, so a pull request cannot reach the key. On a design pull request it comments and passes. With code or tests it waits for a review result for the latest code commit, then stays red on a blocking finding until a code owner approves; the run on `pull_request_review`, without the key, turns it green after that approval.
 - Ruleset on `main`: pull requests only, squash merges, code owner review for owned paths, approvals dismissed on push, the four checks from GitHub Actions required on a branch that is up to date with `main`, no bypass.
 
 ## Scenarios
@@ -175,7 +175,6 @@ Every output line starts with the command name and a colon. An error line is `<c
 - **scenario 02.11** (manual) **A pull request cannot fake a check.** A pull request that adds its own workflow with a job named `test` that passes at once cannot be merged without the engineer's approval, because `.github/` belongs to the engineer.
 - **scenario 02.12** (manual) **Agent sessions act as the agent account.** A cloud session and a local session push, open pull requests and comment as the agent account. A local session cannot read `~/.ssh`, `~/.config/gh` or the SSH agent. Outside a design session, commands in the shell reach only the allowed hosts, in the cloud and locally.
 - **scenario 02.20** (manual) **New tests start red.** On a pull request that changes test files, `tests-start-red` passes only when each added test failed on the last commit before the code and every other test passed there. `test` fails until the code exists, so the pull request cannot merge earlier.
-- **scenario 02.21** (manual) **The strength of the tests is measured.** A pull request with code shows, in the summary of the job `test`, the share of deliberately broken versions of the code (mutants) that the acceptance tests catch. A low share does not block the merge.
 
 ### Hooks (Claude Code adapter)
 
@@ -208,8 +207,7 @@ Every output line starts with the command name and a colon. An error line is `<c
 
 - **Approved scenarios:** 02.1 to 02.9, 02.13, 02.14, 02.18, 02.19, 02.23 to 02.26, 02.29 to 02.33. The engineer approves them in this note; their `testscript` files come from the test-writer session.
 - **Demonstrated:** 02.15.
-- **Manual:** 02.10, 02.11, 02.12, 02.16, 02.17, 02.20, 02.21 and 02.27.
-- **Measurement, not evidence:** the mutation score from 02.21, recorded in `retro.md`.
+- **Manual:** 02.10, 02.11, 02.12, 02.16, 02.17, 02.20 and 02.27.
 - **ADR confirmation:** 02.14 and 02.23.
 - **Not evidence:** unit tests from the implementing agent.
 
@@ -227,6 +225,6 @@ Every output line starts with the command name and a colon. An error line is `<c
 - **Bootstrap:** until the CI pull request, the environment `approval` still gates this increment. The engineer reads `check-pr`, `check-tests` and the workflows line by line, because they guard all later pull requests.
 - **One agent account:** GitHub cannot tell the test writer from the implementing agent. All of the engineer's Claude sessions act as the agent account, also in other projects.
 - **Python:** `factory validate-skills` needs Python 3.10 or later with PyYAML wherever it runs, CI included (ADR 0001).
-- **Soft parts:** the guard hook, with its reading of the transcript, and the reviewer run in the agent's session, and test files are not owned. `FACTORY_SESSION` is set by whoever starts the session. Tests in CI, `tests-start-red`, `cross-review` and the network access of cloud environments are the hard guards; the mutation score only measures.
+- **Soft parts:** the guard hook, with its reading of the transcript, and the reviewer run in the agent's session, and test files are not owned. `FACTORY_SESSION` is set by whoever starts the session. Tests in CI, `tests-start-red`, `cross-review` and the network access of cloud environments are the hard guards.
 - **Review by another model:** it runs no code, and in one study a non-Claude reviewer made Claude's code worse (arXiv 2607.21656). So a finding only holds the merge until the engineer has read it. About 0.05 to 0.70 USD per review.
 - **Break glass:** the engineer can switch off the ruleset; the next retro records each use.
