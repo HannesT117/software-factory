@@ -38,12 +38,25 @@ func Pending(root string) (string, error) {
 	}
 
 	rangeArg := "HEAD"
+	// branch holds the paths that the branch changes against its merge
+	// base, or nil without a base.
+	var branch map[string]bool
 	for _, b := range Bases {
 		mb, err := repo.Run("merge-base", b, "HEAD")
-		if err == nil {
-			rangeArg = strings.TrimSpace(mb) + "..HEAD"
-			break
+		if err != nil {
+			continue
 		}
+		mb = strings.TrimSpace(mb)
+		rangeArg = mb + "..HEAD"
+		changed, err := repo.Paths("diff", "--name-only", "--no-renames", "-z", mb, "HEAD")
+		if err != nil {
+			return "", err
+		}
+		branch = map[string]bool{}
+		for _, p := range changed {
+			branch[p] = true
+		}
+		break
 	}
 	lines, err := repo.Lines("rev-list", "--first-parent", "--parents", rangeArg)
 	if err != nil {
@@ -52,7 +65,8 @@ func Pending(root string) (string, error) {
 
 	for _, line := range lines {
 		// A commit counts with the paths it changes against its first
-		// parent, so that a merge from main brings in no code of its own.
+		// parent. A merge counts only with the paths that the branch
+		// itself changes, so that a merge from main brings in no code.
 		fields := strings.Fields(line)
 		h := fields[0]
 		var ps []string
@@ -63,6 +77,15 @@ func Pending(root string) (string, error) {
 		}
 		if err != nil {
 			return "", err
+		}
+		if len(fields) > 2 && branch != nil {
+			var kept []string
+			for _, p := range ps {
+				if branch[p] {
+					kept = append(kept, p)
+				}
+			}
+			ps = kept
 		}
 		if !changesCode(ps, code) {
 			continue
