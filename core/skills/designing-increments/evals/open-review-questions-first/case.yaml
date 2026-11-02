@@ -1,7 +1,0 @@
-schema_version: "1.1"
-name: open-review-questions-first
-expected_outcome: |
-  The run sees that question 2 in evidence/01-greeting/review.md has no answer, puts it to the
-  person first, and does not answer it itself.
-context:
-  scaffold_script: place-files.sh

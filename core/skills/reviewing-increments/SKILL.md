@@ -1,6 +1,6 @@
 ---
 name: reviewing-increments
-description: Reviews the change of an increment against its design note in a fresh context and writes the review result with comprehension questions, which allows or blocks auto-merge. The agent uses it after the last code commit of an increment, when the stop hook asks for a review result, or when the person asks to review an increment. Not for a draft design note, which designing-increments covers.
+description: Reviews the change of an increment against its design note in a fresh context, writes the review result, which allows or blocks auto-merge, and asks the person comprehension questions in the conversation. The agent uses it after the last code commit of an increment, when the stop hook asks for a review result, or when the person asks to review an increment. Not for a draft design note, which designing-increments covers.
 ---
 
 # Reviewing increments
@@ -27,7 +27,7 @@ The agent runs each demonstrated scenario of the note, records it under `evidenc
 
 ## Comprehension questions
 
-The result ends with 2 or 3 questions that the person should be able to answer after reading the change. At least one is about debugging: where to look, or what to run, when a part fails. The questions test understanding, so the result does not answer them. The person answers first; the agent explains the gaps after that. The next design pull request waits until every question has an answer.
+After the result, the agent asks the person 2 or 3 questions in the conversation that the person should be able to answer after reading the change. At least one is about debugging: where to look, or what to run, when a part fails. The questions test understanding, so the agent does not answer them. The person answers first; the agent explains the gaps after that. Neither the questions nor the answers go into the repo.
 
 ## Result
 

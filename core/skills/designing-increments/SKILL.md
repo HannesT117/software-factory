@@ -9,16 +9,13 @@ A design note is the spec of one increment. The person approves it, a separate s
 
 - the person can approve it without the conversation that led to it,
 - the test writer finds in it every case and every output that a test must check,
-- `factory check-design <increment-dir>` passes,
-- and the person has answered every comprehension question of earlier reviews.
+- and `factory check-design <increment-dir>` passes.
 
 ## Who decides
 
 The person owns the terms, the boundaries of bounded contexts, the dependencies between contexts, and each choice whose consequences reach beyond the code. The agent finds facts in the repo and its docs itself, and decides implementation details itself.
 
 The agent asks the person directly in the conversation, never through the note. Each question says what it is about, so that it reads without context, and names the consequences of each option. A question carries no recommended answer, so that the person decides instead of agreeing. Questions come in rounds; each round builds on the answers to the last one.
-
-Open comprehension questions of earlier reviews come first. The agent explains the gaps they show after the person has answered, not before.
 
 ## What the note holds
 

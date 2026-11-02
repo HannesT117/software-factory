@@ -1,7 +1,0 @@
-schema_version: "1.1"
-name: writes-result-with-questions
-expected_outcome: |
-  A clean change: the result has no findings, names the full hash of the latest code commit, and
-  ends with 2 or 3 comprehension questions, at least one about debugging, without answers.
-context:
-  scaffold_script: place-files.sh

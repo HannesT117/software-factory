@@ -15,8 +15,3 @@ Result: <no findings | n findings>
 ## Demonstrated scenarios
 
 - **scenario <nn>.<n>**: <recording path>, <what it shows>
-
-## Comprehension questions
-
-- **question 1** <question>
-- **question 2** <question about debugging: where to look or what to run when a part fails>
