@@ -1,0 +1,52 @@
+name: delete-branch
+on:
+  pull_request_target:
+    types: [closed]
+  # By hand: deletes every branch whose pull requests are all closed.
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: read
+jobs:
+  delete-branch:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      OWNER: ${{ github.repository_owner }}
+      DEFAULT: ${{ github.event.repository.default_branch }}
+    steps:
+      - name: Delete the branch of a closed pull request
+        if: github.event_name == 'pull_request_target'
+        env:
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          if [ "$HEAD_REPO" != "$REPO" ] || [ "$BRANCH" = "$DEFAULT" ]; then
+            echo "delete-branch: $BRANCH is not a branch of this repo to delete"
+            exit 0
+          fi
+          open=$(gh api "repos/$REPO/pulls?state=open&head=$OWNER:$BRANCH" --jq length)
+          if [ "$open" != 0 ]; then
+            echo "delete-branch: $BRANCH has an open pull request"
+            exit 0
+          fi
+          if gh api -X DELETE "repos/$REPO/git/refs/heads/$BRANCH" > /dev/null 2>&1; then
+            echo "delete-branch: deleted $BRANCH"
+          else
+            echo "delete-branch: $BRANCH is already gone"
+          fi
+      - name: Delete every branch whose pull requests are all closed
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          gh api --paginate "repos/$REPO/branches" --jq '.[].name' | while read -r branch; do
+            [ "$branch" = "$DEFAULT" ] && continue
+            all=$(gh api "repos/$REPO/pulls?state=all&head=$OWNER:$branch" --jq length)
+            open=$(gh api "repos/$REPO/pulls?state=open&head=$OWNER:$branch" --jq length)
+            if [ "$all" != 0 ] && [ "$open" = 0 ]; then
+              gh api -X DELETE "repos/$REPO/git/refs/heads/$branch" > /dev/null
+              echo "delete-branch: deleted $branch"
+            else
+              echo "delete-branch: kept $branch"
+            fi
+          done
