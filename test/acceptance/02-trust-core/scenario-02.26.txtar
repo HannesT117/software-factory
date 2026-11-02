@@ -49,16 +49,57 @@ stdout '^cross-review: blocking$'
 ! stdout '^cross-review: ok$'
 env FACTORY_MODEL_KEY=test-key
 
-# Without the key, or without the config, that is a problem of the
+# A config that the pull request changes does not count: the command
+# reads the config of the base, and still reaches the stand-in.
+exec git checkout -q -b redirect code
+cp ../config-elsewhere .factory/cross-review.json
+exec git commit -q -a -m redirect
+rm ../model
+exec factory cross-review --base main
+stdout '^cross-review: ok$'
+grep '^code-model$' ../model
+exec git checkout -q code
+
+# Without the key, or with an empty key, that is a problem of the
 # environment.
 exitcode 2 env -u FACTORY_MODEL_KEY factory cross-review --base main
+stdout '^cross-review: error \S*: no-key( |$)'
+stdout '^cross-review: 1 errors\n\z'
 ! stdout '^cross-review: (ok|blocking)$'
-exec git checkout -q -b no-config code
+env FACTORY_MODEL_KEY=
+exitcode 2 factory cross-review --base main
+stdout '^cross-review: error \S*: no-key( |$)'
+stdout '^cross-review: 1 errors\n\z'
+! stdout '^cross-review: (ok|blocking)$'
+env FACTORY_MODEL_KEY=test-key
+
+# Without the config on the base, that is a problem of the environment,
+# also when the pull request brings a config of its own.
+exec git checkout -q -b no-config main
 exec git rm -q .factory/cross-review.json
 exec git commit -q -m 'no config'
-exitcode 2 factory cross-review --base main
+exec git checkout -q -b on-no-config no-config
+mkdir .factory
+cp ../config-elsewhere .factory/cross-review.json
+cp ../edit internal/x.go
+exec git add -A
+exec git commit -q -m code
+exitcode 2 factory cross-review --base no-config
+stdout '^cross-review: error \S*: no-config( |$)'
+stdout '^cross-review: 1 errors\n\z'
 ! stdout '^cross-review: (ok|blocking)$'
-exec git checkout -q code
+
+# A config on the base that is not in its format is the same problem.
+exec git checkout -q -b bad-config main
+cp ../edit .factory/cross-review.json
+exec git commit -q -a -m 'bad config'
+exec git checkout -q -b on-bad-config bad-config
+cp ../edit internal/x.go
+exec git commit -q -a -m code
+exitcode 2 factory cross-review --base bad-config
+stdout '^cross-review: error \S*: no-config( |$)'
+stdout '^cross-review: 1 errors\n\z'
+! stdout '^cross-review: (ok|blocking)$'
 
 # A pull request that changes a design note asks the design model.
 exec git checkout -q -b note main
@@ -79,6 +120,8 @@ stdout '^cross-review: blocking$'
 
 -- edit --
 changed
+-- config-elsewhere --
+{"endpoint": "http://127.0.0.1:1/v1", "models": {"design": "other-model", "code": "other-model"}}
 -- answer-blocking --
 {"findings": [{"severity": "blocking", "path": "internal/x.go", "text": "The loop never ends."}, {"severity": "note", "path": "internal/x.go", "text": "The name x says little."}]}
 -- answer-notes --
