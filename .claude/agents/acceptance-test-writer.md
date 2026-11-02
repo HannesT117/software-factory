@@ -1,0 +1,1 @@
+../../adapters/claude-code/agents/acceptance-test-writer.md
