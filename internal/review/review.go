@@ -1,23 +1,14 @@
 // Package review finds the latest code commit that still needs a review
-// result, and the comprehension questions of review results that have no
-// answer.
+// result.
 package review
 
 import (
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/HannesT117/software-factory/internal/gitx"
 	"github.com/HannesT117/software-factory/internal/paths"
-)
-
-var (
-	// ResultFile is the path of a review result.
-	ResultFile = regexp.MustCompile(`^evidence/[^/]+/review\.md$`)
-	question   = regexp.MustCompile(`^- \*\*question (\d+)\*\* \S`)
-	answer     = regexp.MustCompile(`^  - \*\*answer\*\* \S`)
 )
 
 // Bases are the refs, in this order, whose merge base with HEAD starts the
@@ -101,35 +92,4 @@ func named(root, hash string) (bool, error) {
 		}
 	}
 	return false, nil
-}
-
-// Question is a comprehension question without an answer.
-type Question struct {
-	Number string
-	Line   int
-}
-
-// Unanswered returns the questions of a review result that have no answer:
-// the next line that is not empty after a question is not an answer.
-func Unanswered(text string) []Question {
-	lines := strings.Split(strings.ReplaceAll(text, "\r\n", "\n"), "\n")
-	var open []Question
-	for i, line := range lines {
-		m := question.FindStringSubmatch(line)
-		if m == nil {
-			continue
-		}
-		answered := false
-		for _, next := range lines[i+1:] {
-			if strings.TrimSpace(next) == "" {
-				continue
-			}
-			answered = answer.MatchString(next)
-			break
-		}
-		if !answered {
-			open = append(open, Question{Number: m[1], Line: i + 1})
-		}
-	}
-	return open
 }

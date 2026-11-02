@@ -1,6 +1,5 @@
 // Package prcheck checks the commits of a pull request: whether it mixes
-// path groups, where its tests end, and whether a design note waits for
-// answers to earlier review questions.
+// path groups, and where its tests end.
 package prcheck
 
 import (
@@ -10,7 +9,6 @@ import (
 	"github.com/HannesT117/software-factory/internal/gitx"
 	"github.com/HannesT117/software-factory/internal/paths"
 	"github.com/HannesT117/software-factory/internal/report"
-	"github.com/HannesT117/software-factory/internal/review"
 )
 
 // Change is one path that a pull request changes, with its group.
@@ -33,9 +31,6 @@ type Result struct {
 	Mixed []Mixed
 	// TestsEnd is the last commit that changes test files, or "".
 	TestsEnd string
-	// DesignChange is true when the pull request changes the design-notes
-	// group.
-	DesignChange bool
 }
 
 // commit is one commit of the pull request with the paths it changes.
@@ -64,11 +59,6 @@ func Run(r *report.Report, dir, base string) int {
 	}
 	for _, m := range res.Mixed {
 		r.Error(m.Path, 0, "mixed-pr", m.Detail)
-	}
-	if res.DesignChange {
-		if err := unanswered(r, repo); err != nil {
-			return r.Abort(dir, "git-failed", err.Error())
-		}
 	}
 	if res.TestsEnd != "" {
 		r.Line("tests end at " + res.TestsEnd)
@@ -100,7 +90,6 @@ func Check(repo gitx.Repo, base string) (Result, error) {
 			kinds[g] = true
 		}
 	}
-	res.DesignChange = kinds[paths.DesignNotes]
 
 	commits, err := readCommits(repo, mb, changed)
 	if err != nil {
@@ -146,28 +135,6 @@ func Check(repo gitx.Repo, base string) (Result, error) {
 		}
 	}
 	return res, nil
-}
-
-// unanswered reports each comprehension question without an answer in the
-// review results at HEAD.
-func unanswered(r *report.Report, repo gitx.Repo) error {
-	files, err := repo.Paths("ls-tree", "-r", "-z", "--name-only", "HEAD", "--", "evidence")
-	if err != nil {
-		return err
-	}
-	for _, f := range files {
-		if !review.ResultFile.MatchString(f) {
-			continue
-		}
-		text, err := repo.Run("show", "HEAD:"+f)
-		if err != nil {
-			return err
-		}
-		for _, q := range review.Unanswered(text) {
-			r.Error(f, q.Line, "unanswered-question", "question "+q.Number+" has no answer; the engineer answers it before a design changes")
-		}
-	}
-	return nil
 }
 
 // readCommits returns the commits on the first-parent line from mb to HEAD,
