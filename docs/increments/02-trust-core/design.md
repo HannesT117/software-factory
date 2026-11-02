@@ -67,7 +67,7 @@ flowchart LR
 
 **Cross-review config**, `.factory/cross-review.json`: `{"endpoint": "<base URL of an OpenAI-compatible API>", "models": {"design": "<model id>", "code": "<model id>"}}`.
 
-**Code paths**, `.factory/code-paths`: one path pattern per line. The stop hook and `cross-review` count a change to a matching path, or to the tests group, as code. Without the file, every path outside the groups counts.
+**Code paths**, `.factory/code-paths`: one path pattern per line. The stop hook and `cross-review` count a change to a matching path, or to the tests group, as code. Without the file, every path outside the groups counts. A path under `evidence/` never counts as code, so that the commit of a review result does not ask for another review.
 
 **Domain model**: `docs/domain/glossary.md` and `docs/domain/context-map.md`, in the design-notes group. Their formats are the templates of `designing-increments`.
 
