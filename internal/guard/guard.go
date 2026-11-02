@@ -23,9 +23,12 @@ func Check(rel string, testWriter bool) string {
 	if rel == ".." || strings.HasPrefix(rel, "../") {
 		return ""
 	}
-	switch paths.GroupOf(rel) {
+	// A file system that ignores case, such as the default one of macOS,
+	// writes .GitHub/x to .github/x, so the groups match in lower case.
+	folded := strings.ToLower(rel)
+	switch paths.GroupOf(folded) {
 	case paths.Tests:
-		if testWriter && strings.HasPrefix(rel, paths.TestDir) {
+		if testWriter && strings.HasPrefix(folded, paths.TestDir) {
 			return ""
 		}
 		return rel + " is in the tests group. Only a session started as " + TestWriter +
@@ -97,7 +100,7 @@ func WebReason(search bool, host string, hosts []string) string {
 // IsSkillFile reports whether file, an absolute path, belongs to a skill:
 // it is a SKILL.md, or a folder above it holds a SKILL.md.
 func IsSkillFile(file string) bool {
-	if filepath.Base(file) == "SKILL.md" {
+	if strings.EqualFold(filepath.Base(file), "SKILL.md") {
 		return true
 	}
 	dir := filepath.Dir(file)
