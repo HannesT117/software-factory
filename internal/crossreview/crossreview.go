@@ -59,29 +59,29 @@ func Run(r *report.Report, root, base, key string) int {
 	repo := gitx.Repo{Dir: root}
 	cfgText, err := repo.Run("show", base+":"+ConfigFile)
 	if err != nil {
-		return blocked(r, ConfigFile, "no-config", "no "+ConfigFile+" on "+base, report.Usage)
+		return r.Abort(ConfigFile, "no-config", "no "+ConfigFile+" on "+base)
 	}
 	var cfg Config
 	if err := json.Unmarshal([]byte(cfgText), &cfg); err != nil || cfg.Endpoint == "" || cfg.Models.Design == "" || cfg.Models.Code == "" {
-		return blocked(r, ConfigFile, "bad-config", `needs {"endpoint": "...", "models": {"design": "...", "code": "..."}}`, report.Usage)
+		return r.Abort(ConfigFile, "no-config", `on `+base+` it is not {"endpoint": "...", "models": {"design": "...", "code": "..."}}`)
 	}
 	if key == "" {
-		return blocked(r, KeyVar, "no-key", "the API key is missing", report.Usage)
+		return r.Abort(KeyVar, "no-key", "the API key is missing or empty")
 	}
 
 	mb, err := repo.Run("merge-base", base, "HEAD")
 	if err != nil {
-		return blocked(r, base, "git-failed", err.Error(), report.Usage)
+		return r.Abort(base, "git-failed", short(err.Error()))
 	}
 	mb = strings.TrimSpace(mb)
 	changed, err := repo.Paths("diff", "--name-only", "--no-renames", "-z", mb, "HEAD")
 	if err != nil {
-		return blocked(r, root, "git-failed", err.Error(), report.Usage)
+		return r.Abort(root, "git-failed", short(err.Error()))
 	}
 
 	model, instructions, content, err := request(repo, cfg, mb, changed)
 	if err != nil {
-		return blocked(r, root, "git-failed", err.Error(), report.Usage)
+		return r.Abort(root, "git-failed", short(err.Error()))
 	}
 	findings, err := ask(cfg.Endpoint, key, model, instructions+"\n\n"+answerFormat, content)
 	if err != nil {
@@ -212,7 +212,7 @@ func ask(endpoint, key, model, system, user string) ([]Finding, error) {
 	return *answer.Findings, nil
 }
 
-// blocked reports a problem, the result blocking, and returns code.
+// blocked reports why the review did not happen and the result blocking.
 func blocked(r *report.Report, where, code, detail string, exit int) int {
 	r.Error(where, 0, code, short(detail))
 	r.Line("blocking")
