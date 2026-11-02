@@ -1,6 +1,6 @@
 # Review of increment 02: trust core
 
-Reviewed commit: 283679231a076254a8815a922e3722b3e9f3668b
+Reviewed commit: 80d58062c208ca6f34aeeb4b755937cdcbebe1fc
 Pull request: https://github.com/HannesT117/software-factory/pull/39
 Result: no findings
 
@@ -23,4 +23,4 @@ None.
 
 ## Demonstrated scenarios
 
-- **scenario 02.15**: not run yet; the reviewer offered the run to the engineer, because it starts agent sessions for each skill with and without the skill.
+- **scenario 02.15**: not complete. A first run stopped at the account's usage limit: the case evals of `authoring-skills` and `designing-increments` ran 3 times with and 3 times without the skill; the other four skills and all trigger queries did not run. The run needs a repeat after the limit resets, and then a recording under `evidence/02-trust-core/`.
