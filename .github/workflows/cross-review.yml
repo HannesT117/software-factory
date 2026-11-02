@@ -5,17 +5,15 @@ on:
   pull_request_target:
     branches: [main]
     types: [opened, synchronize, reopened, ready_for_review]
-  # Without the key: turns the check green after a code owner's approval.
-  pull_request_review:
-    types: [submitted, dismissed]
 permissions:
   contents: read
   pull-requests: write
-  actions: read
 jobs:
   cross-review:
-    # No `if:` here: GitHub counts a skipped job as a passed required check.
     runs-on: ubuntu-latest
+    # The key is a secret of this environment, which only main may use, so
+    # that a workflow pushed to another branch cannot read it.
+    environment: cross-review
     env:
       BASE: origin/${{ github.base_ref }}
       GH_TOKEN: ${{ github.token }}
@@ -24,25 +22,21 @@ jobs:
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
       - name: Check out main
-        if: github.event_name == 'pull_request_target'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: base
           persist-credentials: false
       - name: Fetch the pull request as data
-        if: github.event_name == 'pull_request_target'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           path: pr
           fetch-depth: 0
           persist-credentials: false
-      - if: github.event_name == 'pull_request_target'
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: base/go.mod
       - name: Review
-        if: github.event_name == 'pull_request_target'
         env:
           FACTORY_MODEL_KEY: ${{ secrets.OPPER_API_KEY }}
         run: |
@@ -73,18 +67,3 @@ jobs:
             exit 0
           fi
           exit $code
-      - name: Follow a code owner's approval
-        if: github.event_name == 'pull_request_review'
-        env:
-          STATE: ${{ github.event.review.state }}
-          ASSOCIATION: ${{ github.event.review.author_association }}
-          REVIEW_SHA: ${{ github.event.review.commit_id }}
-        run: |
-          if [ "$STATE" = approved ] && [ "$ASSOCIATION" = OWNER ] && [ "$REVIEW_SHA" = "$HEAD_SHA" ]; then
-            echo "cross-review: ok, a code owner approved $HEAD_SHA"
-            exit 0
-          fi
-          # Otherwise the result of the review for this commit stays.
-          conclusion=$(gh api "repos/$REPO/actions/workflows/cross-review.yml/runs?head_sha=$HEAD_SHA&event=pull_request_target" --jq '.workflow_runs[0].conclusion // "missing"')
-          echo "cross-review: the review of $HEAD_SHA ended with $conclusion"
-          [ "$conclusion" = success ]
