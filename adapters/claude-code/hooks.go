@@ -84,7 +84,7 @@ func PreToolUse(in io.Reader, out io.Writer) int {
 		file = filepath.Join(input.Cwd, file)
 	}
 	file = filepath.Clean(file)
-	if rel, err := filepath.Rel(root, file); err == nil {
+	if rel, err := filepath.Rel(fileRoot(file, root), file); err == nil {
 		// A session started with --agent has agent_type and no agent_id. A
 		// subagent has both.
 		testWriter := input.AgentType != nil && *input.AgentType == guard.TestWriter && input.AgentID == nil
@@ -216,6 +216,26 @@ func projectRoot(cwd string) string {
 		return top
 	}
 	return abs
+}
+
+// fileRoot returns the root of the git working tree that holds file, so
+// that the session's working folder does not decide which repo a write
+// goes to. Without such a tree, it returns root.
+func fileRoot(file, root string) string {
+	dir := filepath.Dir(file)
+	for {
+		if _, err := os.Stat(dir); err == nil {
+			if top, err := gitx.Toplevel(dir); err == nil {
+				return top
+			}
+			return root
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return root
+		}
+		dir = parent
+	}
 }
 
 func writeJSON(out io.Writer, v any) int {
