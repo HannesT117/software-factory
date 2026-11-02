@@ -1,0 +1,86 @@
+name: test
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  test:
+    # No `if:` here: GitHub counts a skipped job as a passed required check.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      # validate-skills runs the validator of authoring-skills with Python.
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --quiet pyyaml
+      - run: go vet ./...
+      - run: go test ./...
+
+  tests-start-red:
+    # No `if:` here: GitHub counts a skipped job as a passed required check.
+    runs-on: ubuntu-latest
+    env:
+      BASE: origin/${{ github.base_ref }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --quiet pyyaml
+      - name: Build factory from main
+        run: |
+          git worktree add --quiet "$RUNNER_TEMP/base" "$BASE"
+          go build -C "$RUNNER_TEMP/base" -o "$RUNNER_TEMP/bin/factory" ./cmd/factory
+      - name: Find the last commit with tests
+        id: end
+        run: |
+          # The job checks only finds mixed changes; this job only needs the commit.
+          out=$("$RUNNER_TEMP/bin/factory" check-pr --base "$BASE" || true)
+          printf '%s\n' "$out"
+          echo "commit=$(printf '%s\n' "$out" | sed -n 's/^check-pr: tests end at //p')" >> "$GITHUB_OUTPUT"
+      - name: Each added test fails there, and every other test passes
+        if: steps.end.outputs.commit != ''
+        env:
+          END: ${{ steps.end.outputs.commit }}
+        run: |
+          git checkout --quiet "$END"
+          git diff --name-only --diff-filter=A "$BASE...$END" -- 'test/acceptance/*.txtar' > "$RUNNER_TEMP/added.txt"
+          go test -json ./test/acceptance/ > "$RUNNER_TEMP/tests.json" || true
+          python3 - "$RUNNER_TEMP/added.txt" "$RUNNER_TEMP/tests.json" <<'PY'
+          import json, sys
+          added = {
+              "TestAcceptance/" + p.strip()[len("test/acceptance/"):-len(".txtar")]
+              for p in open(sys.argv[1]) if p.strip()
+          }
+          results = {}
+          for line in open(sys.argv[2]):
+              try:
+                  event = json.loads(line)
+              except ValueError:
+                  continue
+              name = event.get("Test", "")
+              if name.count("/") == 2 and event.get("Action") in ("pass", "fail"):
+                  results[name] = event["Action"]
+          errors = 0
+          for name in sorted(added | set(results)):
+              got = results.get(name, "did not run")
+              want = "fail" if name in added else "pass"
+              if got != want:
+                  errors += 1
+                  print(f"tests-start-red: error {name}: {got}, want {want}")
+          print(f"tests-start-red: {errors} errors" if errors else f"tests-start-red: ok {len(results)} checked")
+          sys.exit(1 if errors else 0)
+          PY

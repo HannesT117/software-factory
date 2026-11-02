@@ -1,0 +1,46 @@
+name: checks
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  checks:
+    # No `if:` here: GitHub counts a skipped job as a passed required check.
+    runs-on: ubuntu-latest
+    env:
+      BASE: origin/${{ github.base_ref }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      # The checks that judge a pull request come from main, so that a pull
+      # request cannot change them for itself.
+      - name: Build factory from main
+        run: |
+          git worktree add --quiet "$RUNNER_TEMP/base" "$BASE"
+          go build -C "$RUNNER_TEMP/base" -o "$RUNNER_TEMP/bin/factory" ./cmd/factory
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+      - name: check-pr
+        run: factory check-pr --base "$BASE"
+      - name: check-adr
+        run: factory check-adr
+      - name: check-design for each changed note
+        run: |
+          status=0
+          for dir in $(git diff --name-only "$BASE...HEAD" -- 'docs/increments/*/design.md' | xargs -r -n1 dirname | sort -u); do
+            [ -f "$dir/design.md" ] || continue
+            factory check-design "$dir" || status=1
+          done
+          exit $status
+      - name: check-tests when code or tests change
+        run: |
+          if git diff --name-only "$BASE...HEAD" | grep -qvE '^(docs/increments/[^/]+/design\.md|docs/domain/.*|\.github/.*|\.factory/.*|evidence/.*)$'; then
+            factory check-tests --base "$BASE"
+          else
+            echo "checks: no code or tests change, so check-tests does not run"
+          fi
