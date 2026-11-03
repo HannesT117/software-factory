@@ -30,6 +30,13 @@
 - Required checks: at once, with the import of `ruleset.json`. The workflows `checks` and `test` run only on `pull_request`, so the note says nothing about checks on the latest commit of `main`.
 - Open from the engineer: "Why don't we use `factory install` for this, then?" Asked in round 2 (Q4), together with what still holds of the owned `docs/setup/` (Q5), second run and dry run (Q6), and README overlap (Q7).
 
+## Decisions of the engineer, round 2, 2026-11-03
+
+- Q4: two commands. `factory setup` (admin, the engineer, once per repo) in increment 03; `factory install` (files, agents, every update) in increment 05. Increment 03 stays.
+- Q6: each run sets every step to the target state again; rulesets are updated by their name. A dry run prints what it would change without changing anything.
+- Q7: `docs/setup/README.md` lists only the steps that stay manual and names the command for the rest; the values live only in the command and the ruleset files.
+- Q5 (what holds of the owned `docs/setup/`): open. The engineer asked whether all of `docs/` should be owned; the orchestrating session answers that and sends Q5's answer.
+
 ## Open, to ask the engineer in rounds
 
 Each question names the consequences of each option and carries no recommendation (skill `designing-increments`, section Who decides):
@@ -54,3 +61,4 @@ Each question names the consequences of each option and carries no recommendatio
 - 2026-11-03T00:55Z step 3 round 1 sent (form, steps covered, required checks); claude/03-setup-script-design@70aa5b5; next: wait for answers, then round 2 (second run, dry run, report, docs overlap); open: round 1
 - 2026-11-03T00:59Z round 1 answered: Q1 factory subcommand; Q2 all four steps; Q3 required checks at once with ruleset.json; claude/03-setup-script-design@70aa5b5; next: round 2 (relation to factory install, what holds of owned docs/setup/, second run and dry run, README overlap); open: round 2
 - 2026-11-03T00:59Z step 3 round 2 sent (Q4 relation to install, Q5 owned docs/setup, Q6 second run and dry run, Q7 README overlap); claude/03-setup-script-design@70aa5b5; next: wait for answers, then write design.md; open: round 2
+- 2026-11-03T01:06Z round 2 answered except Q5; claude/03-setup-script-design@70aa5b5; next: write design.md parts that do not depend on Q5; open: Q5
