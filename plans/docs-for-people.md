@@ -38,6 +38,16 @@ One diagram per design note may be too little. Separate the implementation plan 
 3. Write 2 to 4 options. Each says what changes, what the engineer reads, what it costs, and its consequences, with no recommendation.
 4. Commit the research notes on the work branch and push. Send the options to the orchestrating session, and wait for the engineer's decision. Then open the research pull request.
 
+## Decisions of the engineer
+
+### 2026-11-03, round 1 (options A to D)
+
+- Option C: hand-written flows, updated in the code pull request and checked by the reviewer, plus generated structure (package graph, CLI commands, scenarios in force) with a check that fails when it differs from the code.
+- Not one file `docs/system.md`: a sensible split of the docs for people. The next round proposes 2 to 4 splits, each with the files, what goes where, what the engineer reads and the consequences, from best practice (Diátaxis, arc42, C4, docs as code, how projects split explanation, flows, reference and how-to).
+- The paths of these docs are owned by the engineer as code owner, so each code pull request that changes them waits for the engineer.
+- A skill for writing these docs may be needed. Each split says whether it needs such a skill (see the backlog row for `reviewing-architecture` and `writing-docs`) and what it would hold.
+- Rule 18 needs a decision for option C (building-block views come from a model that the engineer owns; code is not such a model). It goes as a question with consequences into the same round.
+
 ## Checkpoints
 - 2026-11-03T00:52Z step 1 done; claude/research-docs-for-people@7759cd2 (no commits yet, from main); next: step 2, research question 1; open: none. Note: `docs/domain/` does not exist in the factory repo; only the skill assets define its format.
 - 2026-11-03T00:55Z step 2 done; claude/research-docs-for-people@1401381; next: step 3, write the options; open: none
