@@ -88,3 +88,4 @@ Each question names the consequences of each option and carries no recommendatio
 - 2026-11-03T02:06Z step 5a: gh stand-in and tests 03.1 to 03.3 done; claude/03-setup-script@df3d2c6; next: tests 03.4 to 03.8; open: none
 - 2026-11-03T02:07Z step 5a: test 03.4 done; claude/03-setup-script@9a1936d; next: test 03.5; open: none
 - 2026-11-03T02:07Z step 5a: test 03.5 done; claude/03-setup-script@0ad7884; next: test 03.6; open: none
+- 2026-11-03T02:08Z step 5a: test 03.6 done; claude/03-setup-script@531ae03; next: test 03.7; open: none
