@@ -4,9 +4,9 @@ Plans for work in progress, written so that any agent, also one of another vendo
 
 | Plan | Work | Runs as |
 |---|---|---|
-| [03-setup-script.md](03-setup-script.md) | Increment 03: a script for the engineer's one-time setup per repo | design session, then test writer and implementing session |
-| [04-design-questions.md](04-design-questions.md) | Increment 04: comprehension questions before the design approval; the reviewer explains deviations | orchestrating session |
-| [docs-for-people.md](docs-for-people.md) | Research: documentation of the whole system for people, apart from the plans for agents | design session |
+| [03-setup-script.md](03-setup-script.md) | Increment 03: a script for the engineer's one-time setup per repo | design session `session_01PcDxYJRQgSMLHSGFeeXhgD`, then test writer and implementing session |
+| [04-design-questions.md](04-design-questions.md) | Increment 04: comprehension questions before the design approval; the reviewer explains deviations | orchestrating session `session_01VBxMTgez7WqptNV5nYhthf` |
+| [docs-for-people.md](docs-for-people.md) | Research: documentation of the whole system for people, apart from the plans for agents | design session `session_01PcDxYM6G6DMitZSSs5XjMm` |
 
 Small pull requests outside these plans, done by the orchestrating session:
 
