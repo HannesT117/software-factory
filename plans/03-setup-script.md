@@ -23,6 +23,13 @@
 - The engineer owns `docs/setup/` as code owner. `docs/setup/` becomes a path group of its own, so that the guard hook refuses agent edits there and `check-pr` keeps it apart from other changes.
 - It is an increment of its own, number 03. Install and distribution becomes 05, the handover 06.
 
+## Decisions of the engineer, round 1, 2026-11-03
+
+- Form: a `factory` subcommand, with the consequence that agents change `cmd/` and `internal/` without the engineer's approval and the engineer runs that code with admin rights.
+- Steps: all four through the API: merge settings; invite the agent account; environment `cross-review`, limited to `main`, with the secret `OPPER_API_KEY`; import both rulesets.
+- Required checks: at once, with the import of `ruleset.json`. The workflows `checks` and `test` run only on `pull_request`, so the note says nothing about checks on the latest commit of `main`.
+- Open from the engineer: "Why don't we use `factory install` for this, then?" Asked in round 2 (Q4), together with what still holds of the owned `docs/setup/` (Q5), second run and dry run (Q6), and README overlap (Q7).
+
 ## Open, to ask the engineer in rounds
 
 Each question names the consequences of each option and carries no recommendation (skill `designing-increments`, section Who decides):
