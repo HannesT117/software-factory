@@ -37,6 +37,13 @@
 - Q7: `docs/setup/README.md` lists only the steps that stay manual and names the command for the rest; the values live only in the command and the ruleset files.
 - Q5 (what holds of the owned `docs/setup/`): open. The engineer asked whether all of `docs/` should be owned; the orchestrating session answers that and sends Q5's answer.
 
+## Decisions of the engineer, Q5, 2026-11-03
+
+- Ownership of `docs/`: as today, plus `docs/setup/`. Not all of `docs/`. The CODEOWNERS line for `docs/setup/` comes with a CI pull request, not with the design pull request.
+- Rulesets: embedded in the binary from a code path that the engineer does not own. Protection: approved scenarios with tests, reviewer, cross-review, and the dry run the engineer reads before applying.
+- Agent decision: the ruleset files move to `internal/setup/rulesets/` (Go embed reaches only files below the package folder); `docs/setup/ruleset*.json` are removed.
+- Open, round 3 (Q8): whether `docs/setup/` stays a path group of its own when it holds only `README.md`.
+
 ## Open, to ask the engineer in rounds
 
 Each question names the consequences of each option and carries no recommendation (skill `designing-increments`, section Who decides):
@@ -64,3 +71,4 @@ Each question names the consequences of each option and carries no recommendatio
 - 2026-11-03T01:06Z round 2 answered except Q5; claude/03-setup-script-design@70aa5b5; next: write design.md parts that do not depend on Q5; open: Q5
 - 2026-11-03T01:07Z draft of design.md without Q5 (check-design ok); claude/03-setup-script-design@974f13a; next: add the Q5 answer (ruleset source, docs/setup path group), fresh-context scenario check, PR; open: Q5
 - 2026-11-03T01:09Z fresh-context check of scenarios 03.1-03.9 done, scenarios rewritten; claude/03-setup-script-design@5ad835e; next: add the Q5 answer, check new scenarios with a fresh context, open the PR; open: Q5
+- 2026-11-03T01:36Z Q5 answered; claude/03-setup-script-design@5ad835e; next: round 3 (Q8 path group of docs/setup), meanwhile write the Q5 parts into design.md; open: Q8
