@@ -13,6 +13,7 @@ Small pull requests outside these plans, done by the orchestrating session:
 
 - Renumber the planned increments (#42): 03 setup command, 04 design questions, 05 docs for people, 06 install and distribution, 07 handover and feedback loop. Records on `main` (ADR 0002, the design note of 02) keep their numbers.
 - Docs after the CI pull request #41 (merged): #48. Code owner of `docs/architecture/`: #49. No session in pull requests: #46.
+- The approval run of `cross-review` is dropped (#53, engineer's decision 2026-11-03); the design note of 06 install and distribution must replace scenario 02.27, which still describes it.
 - After the engineer has put `OPPER_API_KEY` into the environment `cross-review`: push to each open pull request once, so that its checks and `cross-review` run.
 
 Order of work, decided by the engineer on 2026-11-03: finish 03 and 04, then 05 tests per increment, then 06 install and distribution (#50 sets this order). Every increment adds a feature that the factory provides to other repos; this repo using the factory is a side effect.
