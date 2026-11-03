@@ -67,6 +67,12 @@ Each question names the consequences of each option and carries no recommendatio
 4. Write `design.md` with the skill `designing-increments`. Run `factory check-design docs/increments/03-setup-script`. Have a fresh context explain each scenario, and rewrite each scenario that it cannot explain alone. Open the design pull request (skill `writing-pull-requests`), turn on auto-merge, and stop. The engineer approves as code owner.
 5. After the merge: the test writer, the code, the review and the retro, as `AGENTS.md` describes. Each step gets its own plan section here before it starts.
 
+## Step 5a: acceptance tests
+
+- Runs as: a test-writer session (agent `acceptance-test-writer`), on the branch `claude/03-setup-script` from `main`.
+- One `testscript` file per automated scenario, 03.1 to 03.8, in `test/acceptance/03-setup-script/`. The runner gets a stand-in for `gh` (`test/acceptance/gh_test.go`) and two JSON commands (`test/acceptance/json_test.go`).
+- Done when every test fails because `factory setup` does not exist, the tests of 02 pass, and `factory check-tests --base main` passes. Then the pull request "Add the command for the repo admin setup", and a report to the orchestrating session.
+
 ## Checkpoints
 - 2026-11-03T00:52Z step 1 done; no work branch yet (main@7759cd2, CI PR #41 open); next: step 2; open: none
 - 2026-11-03T00:54Z step 2 done; claude/03-setup-script-design@70aa5b5; next: step 3, round 1 of questions; open: required checks before the first run not verified
@@ -79,3 +85,4 @@ Each question names the consequences of each option and carries no recommendatio
 - 2026-11-03T01:36Z Q5 answered; claude/03-setup-script-design@5ad835e; next: round 3 (Q8 path group of docs/setup), meanwhile write the Q5 parts into design.md; open: Q8
 - 2026-11-03T01:37Z round 3 sent (Q8 path group of docs/setup); Q5 written into design.md; claude/03-setup-script-design@6dab254; next: write the Q8 answer, fresh-context check of changed scenarios, open the PR; open: Q8
 - 2026-11-03T01:44Z step 4 done: design PR #45 open (https://github.com/HannesT117/software-factory/pull/45); claude/03-setup-script-design@f32707c; auto-merge refused because the PR is already clean, so it is not merged by the agent and waits for the engineer; next: after the merge, step 5 (test writer); open: none
+- 2026-11-03T02:06Z step 5a: gh stand-in and tests 03.1 to 03.3 done; claude/03-setup-script@df3d2c6; next: tests 03.4 to 03.8; open: none
