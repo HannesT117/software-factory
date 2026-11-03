@@ -129,9 +129,9 @@ Rule 18 covers building-block views. Flows across people and sessions have no mo
 
 No item shows the whole system as it is after the increment. The engineer rebuilds that view from the design notes of all increments.
 
-## Options
+## Options for the system doc
 
-Each option says what changes, what the engineer reads, what it costs, and its consequences. The engineer decides.
+Each option says what changes, what the engineer reads, what it costs, and its consequences. The engineer chose C on 2026-11-03, split into several files instead of one `docs/system.md`. A, B and D stay here as rejected options: A shows no whole system, B leaves the structure to drift, D leaves `main` out of date between merges.
 
 ### A. More diagrams in the design note, no system doc
 
@@ -197,3 +197,36 @@ Constraints that hold for every split:
 
 - **All four Diátaxis folders at once:** Diátaxis itself advises against empty sections, and the factory has no tutorial.
 - **One file per arc42 section, all twelve:** most sections would stay empty or repeat `docs/principles.md` and the ADRs.
+
+## Options for the split
+
+Each split names the files, what goes where, what the engineer reads, whether a skill is needed and what it holds, and the consequences. In each split, `factory` writes the generated files, a check fails when they differ from the code, and the reviewer checks the hand-written flows against the diff.
+
+### S1. By Diátaxis type, only the types with content
+
+- **Files:** `docs/explanation/overview.md` (what the system is, its parts and boundaries, invariants); `docs/explanation/flows/<flow>.md`, one file per flow, each with one sketch of about 7 elements and a few sentences; `docs/reference/packages.md`, `docs/reference/commands.md`, `docs/reference/scenarios.md`, generated. `docs/setup/` stays as the how-to guide.
+- **Engineer reads:** the overview once; in each code pull request, the flow files that changed and the diff of the generated files.
+- **Skill:** yes, `writing-docs`: which type a text belongs to, the format of a flow file (one question, one sketch, about 7 elements, names as in the glossary), that a flow describes the state after the code, and when a flow changes. `reviewing-increments` gets a check that each changed flow matches the diff.
+- **Consequences:** a new file per flow, so about 7 files for the factory and more for a project. The types match Diátaxis, so a later how-to or tutorial has a place. Readers move between several files for one picture.
+
+### S2. arc42 lean, one file per section that has content
+
+- **Files:** `docs/architecture/context.md` (arc42 sections 1 to 4: goals, constraints, context with all external interfaces, solution strategy, as short lists); `docs/architecture/building-blocks.md` (section 5, level 1, generated); `docs/architecture/runtime.md` (section 6: all flows in one file, one sketch of about 7 elements each); links to the ADRs (section 9) and the glossary (section 12) instead of copies.
+- **Engineer reads:** `context.md` once; in each code pull request, the changed part of `runtime.md` and the diff of `building-blocks.md`.
+- **Skill:** yes, `writing-docs`, smaller than in S1: which arc42 section a text belongs to, the lean and essential tips that apply, the format of a runtime scenario, and when it changes. `reviewing-increments` gets the same check as in S1. Because arc42 is a named format, the docs use only its sections (rule 36).
+- **Consequences:** three files, a known template, and a mapping to C4 views. `runtime.md` grows with each flow and becomes long in a project. The CLI commands and scenarios in force have no arc42 section; they go into `building-blocks.md` or stay outside the split.
+
+### S3. One short entry file at the root, with flows and reference next to it
+
+- **Files:** `ARCHITECTURE.md` at the root, after matklad: bird's-eye view, a generated codemap of packages and commands between markers, invariants and boundaries, all hand-written except the codemap; `docs/flows/<flow>.md`, one file per flow; `docs/reference/scenarios.md`, generated.
+- **Engineer reads:** `ARCHITECTURE.md` once and then on change; in each code pull request, the changed flow files and the codemap diff.
+- **Skill:** a small one, or none: the format of a flow file and the markers that the generator owns can sit in `reviewing-increments` and in the design-note skill. Without a skill, nothing tells the implementing agent when a flow changes except the reviewer's finding.
+- **Consequences:** a well-known entry point for people and agents. `ARCHITECTURE.md` mixes hand-written and generated text in one file, so the check must compare only the part between the markers. An agent reads `ARCHITECTURE.md` too, which adds context to sessions that do not need it.
+
+## Rule 18 for the generated structure
+
+Rule 18 says that building-block views come from a model that the engineer owns. A package graph generated from the code is not such a model: it shows what the code is, not what the engineer intends.
+
+- **R1. Count the code as the source.** Rule 18 adds: or generated from the code. Agents never draw building blocks. The graph shows the code as it is, including an import that should not exist; only the reviewer and the engineer's reading catch that.
+- **R2. The engineer owns a small model now.** An owned file lists the packages and their allowed imports. The generator draws from the code, and the check fails when the code differs from the model. This brings the backlog row "Architecture model as code, checked against the import graph" forward. It costs more in this increment, and it catches an unwanted import before the merge.
+- **R3. No generated building-block view yet.** Only commands and scenarios in force are generated. Rule 18 stays as it is. The docs show no structure until the backlog row is built.
