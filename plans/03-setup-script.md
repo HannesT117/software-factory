@@ -63,3 +63,4 @@ Each question names the consequences of each option and carries no recommendatio
 - 2026-11-03T00:59Z step 3 round 2 sent (Q4 relation to install, Q5 owned docs/setup, Q6 second run and dry run, Q7 README overlap); claude/03-setup-script-design@70aa5b5; next: wait for answers, then write design.md; open: round 2
 - 2026-11-03T01:06Z round 2 answered except Q5; claude/03-setup-script-design@70aa5b5; next: write design.md parts that do not depend on Q5; open: Q5
 - 2026-11-03T01:07Z draft of design.md without Q5 (check-design ok); claude/03-setup-script-design@974f13a; next: add the Q5 answer (ruleset source, docs/setup path group), fresh-context scenario check, PR; open: Q5
+- 2026-11-03T01:09Z fresh-context check of scenarios 03.1-03.9 done, scenarios rewritten; claude/03-setup-script-design@5ad835e; next: add the Q5 answer, check new scenarios with a fresh context, open the PR; open: Q5
