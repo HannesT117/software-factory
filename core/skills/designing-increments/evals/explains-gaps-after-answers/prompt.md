@@ -17,6 +17,6 @@ My answers:
 2. I don't know.
 3. `greet: HELLO, ADA!`
 
-Explain the gaps.
+Explain the gaps, as the skill designing-increments says.
 
 Input files: README.md, go.mod, docs/, evidence/ (a git repository: main holds increment 01, the branch design-shout adds the note of increment 02)
