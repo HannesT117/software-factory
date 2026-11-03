@@ -63,3 +63,68 @@ Three placements follow:
 1. **Code pull request.** The implementing agent updates the system doc with the code; the reviewer checks it against the diff (rule 12). The doc on `main` always matches the code on `main`. The engineer sees the change only if the system doc is an owned path, which then makes the code pull request wait for the engineer (rule 27).
 2. **Design pull request, as a delta.** The design note shows the changed flow as a diagram of the future state. The code pull request moves it into the system doc. The engineer reads the flow before approval, and the doc on `main` stays current.
 3. **Separate pull request after the code.** A session refreshes the system doc from `main`. The doc lags behind the code between the merges.
+
+## Flows, diagram size and agents that draw
+
+### Flows that the factory and its projects need
+
+The factory has no runtime of its own beyond the CLI; its flows run across people, sessions and GitHub. From the docs on `main`:
+
+| Flow | Question it answers | Where it lives today |
+|---|---|---|
+| Increment workflow | Which step comes next, and who acts? | `AGENTS.md` (text), sketch in the design note of 02 |
+| Merge gate | Where does a pull request wait for the engineer? | sketch in the design note of 02; rules 16, 27, 31 |
+| Write permissions | Which session may change which path? | rules 28, 29; path groups in the design note of 02 |
+| Credentials and network | Which identity and which hosts does each session use? | rule 33 |
+| Feedback loop | How does a correction in a project reach the factory? | rule 35 (increment 06) |
+| Install and update | How does a project get a new factory version? | ADR 0002 (increment 05) |
+
+A project adds the runtime flows of arc42: main use cases, external interfaces, start and stop, errors.
+
+### How much a reader takes in
+
+| Source | Finding | Can take |
+|---|---|---|
+| [Cowan, The magical number 4 in short-term memory](https://memory.psych.missouri.edu/assets/doc/articles/2001/cowan-bbs-2001.pdf), Behavioral and Brain Sciences 24(1), 2001 (via search; measured) | A central limit of about 4 chunks, 3 to 5 in adults; Miller's 7 was "a rough estimate and a rhetorical device". | About 7 elements fits when a reader can group them; one diagram answers one question. |
+| [Störrle, Good, bad, ugly: layout matters](https://www.pst.ifi.lmu.de/~stoerrle/talks/Good_Bad_Ugly-LayoutMatters.pdf) (via search; measured, small samples) | Size measured as number of elements; about 50 is given as a maximum safe size. Layout flaws such as crossings add as much load as elements. | An upper bound, not a target. Layout counts as much as size. |
+| [Sözen, Say, Kılıç, working memory and complex diagrams](https://ada.atilim.edu.tr/entities/publication/e4644cf7-f5ad-47c1-a23a-967a8cb0b5cc/full) (via search; measured, students) | Higher working memory capacity helps with complex activity diagrams. | Smaller diagrams help readers with less capacity. |
+
+No study found counts how many diagrams a reader takes in per document. arc42 and C4 advise few views, chosen by relevance.
+
+### Mermaid
+
+| Source | Finding | Can take |
+|---|---|---|
+| [GitHub docs, creating diagrams](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams) (read) | Mermaid renders in Markdown files, issues and pull requests. The supported syntax depends on the Mermaid version that GitHub uses. | Mermaid in the system doc renders without a build step. |
+| [Mermaid config schema](https://mermaid.js.org/config/schema-docs/config.html) (via search) | Defaults: `maxTextSize` 50000, `maxEdges` 500. | Size limits are far above what a reader takes in; they do not constrain. |
+| [MermaidSeqBench, arXiv 2511.14967](https://arxiv.org/abs/2511.14967), v2 2026-04-25 (read; measured) | 132 samples; LLM judges found "significant capability gaps across models" in sequence diagrams from text. | A sequence diagram drawn by an agent needs a check or a review. |
+
+Layout cannot be pinned in GitHub's Mermaid; there is no model behind the diagrams, so the same element can have a different name in two diagrams.
+
+### Agents that draw diagrams (rule 18)
+
+| Source | Finding | Can take |
+|---|---|---|
+| [arXiv 2608.28403](https://arxiv.org/abs/2608.28403), Recovering software architecture intent from historical work items (read; measured, one company) | An LLM pipeline recovers C4 diagrams from work items. "High stability for architectural entities but lower stability for their relationships", "with relative variance compounding across generation steps". | Rule 18 holds. The finding is lower stability of relations; the need for human review is this repo's conclusion, not the paper's statement. |
+| [Structurizr, DSL generation with AI](https://docs.structurizr.com/ai/dsl-generation) and the [C4 author's post](https://www.patreon.com/posts/152027514) (via search; vendor) | For diagrams from AI, a "models as code" tool gives better results, because the model enforces consistency. | Building-block views from a model that the engineer owns, as in rule 18 and the backlog. |
+| Simon Brown, The C4 model, Structurizr vNext, and AI, [BCS Edinburgh 2026-05-20](https://edinburgh.bcs.org/events/2026/260520.htm) (via search; no slides found) | Talk abstract: hand-drawn diagrams turned into DSL, many diagrams from one model. | Same. |
+
+Rule 18 covers building-block views. Flows across people and sessions have no model to generate them from, so they are drawn by hand and checked by review.
+
+### Rejected
+
+- **A full arc42 document:** twelve sections, most of which the factory does not need, such as deployment and quality scenarios; C4 and arc42 both advise only views that add value.
+- **Context Mapper or Structurizr now:** the factory has one Go module and one bounded context; the backlog builds a model when a project has two packages or three contexts.
+
+## What the engineer reads per increment today
+
+| Item | Size for increment 02 | Written for |
+|---|---|---|
+| Design note | about 4,900 words, 1 diagram | agents, tests, the engineer's approval |
+| Pull request descriptions | 1 to 2 per increment | the engineer and the history |
+| Review result | `evidence/<nn>-<slug>/review.md` | the engineer and the merge gate |
+| Recordings of demonstrated scenarios | per scenario | the engineer |
+| Retro | `retro.md` | the engineer and the factory |
+| `README.md` | about 730 words, the status | the engineer |
+
+No item shows the whole system as it is after the increment. The engineer rebuilds that view from the design notes of all increments.
