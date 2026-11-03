@@ -45,3 +45,4 @@ Each question names the consequences of each option and carries no recommendatio
 - 2026-11-03T00:52Z step 1 done; no work branch yet (main@7759cd2, CI PR #41 open); next: step 2; open: none
 - 2026-11-03T00:54Z step 2 done; claude/03-setup-script-design@70aa5b5; next: step 3, round 1 of questions; open: required checks before the first run not verified
 - 2026-11-03T00:55Z step 3 round 1 sent (form, steps covered, required checks); claude/03-setup-script-design@70aa5b5; next: wait for answers, then round 2 (second run, dry run, report, docs overlap); open: round 1
+- 2026-11-03T00:59Z round 1 answered: Q1 factory subcommand; Q2 all four steps; Q3 required checks at once with ruleset.json; claude/03-setup-script-design@70aa5b5; next: round 2 (relation to factory install, what holds of owned docs/setup/, second run and dry run, README overlap); open: round 2
