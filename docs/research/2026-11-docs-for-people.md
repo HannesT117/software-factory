@@ -200,7 +200,7 @@ Constraints that hold for every split:
 
 ## Options for the split
 
-Each split names the files, what goes where, what the engineer reads, whether a skill is needed and what it holds, and the consequences. In each split, `factory` writes the generated files, a check fails when they differ from the code, and the reviewer checks the hand-written flows against the diff.
+Each split names the files, what goes where, what the engineer reads, whether a skill is needed and what it holds, and the consequences. In each split, `factory` writes the generated files, a check fails when they differ from the code, and the reviewer checks the hand-written flows against the diff. The engineer chose S2 on 2026-11-03. S1 and S3 stay here as rejected options: S1 spreads one picture over many files, S3 mixes generated and hand-written text in one file that agents also read.
 
 ### S1. By Diátaxis type, only the types with content
 
@@ -227,6 +227,16 @@ Each split names the files, what goes where, what the engineer reads, whether a 
 
 Rule 18 says that building-block views come from a model that the engineer owns. A package graph generated from the code is not such a model: it shows what the code is, not what the engineer intends.
 
+The engineer chose none of R1 to R3 on 2026-11-03: the factory is a collection of scripts, so a building-block view of it has little value. The factory's docs get no building-block view, and rule 18 stays as it is. Whether projects that use the factory get a generated building-block view is open, for increment 05 or later.
+
 - **R1. Count the code as the source.** Rule 18 adds: or generated from the code. Agents never draw building blocks. The graph shows the code as it is, including an import that should not exist; only the reviewer and the engineer's reading catch that.
 - **R2. The engineer owns a small model now.** An owned file lists the packages and their allowed imports. The generator draws from the code, and the check fails when the code differs from the model. This brings the backlog row "Architecture model as code, checked against the import graph" forward. It costs more in this increment, and it catches an unwanted import before the merge.
 - **R3. No generated building-block view yet.** Only commands and scenarios in force are generated. Rule 18 stays as it is. The docs show no structure until the backlog row is built.
+
+## Result
+
+- **Files:** `docs/architecture/context.md` (arc42 sections 1 to 4, short lists) and `docs/architecture/runtime.md` (arc42 section 6: one sketch of about 7 elements per flow). Decisions and the glossary are linked, not copied. No `building-blocks.md`.
+- **Generated parts:** none for the factory. The CLI is the external interface in `context.md`, which points to `factory` without arguments for the list of commands and to `factory scenarios` for the scenarios in force. A generated copy would restate what a command prints, and as an owned path it would make code pull requests wait for the engineer. So the generator and its check of option C are not built for the factory.
+- **Updates:** the implementing agent changes `runtime.md` and `context.md` in the code pull request; the reviewer checks them against the diff. The paths are owned by the engineer, so a code pull request that changes them waits for the engineer.
+- **Skill:** `writing-docs` holds the arc42 sections in use, the lean and essential tips that apply, the format of a runtime scenario, and when a flow changes. `reviewing-increments` checks each changed flow against the diff.
+- **Open:** generated building-block views and other generated parts for projects, increment 05 or later.
