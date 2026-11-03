@@ -1,0 +1,74 @@
+# scenario 03.5: Without admin rights, nothing changes
+# The logged-in account is not an admin of the repo; then gh is not logged
+# in; then gh is not on PATH. Each time, a run and a dry run refuse before
+# the first step with an error of the environment, and make no writing
+# call.
+exitcode 2 factory setup --agent project-agent --repo engineer/project
+stdout '^setup: error .*: not-admin( |$)'
+stdout '^setup: 1 errors$'
+! stdout '^setup: (changed|unchanged|would change) '
+exitcode 2 factory setup --agent project-agent --repo engineer/project --dry-run
+stdout '^setup: error .*: not-admin( |$)'
+stdout '^setup: 1 errors$'
+! stdout '^setup: (changed|unchanged|would change) '
+! grep '^(api (POST|PUT|PATCH|DELETE) |secret set )' gh/calls.log
+cmp gh/state.json not-admin.json
+
+# gh is not logged in.
+cp logged-out.json gh/state.json
+exitcode 2 factory setup --agent project-agent --repo engineer/project
+stdout '^setup: error .*: no-gh( |$)'
+stdout '^setup: 1 errors$'
+! stdout '^setup: (changed|unchanged|would change) '
+exitcode 2 factory setup --agent project-agent --repo engineer/project --dry-run
+stdout '^setup: error .*: no-gh( |$)'
+stdout '^setup: 1 errors$'
+! stdout '^setup: (changed|unchanged|would change) '
+! grep '^(api (POST|PUT|PATCH|DELETE) |secret set )' gh/calls.log
+cmp gh/state.json logged-out.json
+
+# gh is not on PATH.
+env PATH=$FACTORY_BIN
+exitcode 2 factory setup --agent project-agent --repo engineer/project
+stdout '^setup: error .*: no-gh( |$)'
+stdout '^setup: 1 errors$'
+! stdout '^setup: (changed|unchanged|would change) '
+exitcode 2 factory setup --agent project-agent --repo engineer/project --dry-run
+stdout '^setup: error .*: no-gh( |$)'
+stdout '^setup: 1 errors$'
+! stdout '^setup: (changed|unchanged|would change) '
+
+-- gh/calls.log --
+-- gh/state.json --
+{
+  "logged_in": true,
+  "user": "engineer",
+  "repos": {
+    "engineer/project": {
+      "admin": false,
+      "settings": {"allow_merge_commit": true}
+    }
+  }
+}
+-- not-admin.json --
+{
+  "logged_in": true,
+  "user": "engineer",
+  "repos": {
+    "engineer/project": {
+      "admin": false,
+      "settings": {"allow_merge_commit": true}
+    }
+  }
+}
+-- logged-out.json --
+{
+  "logged_in": false,
+  "user": "engineer",
+  "repos": {
+    "engineer/project": {
+      "admin": true,
+      "settings": {"allow_merge_commit": true}
+    }
+  }
+}
