@@ -49,9 +49,13 @@ Output follows the rules of the Interface of increment 02: every line starts wit
 
 **Output lines**, one per step: `setup: unchanged <step>`, `setup: changed <step>`, or with `--dry-run` `setup: would change <step>`. A changed or would-change line of `merge-settings` and of a ruleset names the fields that differ, as `<field> <current> -> <target>` separated by `, `. The last line is `setup: ok 6 checked` or `setup: <n> errors`.
 
-**Dry run.** With `--dry-run`, the command makes only reading calls: `GET` through `gh api`, and no `gh secret set`. It reads no standard input.
+A writing call is a `gh api` call with a method other than `GET`, or `gh secret set`.
 
-**Errors.** Before the first step, the command checks `gh`, the repo and the admin right; an error there changes nothing.
+**Secret value.** Before it reads, the command prints `setup: reading OPPER_API_KEY from standard input`. It reads up to the first newline or the end of input and strips surrounding white space. An empty result is `no-secret`.
+
+**Dry run.** With `--dry-run`, the command makes no writing call and reads no standard input. A missing secret is `setup: would change secret`.
+
+**Errors.** Before the first step, the command checks `gh`, the repo, the admin right, and the rights of `<login>` (`permission` of `GET repos/<repo>/collaborators/<login>/permission`; a 404 means no rights). An error there changes nothing. An error in a step stops the run; the steps after it do not run.
 
 | Code | Exit | When |
 |---|---|---|
@@ -59,21 +63,21 @@ Output follows the rules of the Interface of increment 02: every line starts wit
 | `no-gh` | 2 | `gh` is not on `PATH`, or is not logged in. |
 | `no-repo` | 2 | No `--repo` and the current directory has no GitHub repo, or the repo does not exist. |
 | `not-admin` | 2 | The logged-in account has no admin right on the repo (`permissions.admin` of `GET repos/<repo>` is false). |
-| `agent-is-admin` | 1 | `<login>` has the admin right on the repo. The command does not change it. |
-| `no-secret` | 1 | The secret is missing and standard input is empty. |
-| `api-failed` | 1 | A call through `gh` fails. `<where>` is the step, the detail names the call and its HTTP status. The command stops; the steps after it do not run. |
+| `agent-is-admin` | 1 | `<login>` has the permission `admin` on the repo. The command does not change it. |
+| `no-secret` | 1 | In the step `secret`: the secret is missing and the value read is empty. |
+| `api-failed` | 1 | A call through `gh` exits with a status other than 0. `<where>` is the step; the detail is the method and path of the call, or `gh secret set`, and the first line of `gh`'s error output. |
 
 ## Scenarios
 
-- **scenario 03.1** (automated) **The first run sets up a new repo.** On a repo with none of the settings, with a stand-in for `gh` that records each call, `factory setup` reports each of the six steps as changed. Afterwards the stand-in holds squash merging only, auto-merge, branch deletion, an invitation for the agent account, the environment `cross-review` limited to `main` with its secret, and both rulesets as in the setup files.
-- **scenario 03.2** (automated) **A second run changes nothing that is in place.** On a repo where every step already has its target state, `factory setup` reports each step as unchanged and writes nothing. It does not ask for the secret.
-- **scenario 03.3** (automated) **A second run repairs what changed by hand.** On a repo where someone turned merge commits back on and changed the ruleset `main`, `factory setup` reports these two steps as changed, names the fields that differed, and sets them back. The other steps stay unchanged. A ruleset with another name stays as it is.
-- **scenario 03.4** (automated) **A dry run shows the changes and makes none.** On the repo of scenario 03.1, `factory setup --dry-run` reports each step that a run would change, with the differing fields, and makes no writing call. It does not ask for the secret.
+- **scenario 03.1** (automated) **The first run sets up a new repo.** On a repo with none of the settings, with a stand-in for `gh` that records each call, `factory setup` with a secret value on standard input reports each of its six steps as changed. Afterwards the stand-in holds: squash merging with the title and description of the pull request as message, no merge commits and no rebase merging, auto-merge, branch deletion, an invitation for the agent account, the environment `cross-review` that only `main` may use, its secret `OPPER_API_KEY`, and the rulesets `main` and `branches` as in their setup files.
+- **scenario 03.2** (automated) **A second run changes nothing that is in place.** On a repo where every step already has its target state, `factory setup` reports each step as unchanged and writes nothing. It does not read standard input.
+- **scenario 03.3** (automated) **A second run repairs what changed by hand.** On a repo in its target state, where someone then turned merge commits back on and set the ruleset `main` to disabled, `factory setup` reports these two steps as changed, names each field with its old and new value, and sets them back. The other steps stay unchanged. A third ruleset with a name of its own, which the setup does not know, stays as it is.
+- **scenario 03.4** (automated) **A dry run shows the changes and makes none.** On the repo of scenario 03.1, `factory setup --dry-run` reports each step that a run would change, with the differing fields, and makes no writing call. It does not read standard input.
 - **scenario 03.5** (automated) **Without admin rights, nothing changes.** When the account logged in to `gh` is not an admin of the repo, `factory setup` refuses before the first step, and reports this as a problem of the environment. The same holds when `gh` is missing.
-- **scenario 03.6** (automated) **An agent account with admin rights is reported.** When the agent account already has admin rights on the repo, `factory setup` reports it as an error and does not change its rights.
-- **scenario 03.7** (automated) **The secret is asked for only when it is missing.** When the secret is missing, `factory setup` reads its value from standard input and passes it to `gh` only on standard input, never as an argument. When standard input is empty, it reports the missing secret as an error.
-- **scenario 03.8** (automated) **A failed call stops the run, and the next run continues.** When GitHub refuses the import of the ruleset `main`, `factory setup` names the step and the refused call, and does not run the later steps. A second run, after GitHub accepts the call, reports the earlier steps as unchanged and completes the rest.
-- **scenario 03.9** (manual) **The setup works on a real repo.** The engineer creates an empty personal repo, runs `factory setup --dry-run` and then `factory setup` with the agent account. GitHub then shows the settings, the invitation, the environment with its secret, and both rulesets, with the required checks from GitHub Actions accepted before any of them ran. A second run reports every step as unchanged.
+- **scenario 03.6** (automated) **An agent account with admin rights is reported.** When the agent account already has admin rights on the repo, `factory setup` reports it as an error before the first step, changes nothing, and leaves the account's rights as they are.
+- **scenario 03.7** (automated) **The secret is asked for only when it is missing.** When the secret is missing, `factory setup` says that it reads the value, reads it from standard input, and passes it to `gh` only on standard input, never as an argument. When standard input is empty or holds only white space, it reports the missing secret as an error and stops; the steps before it stay done, and the rulesets are not imported.
+- **scenario 03.8** (automated) **A failed call stops the run, and the next run continues.** On a new repo, GitHub refuses to create the ruleset `main`. `factory setup` reports an error that names the step and the refused call, and does not create the ruleset `branches`. A second run, after GitHub accepts the call, reports the merge settings, the agent account, the environment and the secret as unchanged, does not read standard input, and reports both rulesets as changed.
+- **scenario 03.9** (manual) **The setup works on a real repo.** The engineer creates an empty public personal repo without workflows, and runs `factory setup --dry-run` and then `factory setup`, logged in to `gh` as themself and naming the agent account as the one to invite. The settings pages of the repo then show the merge settings, the invitation, the environment with its secret, and both rulesets; the ruleset `main` lists its four required checks with GitHub Actions as their source, although none of them has run. A second run reports every step as unchanged.
 
 ## Evidence
 
