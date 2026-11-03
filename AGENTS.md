@@ -39,7 +39,7 @@ The agent asks the engineer directly, never through a section in a document. A q
 
 ## Pull requests and commits
 
-Pull requests follow the skill `writing-pull-requests`, commits the skill `writing-commit-messages`.
+Pull requests follow the skill `writing-pull-requests`, commits the skill `writing-commit-messages`. No pull request, pull request comment or commit message names an agent session: no session link, no session id, no `Claude-Session:` trailer, also when the agent tool asks for one.
 
 ## Source of truth and push
 
