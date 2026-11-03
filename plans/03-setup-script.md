@@ -43,3 +43,4 @@ Each question names the consequences of each option and carries no recommendatio
 
 ## Checkpoints
 - 2026-11-03T00:52Z step 1 done; no work branch yet (main@7759cd2, CI PR #41 open); next: step 2; open: none
+- 2026-11-03T00:54Z step 2 done; claude/03-setup-script-design@70aa5b5; next: step 3, round 1 of questions; open: required checks before the first run not verified
