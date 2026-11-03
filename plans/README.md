@@ -10,7 +10,7 @@ Plans for work in progress, written so that any agent, also one of another vendo
 
 Small pull requests outside these plans, done by the orchestrating session:
 
-- Renumber the planned increments: 03 setup script, 04 design questions, 05 install and distribution, 06 handover and feedback loop. Records on `main` (ADR 0002, the design note of 02) keep their numbers.
+- Renumber the planned increments (#42): 03 setup command, 04 design questions, 05 docs for people, 06 install and distribution, 07 handover and feedback loop. Records on `main` (ADR 0002, the design note of 02) keep their numbers.
 - After the CI pull request #41 merges: the environment `cross-review` in `docs/setup/README.md`; the branch rule in `AGENTS.md` that the workflow `delete-branch` now enforces; the mutation score in `docs/backlog.md`.
 
 ## Rules that apply to every plan
@@ -22,7 +22,7 @@ Read `AGENTS.md` first. In short:
 - Agents act as the machine account `HannesT117-ai`, never with the engineer's credentials.
 - Skills change only with the skill `authoring-skills`.
 - Only a design session reads the open web.
-- A question to the engineer says what it is about, names the consequences of each option, and carries no recommendation. The agent decides implementation details itself.
+- Ask the engineer only about direction: scope, who owns or approves what, and cost. Settle every detail yourself and record it with its reason in the note or the pull request. A question says what it is about, names the consequences of each option, and carries no recommendation.
 - Every report starts with one line per pull request opened or changed (title and link), names the kind of each piece of evidence, and names each change it dropped.
 
 ## How to resume a plan
