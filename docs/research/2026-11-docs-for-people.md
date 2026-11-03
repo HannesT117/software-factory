@@ -33,3 +33,33 @@ Labels:
 
 - **Tessl, spec-as-source:** code is generated from the spec and never edited. Per a [2026 review](https://codemyspec.com/blog/tessl-review) (via search) it was not generally available in mid-2026, and Tessl turned to a registry for agent skills in January 2026. The factory keeps code as the source.
 - **Steering files as the doc for people:** they are loaded into every agent session and cost context there; the factory already keeps `AGENTS.md` short (rule 41).
+
+## How a system doc stays current
+
+| Source | Finding | Can take |
+|---|---|---|
+| [Structurizr, Why "as code"](https://docs.structurizr.com/as-code) (read; vendor) | A DSL holds the model; views render it. "AI agents have limited abilities to interact with UI-driven tools, but they can generate text." Drift detection is a suggested agent workflow, not a feature. Exports Mermaid, PlantUML and a static site. Needs Java or a container. | A model that the engineer owns, as in rule 18. A drift check is extra work in any tool. |
+| [go-arch-lint](https://github.com/vsfedorenko/go-arch-lint/releases) (via search) | Checks Go imports against declared layers. A fork exports the dependency graph as Mermaid. | The import graph of a Go module can be drawn from code. `go list -deps -json` gives the same data with the standard library only. |
+| [LikeC4, dynamic views](https://likec4.dev/dsl/views/dynamic/) (read; open source) | Dynamic views describe one use case with steps, as a diagram or a sequence. They live only in the view, not in the model. | Flows are drawn by hand even in a model tool. |
+| [Write the Docs, docs as code](https://www.writethedocs.org/guide/docs-as-code/) (read) | Docs follow the same review and merge workflow as code; teams can "block merging of new features if they don't include documentation". | The system doc changes in the pull request that changes the behaviour. |
+| [Marius-Juston/agent-harness, issue 299](https://github.com/Marius-Juston/agent-harness/issues/299), 2026-10-19 (read; practitioner, one repo) | An LLM sweep for stale claims in specs and design docs: precision 0.87 (34/39) on docs that had drifted, 0.22 (2/9) on maintained files, recall 7 of 9. 31 of 34 earlier drift fixes deleted the doc. The sweep stays advisory. | An LLM drift check gives false alarms on maintained docs. Less hand-written text means less drift. |
+| [asimov-agent/llgenie, pull request 646](https://github.com/asimov-agent/llgenie/pull/646) (via search; practitioner) | A bot regenerates `docs/ARCHITECTURE.md` from the git diff since the last refresh, in its own pull request. | A refresh as a separate pull request is a known pattern. |
+
+What can be generated from code and what cannot:
+
+- **Generated:** the packages and their imports, the commands of the CLI, the list of scenarios in force (`factory scenarios`), the rules table. A check can compare them with the code on every pull request.
+- **By hand:** flows across sessions, people and GitHub, such as the increment workflow. No code holds them. Only a review checks them.
+
+## In which pull request the system doc changes
+
+| Source | Finding | Can take |
+|---|---|---|
+| [OpenSpec, concepts](https://raw.githubusercontent.com/Fission-AI/OpenSpec/main/docs/concepts.md) (read) | The change holds a delta (ADDED, MODIFIED, REMOVED). The current specs change only at archive, after the code. | The design note holds the future state; the system doc changes with the code. |
+| [Ubl, Design docs at Google](https://www.industrialempathy.com/posts/design-docs-at-google/) (read; practitioner) | "If the designed system hasn't shipped yet, then definitely update the doc." After that, design docs drift and become a set of amendments. A design doc has a system-context diagram. A small change gets a "1-3 page 'mini design doc'". | A design note is a record of a change, not a current-state doc. |
+| Rule 36 and `AGENTS.md` (this repo) | Docs describe the current state. ADRs are in force on `main` once merged. | A system doc changed in the design pull request would describe a state that does not exist until the code merges. |
+
+Three placements follow:
+
+1. **Code pull request.** The implementing agent updates the system doc with the code; the reviewer checks it against the diff (rule 12). The doc on `main` always matches the code on `main`. The engineer sees the change only if the system doc is an owned path, which then makes the code pull request wait for the engineer (rule 27).
+2. **Design pull request, as a delta.** The design note shows the changed flow as a diagram of the future state. The code pull request moves it into the system doc. The engineer reads the flow before approval, and the doc on `main` stays current.
+3. **Separate pull request after the code.** A session refreshes the system doc from `main`. The doc lags behind the code between the merges.
