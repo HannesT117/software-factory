@@ -6,6 +6,7 @@ Plans for work in progress, written so that any agent, also one of another vendo
 |---|---|---|
 | [03-setup-script.md](03-setup-script.md) | Increment 03: a script for the engineer's one-time setup per repo | design note merged (#45); test writer `session_01PcDxYHzSki2JvX18xq1jLD`, then an implementing session |
 | [04-design-questions.md](04-design-questions.md) | Increment 04: comprehension questions before the design approval; the reviewer explains deviations | orchestrating session `session_01VBxMTgez7WqptNV5nYhthf` |
+| [05-tests-per-increment.md](05-tests-per-increment.md) | Increment 05: check-tests asks for missing tests only in their increment | orchestrating session for the design, then test writer and implementing session |
 | [docs-for-people.md](docs-for-people.md) | On hold: the engineer decided that every increment adds a feature for other repos; #44, #47 and #49 describe docs of this repo and wait to be re-cut as increment 06 | none |
 
 Small pull requests outside these plans, done by the orchestrating session:
@@ -14,7 +15,7 @@ Small pull requests outside these plans, done by the orchestrating session:
 - Docs after the CI pull request #41 (merged): #48. Code owner of `docs/architecture/`: #49. No session in pull requests: #46.
 - After the engineer has put `OPPER_API_KEY` into the environment `cross-review`: push to each open pull request once, so that its checks and `cross-review` run.
 
-Order of work, decided by the engineer on 2026-11-03: finish 03 and 04, then 05 install and distribution (#50 moves it there). Every increment adds a feature that the factory provides to other repos; this repo using the factory is a side effect.
+Order of work, decided by the engineer on 2026-11-03: finish 03 and 04, then 05 tests per increment, then 06 install and distribution (#50 sets this order). Every increment adds a feature that the factory provides to other repos; this repo using the factory is a side effect.
 
 ## Rules that apply to every plan
 
