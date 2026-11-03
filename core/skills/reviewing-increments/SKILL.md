@@ -29,7 +29,7 @@ The agent runs each demonstrated scenario of the note, records it under `evidenc
 
 After the result, the agent writes in the conversation the line `Deviations from the note:` and then one entry for every place where the code contradicts the note, which is also a finding, or decides a point that the note leaves open: the file and line, what the note says or leaves open, and what the code does. Without such a place, the line is followed by `none`.
 
-A flow is a sequence of steps that the note describes, in its diagram or in its text. For each place that adds, removes or reorders a step of such a flow, the entry has a Mermaid sketch: its first line is a question that the agent writes for it, and it shows the flow as the code runs it, with at most about 7 nodes and the changed step marked. A longer flow is cut to the part around the change.
+A flow is a sequence of steps that the note describes, in its diagram or in its text. For each place that adds, removes or reorders a step of such a flow, the entry has a Mermaid sketch: its first line is a question that the agent writes for it, as the sketch's `title` in a front-matter block (`---`, `title: <question>`, `---`), and it shows the flow as the code runs it, with at most about 7 nodes and the changed step marked. A longer flow is cut to the part around the change.
 
 The agent asks no comprehension questions; the person answers them on the design pull request.
 

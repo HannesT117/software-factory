@@ -4,4 +4,4 @@ focus: trace
 weight: 1
 ---
 
-The first line of the sketch, or the line right above its code block, is a question that the sketch answers.
+The sketch's title, in a front-matter block at its start, is a question that the sketch answers.
