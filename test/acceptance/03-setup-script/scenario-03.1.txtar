@@ -1,0 +1,86 @@
+# scenario 03.1: The first run sets up a new repo
+# The stand-in for gh holds a new repo with none of the settings. The first
+# run reports each step as changed, in order, with the differing fields of
+# the merge settings and the rulesets, and leaves every setting in place.
+stdin secret.txt
+exec factory setup --agent project-agent --repo engineer/project
+stdout '(?s)^setup: changed merge-settings(\W.*)?\nsetup: changed agent-account(\W.*)?\nsetup: changed environment(\W.*)?\nsetup: changed secret(\W.*)?\nsetup: changed ruleset main(\W.*)?\nsetup: changed ruleset branches(\W.*)?\nsetup: ok 6 checked\n$'
+! stdout ': error '
+
+# Each merge setting differs, with its current and its target value.
+stdout '^setup: changed merge-settings\b.*\ballow_squash_merge false -> true(, |$)'
+stdout '^setup: changed merge-settings\b.*\ballow_merge_commit true -> false(, |$)'
+stdout '^setup: changed merge-settings\b.*\ballow_rebase_merge true -> false(, |$)'
+stdout '^setup: changed merge-settings\b.*\ballow_auto_merge false -> true(, |$)'
+stdout '^setup: changed merge-settings\b.*\bdelete_branch_on_merge false -> true(, |$)'
+stdout '^setup: changed merge-settings\b.*\bsquash_merge_commit_title COMMIT_OR_PR_TITLE -> PR_TITLE(, |$)'
+stdout '^setup: changed merge-settings\b.*\bsquash_merge_commit_message COMMIT_MESSAGES -> PR_BODY(, |$)'
+
+# Each compared field of a missing ruleset differs.
+stdout '^setup: changed ruleset main\b.*\bname .*-> '
+stdout '^setup: changed ruleset main\b.*\btarget .*-> '
+stdout '^setup: changed ruleset main\b.*\benforcement .*-> '
+stdout '^setup: changed ruleset main\b.*\bbypass_actors .*-> '
+stdout '^setup: changed ruleset main\b.*\bconditions .*-> '
+stdout '^setup: changed ruleset main\b.*\brules .*-> '
+stdout '^setup: changed ruleset branches\b.*\bname .*-> '
+stdout '^setup: changed ruleset branches\b.*\btarget .*-> '
+stdout '^setup: changed ruleset branches\b.*\benforcement .*-> '
+stdout '^setup: changed ruleset branches\b.*\bbypass_actors .*-> '
+stdout '^setup: changed ruleset branches\b.*\bconditions .*-> '
+stdout '^setup: changed ruleset branches\b.*\brules .*-> '
+
+# Merge settings: squash merging with title and description of the pull
+# request, no merge commits, no rebase merging, auto-merge, branch deletion.
+exec gh api repos/engineer/project
+cp stdout repo.json
+jsonsub repo.json '{"allow_squash_merge":true,"allow_merge_commit":false,"allow_rebase_merge":false,"allow_auto_merge":true,"delete_branch_on_merge":true,"squash_merge_commit_title":"PR_TITLE","squash_merge_commit_message":"PR_BODY"}'
+
+# An invitation for the agent account, with write access.
+exec gh api repos/engineer/project/invitations
+cp stdout invitations.json
+jsonsub invitations.json '[{"invitee":{"login":"project-agent"},"permissions":"write"}]'
+
+# The environment cross-review, which only the branch main may use.
+exec gh api repos/engineer/project/environments/cross-review
+cp stdout environment.json
+jsonsub environment.json '{"name":"cross-review","deployment_branch_policy":{"protected_branches":false,"custom_branch_policies":true}}'
+exec gh api repos/engineer/project/environments/cross-review/deployment-branch-policies
+cp stdout policies.json
+jsonsub policies.json '{"total_count":1,"branch_policies":[{"name":"main","type":"branch"}]}'
+
+# Its secret, with the value from standard input.
+jsonsub gh/state.json '{"repos":{"engineer/project":{"environments":{"cross-review":{"secrets":{"OPPER_API_KEY":"s3cret-1"}}}}}}'
+
+# The rulesets main and branches, with the content that the binary carries.
+exec gh api repos/engineer/project/rulesets
+cp stdout rulesets.json
+jsonsub rulesets.json '[{"id":1,"name":"main"},{"id":2,"name":"branches"}]'
+exec gh api repos/engineer/project/rulesets/1
+cp stdout main.json
+jsoneq main.json $REPO/internal/setup/rulesets/main.json name target enforcement bypass_actors conditions rules
+exec gh api repos/engineer/project/rulesets/2
+cp stdout branches.json
+jsoneq branches.json $REPO/internal/setup/rulesets/branches.json name target enforcement bypass_actors conditions rules
+
+-- secret.txt --
+s3cret-1
+-- gh/state.json --
+{
+  "logged_in": true,
+  "user": "engineer",
+  "repos": {
+    "engineer/project": {
+      "admin": true,
+      "settings": {
+        "allow_squash_merge": false,
+        "allow_merge_commit": true,
+        "allow_rebase_merge": true,
+        "allow_auto_merge": false,
+        "delete_branch_on_merge": false,
+        "squash_merge_commit_title": "COMMIT_OR_PR_TITLE",
+        "squash_merge_commit_message": "COMMIT_MESSAGES"
+      }
+    }
+  }
+}
