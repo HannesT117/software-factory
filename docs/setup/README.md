@@ -4,7 +4,7 @@ The engineer does these steps once per repo, in this order; step 3 needs the eng
 
 1. **Agent account.** Create a GitHub account for agents, with its own email and two-factor authentication. GitHub allows one free machine account next to a personal account, used only for automated tasks.
 2. **Code owners and workflows, before the rulesets.** Copy `.github/CODEOWNERS`, `.github/workflows/` and `.factory/` from the factory repo, put the engineer's personal account in `CODEOWNERS`, and push them to `main`. Once step 3 has imported the ruleset `main`, every change needs a pull request whose required checks pass, and these workflows provide the checks.
-3. **Admin settings.** Build `factory` in the factory repo with `go build ./cmd/factory`. In the project's clone, logged in to `gh` with the engineer's personal account, run
+3. **Admin settings.** In the factory repo, install `factory` with `go install ./cmd/factory`; it goes to `$(go env GOPATH)/bin`, which must be on `PATH`. In the project's clone, logged in to `gh` with the engineer's personal account, run
    ```bash
    factory setup --agent <agent account> --dry-run
    factory setup --agent <agent account> < file-with-the-opper-api-key
