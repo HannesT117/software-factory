@@ -1,6 +1,6 @@
 # Claude Code adapter
 
-This folder translates the factory for Claude Code. `factory install` copies it into a project from increment 03 on.
+This folder translates the factory for Claude Code. `factory install` copies it into a project from increment 06 on.
 
 - `settings.json`: the hooks. In a project, they go into `.claude/settings.json`.
   - `PreToolUse` runs `factory hook pre-tool-use`. It denies writes to the tests group and the CI-and-config group, except test files from a session started as `acceptance-test-writer`. It denies changes to the files of a skill until the session has loaded `authoring-skills`. Outside a design session (`FACTORY_SESSION=design`), it denies web searches and pages from hosts that `.factory/allowed-hosts` does not list.
