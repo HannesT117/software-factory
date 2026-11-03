@@ -39,3 +39,4 @@ One diagram per design note may be too little. Separate the implementation plan 
 4. Commit the research notes on the work branch and push. Send the options to the orchestrating session, and wait for the engineer's decision. Then open the research pull request.
 
 ## Checkpoints
+- 2026-11-03T00:52Z step 1 done; claude/research-docs-for-people@7759cd2 (no commits yet, from main); next: step 2, research question 1; open: none. Note: `docs/domain/` does not exist in the factory repo; only the skill assets define its format.
