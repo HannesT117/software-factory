@@ -9,13 +9,13 @@
 | Tests changed after review | 0 |
 | Code commits | 3; 663 lines in `cmd/` and `internal/`, with the two moved ruleset files |
 | `go test ./...` runs until green | 1 |
-| Review rounds | 1 so far; 1 finding |
-| Engineer's interventions during the code | 1 question: how a ruleset is compared (finding of review 1) |
+| Review rounds | 2; 1 finding in round 1 |
+| Engineer's interventions during the code | 0; the orchestrating session settled the one question (how a ruleset is compared) |
 | Agent | Claude Code 2.1.317, cloud session; a test-writer session, an implementing session, and the subagent `increment-reviewer` |
 
 ## Corrections
 
-- The design note says that a ruleset on GitHub "equals" the embedded file. The code compares by containment, because GitHub returns default keys that the file lacks; the reviewer reported this as its finding. The engineer decides between containment and strict equality.
+- The design note says that a ruleset on GitHub "equals" the embedded file. The code compares by containment, because GitHub returns default keys that the file lacks; the reviewer reported this as its finding. The orchestrating session kept containment, and design pull request #56 changes the note to "holds every key and value that the file sets".
 - `docs/setup/README.md` told the engineer to build `factory` and then run it in another folder, where it is not on `PATH`. Fixed with `go install`.
 - The implementing session deleted the reviewer's uncommitted `review.md` in the shared worktree, and restored it from the reviewer's commit.
 
@@ -28,4 +28,4 @@
 
 ## Summary
 
-`factory setup` applies the admin settings of a repo in six steps, with a dry run and with repair on a second run. The tests of 03.1 to 03.8 passed on the first full run. Review 1 found one deviation from the note: rulesets are compared by containment, not equality, which the engineer decides. The manual scenario 03.9 on a real repo is open; it also shows which default keys GitHub adds to a ruleset.
+`factory setup` applies the admin settings of a repo in six steps, with a dry run and with repair on a second run. The tests of 03.1 to 03.8 passed on the first full run. Review 1 found one deviation from the note: rulesets are compared by containment, not equality; #56 changes the note to match. The manual scenario 03.9 on a real repo is open; it also shows which default keys GitHub adds to a ruleset.

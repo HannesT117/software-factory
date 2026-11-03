@@ -8,13 +8,13 @@ This repo is a software factory: the system around coding agents that decides wh
 
 ## Status
 
-v0, increment 02 of 07.
+v0, increment 03 of 07.
 
 | Increment | Content | State |
 |---|---|---|
 | 01 Basis | this page, principles, research notes, ADRs 0001 and 0002 | done |
 | 02 Trust core | Go CLI with checks for skills, design notes, ADRs, tests and pull request paths; an agent account, with the engineer approving owned paths as code owner; a reviewer that a hook starts, and a review by a model of another vendor; skills with evals; guard hook | [design note](docs/increments/02-trust-core/design.md) approved; tests, code and skills merged; CI pull request in review; manual scenarios and retro open |
-| 03 Setup script | a script in `docs/setup/` that the engineer runs once per repo with their own `gh`, for the steps that need admin rights; `docs/setup/` owned by the engineer and a path group of its own | planned |
+| 03 Setup script | `factory setup`, which the engineer runs once per repo with their own `gh`, for the steps that need admin rights; `docs/setup/` lists only the manual steps | [design note](docs/increments/03-setup-script/design.md) approved; tests, code, review and retro in #54; note wording on rulesets in #56; manual scenario 03.9 open |
 | 04 Design questions | comprehension questions on the design pull request, from a fresh session, before the engineer approves; after the code, the reviewer explains where the code deviates from the note | planned |
 | 05 Docs for people | the whole system for people, apart from the design notes for agents: a lean arc42 set in `docs/architecture/` (context and runtime flows, with one small sketch per flow), owned by the engineer, and a `writing-docs` skill | planned |
 | 06 Install and distribution | `factory install`; the binary through releases with attestations or through `go install …@vX.Y.Z` (open); install in cloud and CI; for the project's language: an architecture check, a linter with the project's own rules, each with test cases and a message that names the fix (for TypeScript: oxlint, ESLint or ast-grep for own rules, and dependency-cruiser, open), a ratchet on lint warnings and complexity, and acceptance tests in the project's own format; lint configuration and rules, manifests and lockfiles owned by the engineer; a block in the project's `AGENTS.md` that makes `authoring-skills` the skill for skills and lets agents start subagents and sessions on their own | planned |
