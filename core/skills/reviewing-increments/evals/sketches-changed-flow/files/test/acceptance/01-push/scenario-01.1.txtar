@@ -1,0 +1,3 @@
+# scenario 01.1: An empty queue sends nothing
+exec outbox push http://127.0.0.1:9/
+stdout '^outbox: sent 0$'

@@ -6,10 +6,10 @@ Read `README.md` first. It is the entry point and shows the status. The factory 
 
 An increment is one unit of work in two pull requests, in the folder `docs/increments/<nn>-<slug>/`. The formats and the path groups are in the design note of increment 02, section Format.
 
-1. **Design pull request.** Write `design.md` with the skill `designing-increments`. Turn on auto-merge. Stop. The engineer approves as code owner.
+1. **Design pull request.** Write `design.md` with the skill `designing-increments`. Turn on auto-merge. A fresh session asks the engineer the comprehension questions, as the skill says; neither questions nor answers go into the repo. Stop. The engineer approves as code owner.
 2. **Tests.** The agent starts a separate session as `acceptance-test-writer`. It commits one `testscript` file per automated scenario to a new work branch, and stops.
 3. **Code, on the same branch.** The implementing agent writes the code until the tests pass. Stop and ask if a test looks wrong.
-4. **Review and demonstration.** When the stop hook blocks, start the subagent `increment-reviewer`. It writes `evidence/<nn>-<slug>/review.md` with the skill `reviewing-increments`, and turns on auto-merge only when it found nothing. The engineer answers its comprehension questions in the conversation before the reviewer explains; neither questions nor answers go into the repo. The same session runs the demonstrated scenarios and puts their recordings into `evidence/`.
+4. **Review and demonstration.** When the stop hook blocks, start the subagent `increment-reviewer`. It writes `evidence/<nn>-<slug>/review.md` with the skill `reviewing-increments`, and turns on auto-merge only when it found nothing. In the conversation, it lists where the code deviates from the note. The same session runs the demonstrated scenarios and puts their recordings into `evidence/`.
 5. **Manual scenarios.** The engineer runs them.
 6. **Retro.** Write `retro.md` in the same pull request: metrics, agent version, corrections, and every point that concerns the factory. From increment 07 on, `factory feedback` prints a prefilled issue link for each factory point, and the engineer submits it. Then a summary of at most 10 lines.
 

@@ -1,6 +1,6 @@
 ---
 name: reviewing-increments
-description: Reviews the change of an increment against its design note in a fresh context, writes the review result, which allows or blocks auto-merge, and asks the person comprehension questions in the conversation. The agent uses it after the last code commit of an increment, when the stop hook asks for a review result, or when the person asks to review an increment. Not for a draft design note, which designing-increments covers.
+description: Reviews the change of an increment against its design note in a fresh context, writes the review result, which allows or blocks auto-merge, and explains to the person where the code deviates from the note. The agent uses it after the last code commit of an increment, when the stop hook asks for a review result, or when the person asks to review an increment. Not for a draft design note, which designing-increments covers.
 ---
 
 # Reviewing increments
@@ -25,9 +25,13 @@ Each finding names the file and line, what is wrong, and why it matters:
 
 The agent runs each demonstrated scenario of the note, records it under `evidence/<nn>-<slug>/`, and names the recording in the result.
 
-## Comprehension questions
+## Deviations
 
-After the result, the agent asks the person 2 or 3 questions in the conversation that the person should be able to answer after reading the change. At least one is about debugging: where to look, or what to run, when a part fails. The questions test understanding, so the agent does not answer them. The person answers first; the agent explains the gaps after that. Neither the questions nor the answers go into the repo.
+After the result, the agent writes in the conversation the line `Deviations from the note:` and then one entry for every place where the code contradicts the note, which is also a finding, or decides a point that the note leaves open: the file and line, what the note says or leaves open, and what the code does. A place that is also a finding gets its own entry here too. Without such a place, the line is followed by `none`.
+
+A flow is a sequence of steps that the note describes, in its diagram or in its text. For each place that adds, removes or reorders a step of such a flow, the entry has a Mermaid sketch: its first line is a question that the agent writes for it, as the sketch's `title` in a front-matter block (`---`, `title: <question>`, `---`), and it shows the flow as the code runs it, with at most about 7 nodes and the changed step marked. A longer flow is cut to the part around the change. A detail inside a step, such as the order of a list or the wording of an output line, does not change the flow and gets no sketch.
+
+The agent asks no comprehension questions; the person answers them on the design pull request.
 
 ## Result
 

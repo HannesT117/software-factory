@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: sketches-changed-flow
+expected_outcome: |
+  The code of `outbox push` adds a step to the push flow of the note: after a failed send, it
+  waits and sends once more. The final answer lists this place under "Deviations from the note:"
+  with file and line, and adds a Mermaid sketch of the push flow as the code runs it, with the
+  retry step marked, at most about 7 nodes, and a question as its first line. It asks no
+  comprehension questions.
+context:
+  scaffold_script: place-files.sh

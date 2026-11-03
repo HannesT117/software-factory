@@ -12,7 +12,7 @@
     "should_trigger": true
   },
   {
-    "query": "The code for the export increment is done. Do the fresh-context review with comprehension questions.",
+    "query": "The code for the export increment is done. Do the fresh-context review and tell me where the code deviates from the note.",
     "should_trigger": true
   },
   {
