@@ -39,7 +39,20 @@ jobs:
           exit $status
       - name: check-tests when code or tests change
         run: |
-          if git diff --name-only "$BASE...HEAD" | grep -qvE '^(docs/increments/[^/]+/design\.md|docs/domain/.*|\.github/.*|\.factory/.*|evidence/.*)$'; then
+          # Code is what .factory/code-paths on main names, plus the tests
+          # group; without that file, every path outside the groups.
+          list="$RUNNER_TEMP/base/.factory/code-paths"
+          if [ -f "$list" ]; then
+            code='^(test/acceptance/.*|go\.mod|go\.sum)$'
+            while read -r p; do
+              re=$(printf '%s' "$p" | sed -e 's/[.]/\\./g' -e 's/\*\*/@@/g' -e 's#\*#[^/]*#g' -e 's/@@/.*/g')
+              code="$code|^$re\$"
+            done < <(grep -vE '^[[:space:]]*(#|$)' "$list")
+            changed=$(git diff --name-only "$BASE...HEAD" | grep -v '^evidence/' | grep -E "$code" || true)
+          else
+            changed=$(git diff --name-only "$BASE...HEAD" | grep -vE '^(docs/increments/[^/]+/design\.md|docs/domain/.*|\.github/.*|\.factory/.*|evidence/.*)$' || true)
+          fi
+          if [ -n "$changed" ]; then
             factory check-tests --base "$BASE"
           else
             echo "checks: no code or tests change, so check-tests does not run"
