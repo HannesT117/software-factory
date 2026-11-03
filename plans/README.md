@@ -4,7 +4,7 @@ Plans for work in progress, written so that any agent, also one of another vendo
 
 | Plan | Work | Runs as |
 |---|---|---|
-| [03-setup-script.md](03-setup-script.md) | Increment 03: a script for the engineer's one-time setup per repo | design note merged (#45); test writer `session_01PcDxYHzSki2JvX18xq1jLD`, then an implementing session |
+| [03-setup-script.md](03-setup-script.md) | Increment 03: a script for the engineer's one-time setup per repo | tests in #54 (test writer `session_01PcDxYHzSki2JvX18xq1jLD`, done); code by `session_01PcDxYGeTSySmjYdvgHL244` |
 | [04-design-questions.md](04-design-questions.md) | Increment 04: comprehension questions before the design approval; the reviewer explains deviations | orchestrating session `session_01VBxMTgez7WqptNV5nYhthf` |
 | [05-tests-per-increment.md](05-tests-per-increment.md) | Increment 05: check-tests asks for missing tests only in their increment | orchestrating session for the design, then test writer and implementing session |
 | [docs-for-people.md](docs-for-people.md) | On hold: the engineer decided that every increment adds a feature for other repos; #44, #47 and #49 describe docs of this repo and wait to be re-cut as increment 06 | none |
