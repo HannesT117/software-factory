@@ -60,3 +60,4 @@ One diagram per design note may be too little. Separate the implementation plan 
 - 2026-11-03T00:55Z step 2 done; claude/research-docs-for-people@1401381; next: step 3, write the options; open: none
 - 2026-11-03T00:56Z step 3 done; claude/research-docs-for-people@241f36b; next: step 4, wait for the engineer's decision on options A to D (sent to the orchestrating session), then open the research pull request; open: which option
 - 2026-11-03T01:05Z round 2 written; claude/research-docs-for-people@cbe5495; next: wait for the engineer's choice of split (S1 to S3) and the rule 18 answer (R1 to R3), sent to the orchestrating session; then record it under Decisions and open the research pull request; open: split, rule 18
+- 2026-11-03T01:42Z round 2 decisions recorded; claude/research-docs-for-people@fcb04ec; next: step 4, open the research pull request once the orchestrating session confirms; then the design pull request of the increment; open: none
