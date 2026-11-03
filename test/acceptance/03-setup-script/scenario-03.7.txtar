@@ -1,0 +1,74 @@
+# scenario 03.7: The secret is asked for only when it is missing
+# On a new repo, the secret is missing. With a value on standard input,
+# surrounded by white space and followed by a second line, a run says that
+# it reads the value, stores only the stripped first line, and passes it to
+# gh on standard input, never as an argument. With only white space, and
+# then with nothing, on standard input, it reports the missing secret as an
+# error; the steps before it are done and the rulesets are not imported.
+cp gh/state.json new-state.json
+stdin value.txt
+exec factory setup --agent project-agent --repo engineer/project
+stdout '(?s)^setup: changed environment(\W.*)?\nsetup: reading OPPER_API_KEY from standard input\n(.*\n)?setup: changed secret(\W.*)?\n'
+stdout '^setup: ok 6 checked$'
+jsonsub gh/state.json '{"repos":{"engineer/project":{"environments":{"cross-review":{"secrets":{"OPPER_API_KEY":"s3cret-7"}}}}}}'
+grep '^secret set ' gh/calls.log
+! grep 's3cret-7' gh/calls.log
+
+# Only white space on standard input.
+cp new-state.json gh/state.json
+rm gh/calls.log
+stdin blank.txt
+exitcode 1 factory setup --agent project-agent --repo engineer/project
+stdout '^setup: changed merge-settings\b'
+stdout '^setup: changed agent-account(\W|$)'
+stdout '^setup: changed environment(\W|$)'
+stdout '(?s)^setup: reading OPPER_API_KEY from standard input\n(.*\n)?setup: error secret: no-secret( [^\n]*)?\n'
+stdout '^setup: 1 errors$'
+! stdout '^setup: [a-z ]*ruleset '
+! grep '^secret set ' gh/calls.log
+! grep '^api (POST|PUT|PATCH|DELETE) repos/engineer/project/rulesets' gh/calls.log
+exec gh api repos/engineer/project/rulesets
+stdout '^\[\]$'
+exec gh api repos/engineer/project/invitations
+stdout '"login":"project-agent"'
+exec gh api repos/engineer/project/environments/cross-review/deployment-branch-policies
+stdout '"name":"main"'
+
+# Nothing on standard input.
+cp new-state.json gh/state.json
+rm gh/calls.log
+exitcode 1 factory setup --agent project-agent --repo engineer/project
+stdout '^setup: changed environment(\W|$)'
+stdout '^setup: reading OPPER_API_KEY from standard input$'
+stdout '^setup: error secret: no-secret( |$)'
+stdout '^setup: 1 errors$'
+! stdout '^setup: [a-z ]*ruleset '
+! grep '^secret set ' gh/calls.log
+exec gh api repos/engineer/project/rulesets
+stdout '^\[\]$'
+
+-- value.txt --
+  s3cret-7	 
+second line
+-- blank.txt --
+ 	  
+
+-- gh/state.json --
+{
+  "logged_in": true,
+  "user": "engineer",
+  "repos": {
+    "engineer/project": {
+      "admin": true,
+      "settings": {
+        "allow_squash_merge": false,
+        "allow_merge_commit": true,
+        "allow_rebase_merge": true,
+        "allow_auto_merge": false,
+        "delete_branch_on_merge": false,
+        "squash_merge_commit_title": "COMMIT_OR_PR_TITLE",
+        "squash_merge_commit_message": "COMMIT_MESSAGES"
+      }
+    }
+  }
+}
