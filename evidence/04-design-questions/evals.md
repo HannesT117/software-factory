@@ -25,9 +25,9 @@ The skills changed after the first runs: the question of a sketch goes into its 
 | explains-deviations | 2 | 1.0, 1.0 |
 | sketches-changed-flow | 2 | 1.0, 1.0 |
 | asks-comprehension-questions | 1 | 1.0 |
-| explains-gaps-after-answers | 2 | 0.8, 0.8 |
+| explains-gaps-after-answers | 2 | 1.0, 1.0 |
 
-In explains-gaps-after-answers, the explanation is right in content but comes as lists, not one paragraph per question.
+explains-gaps-after-answers loaded the skill only after its prompt named it; before, the runs scored 0.8 with the explanation as lists. In the real flow, the design session has the skill loaded already.
 
 ## Limits
 
