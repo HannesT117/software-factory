@@ -48,6 +48,13 @@ One diagram per design note may be too little. Separate the implementation plan 
 - A skill for writing these docs may be needed. Each split says whether it needs such a skill (see the backlog row for `reviewing-architecture` and `writing-docs`) and what it would hold.
 - Rule 18 needs a decision for option C (building-block views come from a model that the engineer owns; code is not such a model). It goes as a question with consequences into the same round.
 
+### 2026-11-03, round 2 (split and rule 18)
+
+- Split S2, arc42 lean: `docs/architecture/context.md`, `docs/architecture/runtime.md`, links to the ADRs and the glossary instead of copies, and a smaller skill `writing-docs`.
+- Rule 18: no building-block view for the factory's own docs ("fairly pointless, because it is a collection of scripts"). Rule 18 stays as it is.
+- Open for increment 05 or later, not decided: whether projects that use the factory get a generated building-block view.
+- Settled by the agent (rule 38, benefit against cost): the factory's docs get no generated files. The CLI commands are the external interface of arc42 section 3, so `context.md` names the CLI and points to `factory` without arguments, which prints the commands; the scenarios in force are printed by `factory scenarios`. A generated copy would restate what a command prints (rule 36, AGENTS.md: a doc points instead of restating), and as an owned path it would make code pull requests wait for the engineer. So for the factory, the generator and its check of option C are dropped; `building-blocks.md` does not exist. Whether projects get generated parts stays open with the building-block view.
+
 ## Checkpoints
 - 2026-11-03T00:52Z step 1 done; claude/research-docs-for-people@7759cd2 (no commits yet, from main); next: step 2, research question 1; open: none. Note: `docs/domain/` does not exist in the factory repo; only the skill assets define its format.
 - 2026-11-03T00:55Z step 2 done; claude/research-docs-for-people@1401381; next: step 3, write the options; open: none
