@@ -41,3 +41,4 @@ One diagram per design note may be too little. Separate the implementation plan 
 ## Checkpoints
 - 2026-11-03T00:52Z step 1 done; claude/research-docs-for-people@7759cd2 (no commits yet, from main); next: step 2, research question 1; open: none. Note: `docs/domain/` does not exist in the factory repo; only the skill assets define its format.
 - 2026-11-03T00:55Z step 2 done; claude/research-docs-for-people@1401381; next: step 3, write the options; open: none
+- 2026-11-03T00:56Z step 3 done; claude/research-docs-for-people@241f36b; next: step 4, wait for the engineer's decision on options A to D (sent to the orchestrating session), then open the research pull request; open: which option
