@@ -42,3 +42,4 @@ Each question names the consequences of each option and carries no recommendatio
 5. After the merge: the test writer, the code, the review and the retro, as `AGENTS.md` describes. Each step gets its own plan section here before it starts.
 
 ## Checkpoints
+- 2026-11-03T00:52Z step 1 done; no work branch yet (main@7759cd2, CI PR #41 open); next: step 2; open: none
