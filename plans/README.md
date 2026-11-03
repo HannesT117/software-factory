@@ -33,6 +33,11 @@ Read `AGENTS.md` first. In short:
 
 ## Checkpoints
 
+Work that exists only in a session is lost when the session ends. So each session pushes its work often, not only at the end of a step:
+
+- A draft, such as a design note or research notes, is committed and pushed as it grows: after each section or each research question, and at the latest every 30 minutes (check with `date -u`).
+- Code and tests are committed and pushed after each change that passes the tests.
+
 After each step of a plan, and before a long run such as evals or a batch of web research:
 
 1. Commit the work on the plan's work branch and push it.
