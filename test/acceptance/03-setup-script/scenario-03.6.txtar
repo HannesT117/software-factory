@@ -1,0 +1,38 @@
+# scenario 03.6: An agent account with admin rights is reported
+# The agent account is already an admin of the repo. A run reports this as
+# an error before the first step, makes no writing call, and the account
+# keeps its admin rights.
+exitcode 1 factory setup --agent project-agent --repo engineer/project
+stdout '^setup: error .*: agent-is-admin( |$)'
+stdout '^setup: 1 errors$'
+! stdout '^setup: (changed|unchanged|would change) '
+! grep '^(api (POST|PUT|PATCH|DELETE) |secret set )' gh/calls.log
+cmp gh/state.json before.json
+exec gh api repos/engineer/project/collaborators/project-agent/permission
+stdout '"permission":"admin"'
+
+-- gh/calls.log --
+-- gh/state.json --
+{
+  "logged_in": true,
+  "user": "engineer",
+  "repos": {
+    "engineer/project": {
+      "admin": true,
+      "settings": {"allow_merge_commit": true},
+      "collaborators": {"project-agent": "admin"}
+    }
+  }
+}
+-- before.json --
+{
+  "logged_in": true,
+  "user": "engineer",
+  "repos": {
+    "engineer/project": {
+      "admin": true,
+      "settings": {"allow_merge_commit": true},
+      "collaborators": {"project-agent": "admin"}
+    }
+  }
+}
