@@ -5,7 +5,7 @@ timeout_seconds: 900
 allowed_tools: [Read, Glob, Grep, Skill, Write, Edit, Bash, Agent]
 ---
 
-The design pull request of greeter for docs/increments/02-shout/design.md (branch design-shout) is open. You showed me these comprehension questions:
+We are in the design step of greeter's increment 02. Its design pull request for docs/increments/02-shout/design.md (branch design-shout) is open, and you showed me these comprehension questions:
 
 1. What does `greet --shout` print when no name follows the flag?
 2. Which output tells that the flag `--shout` is not recognised?
