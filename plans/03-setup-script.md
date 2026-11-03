@@ -44,6 +44,11 @@
 - Agent decision: the ruleset files move to `internal/setup/rulesets/` (Go embed reaches only files below the package folder); `docs/setup/ruleset*.json` are removed.
 - Open, round 3 (Q8): whether `docs/setup/` stays a path group of its own when it holds only `README.md`.
 
+## Decisions, round 3, 2026-11-03
+
+- Q8, decided by the orchestrating session for the engineer: `docs/setup/` is owned but not a path group. The code pull request of this increment updates `docs/setup/README.md`, removes the two ruleset files, and waits for the engineer's approval as code owner.
+- From now on the design session settles details itself and records each in the note or the pull request; it asks the engineer only about direction: scope, who owns or approves what, and cost.
+
 ## Open, to ask the engineer in rounds
 
 Each question names the consequences of each option and carries no recommendation (skill `designing-increments`, section Who decides):
