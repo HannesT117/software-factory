@@ -128,3 +128,35 @@ Rule 18 covers building-block views. Flows across people and sessions have no mo
 | `README.md` | about 730 words, the status | the engineer |
 
 No item shows the whole system as it is after the increment. The engineer rebuilds that view from the design notes of all increments.
+
+## Options
+
+Each option says what changes, what the engineer reads, what it costs, and its consequences. The engineer decides.
+
+### A. More diagrams in the design note, no system doc
+
+- **Changes:** the skill `designing-increments` allows one sketch of about 7 elements per flow that the increment changes, instead of one diagram per note. Nothing else.
+- **Engineer reads:** the design note, as today, with more sketches.
+- **Cost:** a change to one skill and its evals.
+- **Consequences:** sketches show the future state of one increment. No document shows the whole system as it is; the engineer still rebuilds that view from all design notes.
+
+### B. A hand-written system doc, changed in the code pull request
+
+- **Changes:** a new `docs/system.md` for people: a short explanation of the system and one sketch of about 7 elements per flow (about six flows for the factory). The design note shows each changed flow as a sketch of the future state. The implementing agent moves it into `docs/system.md` in the code pull request; the reviewer checks it against the diff (rule 12).
+- **Engineer reads:** `docs/system.md` once, then the changed flows in each design note. If `docs/system.md` is an owned path, the engineer also approves each code pull request that changes it; if not, the code pull request merges without the engineer, and the engineer reads the doc on `main` when needed.
+- **Cost:** one session to write the doc; changes to `designing-increments`, `reviewing-increments`, `AGENTS.md` and rule 36 or 18.
+- **Consequences:** the doc on `main` matches the code on `main`. Only review checks the flows, so drift is possible. As an owned path, every increment that changes a flow waits for the engineer after the code.
+
+### C. Generated structure and hand-written flows, with a check
+
+- **Changes:** as B, and a new command (for example `factory docs`) writes the parts that the code holds into the system doc: the package graph from `go list`, the CLI commands, the scenarios in force. A check fails when the generated part differs from the code. Flows stay hand-written.
+- **Engineer reads:** as B. The generated part changes without the engineer's work.
+- **Cost:** an increment with code, tests and a check, in addition to the cost of B. Each project needs its own generator for its language, in increment 05 or later.
+- **Consequences:** the structure never drifts. Building blocks come from the code, not from an agent's drawing; rule 18 asks for a model that the engineer owns, and the code is not such a model, so the rule needs a decision. Flows drift as in B.
+
+### D. A system doc refreshed in a separate pull request at the retro
+
+- **Changes:** as B, but the system doc changes in its own pull request after the code merges, together with the retro. `docs/system.md` is an owned path.
+- **Engineer reads:** the changed flows in the design note before approval, and the system doc change once per increment, as code owner.
+- **Cost:** one more pull request per increment, approved by the engineer; the same skill changes as B.
+- **Consequences:** between the code merge and the refresh, the doc on `main` describes the earlier state, against rule 36 for that time. The code pull request does not wait for the engineer. The engineer sees every change of the system doc.
