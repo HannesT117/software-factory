@@ -86,3 +86,4 @@ Each question names the consequences of each option and carries no recommendatio
 - 2026-11-03T01:37Z round 3 sent (Q8 path group of docs/setup); Q5 written into design.md; claude/03-setup-script-design@6dab254; next: write the Q8 answer, fresh-context check of changed scenarios, open the PR; open: Q8
 - 2026-11-03T01:44Z step 4 done: design PR #45 open (https://github.com/HannesT117/software-factory/pull/45); claude/03-setup-script-design@f32707c; auto-merge refused because the PR is already clean, so it is not merged by the agent and waits for the engineer; next: after the merge, step 5 (test writer); open: none
 - 2026-11-03T02:06Z step 5a: gh stand-in and tests 03.1 to 03.3 done; claude/03-setup-script@df3d2c6; next: tests 03.4 to 03.8; open: none
+- 2026-11-03T02:07Z step 5a: test 03.4 done; claude/03-setup-script@9a1936d; next: test 03.5; open: none
