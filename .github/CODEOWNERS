@@ -1,0 +1,11 @@
+# The engineer approves every change to these paths.
+/docs/increments/*/design.md @HannesT117
+/docs/domain/ @HannesT117
+/docs/decisions/ @HannesT117
+/AGENTS.md @HannesT117
+/docs/principles.md @HannesT117
+/docs/setup/ @HannesT117
+/go.mod @HannesT117
+/go.sum @HannesT117
+/.github/ @HannesT117
+/.factory/ @HannesT117

@@ -1,0 +1,7 @@
+{
+  "endpoint": "https://api.opper.ai/v3/compat",
+  "models": {
+    "design": "gemini/gemini-4-argon",
+    "code": "openai/gpt-6.1-sol"
+  }
+}

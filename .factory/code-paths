@@ -1,0 +1,7 @@
+# Changes to these paths count as code: the stop hook asks for a review
+# result, and cross-review reviews them as code. The tests group always
+# counts, and evidence/ never does.
+cmd/**
+internal/**
+core/**
+adapters/**
