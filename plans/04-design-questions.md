@@ -43,3 +43,4 @@
 
 ## Checkpoints
 - 2026-11-03T00:54Z step 1 draft written, check-design ok; claude/04-design-questions-design@f086344; next: fresh context explains the scenarios, then the design pull request; open: none
+- 2026-11-03T00:56Z step 1 done: design pull request https://github.com/HannesT117/software-factory/pull/43 open, scenarios sharpened after the fresh-context check; claude/04-design-questions-design@1353a3e; next: step 2 after the engineer approves and #43 merges; open: none
