@@ -73,6 +73,12 @@ Each question names the consequences of each option and carries no recommendatio
 - One `testscript` file per automated scenario, 03.1 to 03.8, in `test/acceptance/03-setup-script/`. The runner gets a stand-in for `gh` (`test/acceptance/gh_test.go`) and two JSON commands (`test/acceptance/json_test.go`).
 - Done when every test fails because `factory setup` does not exist, the tests of 02 pass, and `factory check-tests --base main` passes. Then the pull request "Add the command for the repo admin setup", and a report to the orchestrating session.
 
+## Step 5b: code
+
+- Runs as: the implementing session, on the branch `claude/03-setup-script` (pull request #54).
+- `factory setup` in `cmd/factory` and `internal/setup/`, with the rulesets in `internal/setup/rulesets/` (moved from `docs/setup/`); `docs/setup/README.md` with only the manual steps; rules 16 and 42 point to the new place.
+- Done when `go test ./...` passes; then the subagent `increment-reviewer` until it finds nothing, the retro, the pull request description and the status row of 03 in `README.md`, and a report to the orchestrating session.
+
 ## Checkpoints
 - 2026-11-03T00:52Z step 1 done; no work branch yet (main@7759cd2, CI PR #41 open); next: step 2; open: none
 - 2026-11-03T00:54Z step 2 done; claude/03-setup-script-design@70aa5b5; next: step 3, round 1 of questions; open: required checks before the first run not verified
