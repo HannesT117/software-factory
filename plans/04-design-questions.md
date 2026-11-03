@@ -42,3 +42,4 @@
 5. When the stop hook blocks: the reviewer writes `evidence/04-design-questions/review.md`. Then the retro.
 
 ## Checkpoints
+- 2026-11-03T00:54Z step 1 draft written, check-design ok; claude/04-design-questions-design@f086344; next: fresh context explains the scenarios, then the design pull request; open: none
