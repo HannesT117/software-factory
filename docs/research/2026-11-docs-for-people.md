@@ -160,3 +160,40 @@ Each option says what changes, what the engineer reads, what it costs, and its c
 - **Engineer reads:** the changed flows in the design note before approval, and the system doc change once per increment, as code owner.
 - **Cost:** one more pull request per increment, approved by the engineer; the same skill changes as B.
 - **Consequences:** between the code merge and the refresh, the doc on `main` describes the earlier state, against rule 36 for that time. The code pull request does not wait for the engineer. The engineer sees every change of the system doc.
+
+## How to split the docs for people
+
+Decision of the engineer, 2026-11-03: hand-written flows, changed in the code pull request and checked by the reviewer, and a generated structure with a check against the code. The docs are split into several files, and their paths are owned by the engineer.
+
+| Source | Finding | Can take |
+|---|---|---|
+| [Diátaxis, start here](https://diataxis.fr/start-here/) (read) | Four types on two axes: action or cognition, study or work. Tutorials and how-to guides are about doing; reference and explanation are about knowing. Reference follows the structure of the thing it describes. | Flows and the overview are explanation. Generated structure is reference. `docs/setup/` is a how-to guide. The factory has no tutorial. |
+| [Diátaxis, how to use Diátaxis](https://diataxis.fr/how-to-use-diataxis/) (read) | Against empty sections for all four types: "Don't do that. It's horrible." The top-level structure forms as content moves under a type. | Only the types that have content get a place. |
+| [Kubernetes, page content types](https://kubernetes.io/docs/contribute/style/page-content-types/) (read) | Concept, task, tutorial and reference pages, after Diátaxis. Tool reference pages are generated "from scripts using the component tool commands". | Generated reference next to hand-written concepts is common practice. |
+| [cloud-init, documentation layout](https://docs.cloud-init.io/en/24.1/development/docs_layout.html) (via search) | One folder per Diátaxis type, and a separate folder for contributors. | A folder per type is a known layout. |
+| [matklad, ARCHITECTURE.md](https://matklad.github.io/2021/02/06/ARCHITECTURE.md.html) (read; practitioner) | A short file at the root: a bird's-eye view, a codemap of coarse modules, invariants (also as absences), boundaries and cross-cutting concerns. "Keep it short: every recurring contributor will have to read it." Only what rarely changes. Names entities instead of linking to files, because "links go stale". | One short entry file for the system. Name packages and commands instead of linking lines. |
+| [arc42, overview](https://docs.arc42.org/home/) and [keywords](https://docs.arc42.org/keywords/) (read) | Twelve sections. Lean tips: "Document only a few runtime scenarios", restrict the context to an overview. Essential tips: always describe level 1 of the building-block view; show all external interfaces. | Context, level-1 building blocks and a few runtime scenarios are the core. Decisions (section 9) and the glossary (section 12) exist already. |
+| [arc42, documentation as code](https://arc42.org/documentation/) and [codecentric, Structurizr and Asciidoctor](https://www.codecentric.de/en/knowledge-hub/blog/architecture-documentation-as-code-with-structurizr-and-asciidoctor-part-2-asciidoctor) (via search; practitioner) | arc42 in Markdown or AsciiDoc next to the code, reviewed in pull requests; one file per section. C4 views map onto the arc42 sections. | One file per arc42 section that has content. |
+| Community skills for Diátaxis, for example [writing-documentation-with-diataxis](https://claudemarketplaces.com/skills/sammcj/agentic-coding/writing-documentation-with-diataxis) (via search; quality not checked) | Skills that pick the doc type and apply its rules. | A skill for docs is a known pattern. None was checked against this repo's rules. |
+
+What exists already for people, by type:
+
+| Type | Files today |
+|---|---|
+| Entry | `README.md` (one page, status) |
+| Explanation | none for the whole system; `docs/principles.md` holds rules with reasons; ADRs hold decisions |
+| How-to | `docs/setup/README.md` |
+| Reference | `docs/principles.md` as a rules table; the Interface of each design note |
+| Research | `docs/research/` |
+
+Constraints that hold for every split:
+
+- `.github/CODEOWNERS` does not exist yet on `main`; it comes with the CI pull request of increment 02. The new paths join it there or later.
+- The new paths cannot join the path group "design notes": a pull request that changes a path in a group changes no path outside it, so the code pull request could not change them. They are owned paths outside the groups.
+- If the generated files are owned, every code pull request that changes a package import, a command or a scenario waits for the engineer, even when no flow changes.
+- `README.md` stays one page and links to the new entry file.
+
+### Rejected
+
+- **All four Diátaxis folders at once:** Diátaxis itself advises against empty sections, and the factory has no tutorial.
+- **One file per arc42 section, all twelve:** most sections would stay empty or repeat `docs/principles.md` and the ADRs.
