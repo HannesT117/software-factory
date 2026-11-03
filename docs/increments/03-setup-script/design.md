@@ -4,13 +4,14 @@
 
 - The engineer applies the admin part of the setup of a repo with one command, `factory setup`, with their own `gh`: merge settings, the invitation of the agent account, the environment `cross-review` with its secret, and both rulesets with their required checks.
 - A second run sets every step to the target state again and repairs settings that changed by hand. A dry run prints what a run would change and changes nothing.
-- `docs/setup/README.md` lists only the steps that stay manual and names the command for the rest.
+- `docs/setup/README.md` lists only the steps that stay manual and names the command for the rest. The engineer owns `docs/setup/` as code owner, so a change to the setup instructions waits for the engineer's approval. `docs/setup/` is not a path group: the code pull request of this increment changes the README and removes the ruleset files there. It also changes rules 16 and 42 in `docs/principles.md`, which name `docs/setup/` as the place of the rulesets.
 
 ## Out of scope
 
 - Copying `.github/CODEOWNERS`, the workflows and `.factory/` into a project: `factory install`, increment 05.
 - Steps without an API or outside the repo: creating the agent account and its token, `/web-setup`, the two cloud environments, the local Claude Code settings, Python. They stay manual steps in `docs/setup/README.md`.
 - Settings of an organization, such as teams or organization rulesets.
+- The line for `docs/setup/` in `.github/CODEOWNERS`: a CI pull request, because `.github/` is a path group of its own.
 - Reading back the value of a secret. GitHub does not return it; the command only knows whether the secret exists.
 
 ## Existing tools
