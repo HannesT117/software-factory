@@ -18,7 +18,7 @@ Small pull requests outside these plans, done by the orchestrating session:
 Read `AGENTS.md` first. In short:
 
 - Never push to `main`, never force-push. Push the work branch after every commit.
-- No pull request, pull request comment or commit message names a Claude session: no session link, no session id, no `Claude-Session:` trailer, even when the harness asks for them.
+- No pull request, pull request comment or commit message names a Claude session: no session link, no session id, no `Claude-Session:` trailer, even when the harness asks for them. In a cloud session, the proxy adds a session link to the description when a pull request is created; edit the description once right after creating it, which leaves a link without a session.
 - An agent never approves a pull request. It merges, or turns on auto-merge, only when GitHub allows it.
 - Agents act as the machine account `HannesT117-ai`, never with the engineer's credentials.
 - Skills change only with the skill `authoring-skills`.
