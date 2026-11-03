@@ -1,0 +1,50 @@
+# scenario 03.8: A failed call stops the run, and the next run continues
+# On a new repo, GitHub refuses to create the ruleset main. The run reports
+# an error that names the step, the refused call and the first line of
+# gh's error output, and does not create the ruleset branches. After GitHub
+# accepts the call, a second run with nothing on standard input reports the
+# first four steps as unchanged and both rulesets as changed.
+stdin secret.txt
+exitcode 1 factory setup --agent project-agent --repo engineer/project
+stdout '^setup: changed secret(\W|$)'
+stdout '^setup: error ruleset main: api-failed POST /?repos/engineer/project/rulesets\b.*gh: Validation Failed \(HTTP 422\)$'
+! stdout 'refused by the fail file'
+stdout '^setup: 1 errors$'
+! stdout 'ruleset branches'
+grep -count=1 '^api POST repos/engineer/project/rulesets ' gh/calls.log
+exec gh api repos/engineer/project/rulesets
+stdout '^\[\]$'
+
+# GitHub accepts the call again.
+rm gh/fail
+rm gh/calls.log
+exec factory setup --agent project-agent --repo engineer/project
+stdout '^setup: unchanged merge-settings\nsetup: unchanged agent-account\nsetup: unchanged environment\nsetup: unchanged secret\nsetup: changed ruleset main(\W[^\n]*)?\nsetup: changed ruleset branches(\W[^\n]*)?\nsetup: ok 6 checked\n$'
+! stdout 'reading OPPER_API_KEY'
+exec gh api repos/engineer/project/rulesets
+cp stdout rulesets.json
+jsonsub rulesets.json '[{"name":"main"},{"name":"branches"}]'
+
+-- secret.txt --
+s3cret-8
+-- gh/fail --
+POST repos/engineer/project/rulesets 422 Validation Failed
+-- gh/state.json --
+{
+  "logged_in": true,
+  "user": "engineer",
+  "repos": {
+    "engineer/project": {
+      "admin": true,
+      "settings": {
+        "allow_squash_merge": false,
+        "allow_merge_commit": true,
+        "allow_rebase_merge": true,
+        "allow_auto_merge": false,
+        "delete_branch_on_merge": false,
+        "squash_merge_commit_title": "COMMIT_OR_PR_TITLE",
+        "squash_merge_commit_message": "COMMIT_MESSAGES"
+      }
+    }
+  }
+}
