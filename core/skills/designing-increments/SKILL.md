@@ -37,7 +37,7 @@ When the increment adds or changes terms, bounded contexts or dependencies betwe
 
 After the design pull request is open, the agent starts a fresh session that gets the path of the note on the branch of the pull request, and nothing from the design conversation. That session returns 2 or 3 questions without answers, and the agent shows all of them to the person, numbered, under the line `Comprehension questions:`. At least one asks where a failure of the increment shows, or what the person runs when a part fails, based on the outputs, error codes and failure signal that the note fixes. Neither the agent nor the fresh session answers a question before the person has.
 
-After the answers, a context that knows the note, the questions and the answers, but not the design conversation, explains the gaps: one paragraph per question, on where an answer misses or contradicts the note, and, for a question left open, what the note says. The agent shows that explanation. Nothing blocks the approval while answers are open. No file or commit in the repo, and no pull request description or comment, holds the questions or the answers.
+After the answers, a context that knows the note, the questions and the answers, but not the design conversation, explains the gaps: one paragraph of prose per question, without a list, that first says whether the answer matches the note, then where it misses or contradicts the note, and, for a question left open, what the note says. The agent shows that explanation. Nothing blocks the approval while answers are open. No file or commit in the repo, and no pull request description or comment, holds the questions or the answers.
 
 ## Boundaries
 
