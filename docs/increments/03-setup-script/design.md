@@ -26,7 +26,7 @@
 | Agent account | [Add a repository collaborator](https://docs.github.com/en/rest/collaborators/collaborators#add-a-repository-collaborator); [Get repository permissions for a user](https://docs.github.com/en/rest/collaborators/collaborators#get-repository-permissions-for-a-user) | used, through `gh api` | Its `permission` field applies only to repos of an organization; on a personal repo a collaborator has write access, never admin. |
 | Environment `cross-review` | [Create or update an environment](https://docs.github.com/en/rest/deployments/environments); [deployment branch policies](https://docs.github.com/en/rest/deployments/branch-policies) | used, through `gh api` | One `PUT` creates or updates the environment; `custom_branch_policies` with one policy for `main` limits it to `main`. |
 | Environment secret | [Create or update an environment secret](https://docs.github.com/en/rest/actions/secrets#create-or-update-an-environment-secret); [`gh secret set --env`](https://cli.github.com/manual/gh_secret_set) | `gh secret set` | The endpoint needs the value encrypted with a libsodium sealed box, which the standard library lacks; `gh secret set` encrypts it and reads the value from standard input. |
-| Required checks | [Available rules for rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets); rulesets endpoint | in `ruleset.json`, imported at once | The engineer's decision. The docs say that the app of a check "must have recently submitted a check run"; whether the endpoint accepts `integration_id` before that is verified in the manual scenario. |
+| Required checks | [Available rules for rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets); rulesets endpoint | in the ruleset `main`, imported at once | The engineer's decision. The docs say that the app of a check "must have recently submitted a check run"; whether the endpoint accepts `integration_id` before that is verified in the manual scenario. |
 
 ## Interface
 
@@ -36,6 +36,8 @@ Output follows the rules of the Interface of increment 02: every line starts wit
 
 **Calls.** The command calls GitHub only through `gh`, which must be on `PATH` and logged in: `gh api` for every step except the secret, and `gh secret set OPPER_API_KEY --env cross-review --repo <owner>/<name>` with the value on standard input. Without `--repo`, the repo is the one of the current directory, from `gh repo view --json nameWithOwner --jq .nameWithOwner`.
 
+**Rulesets.** The binary carries `internal/setup/rulesets/main.json` and `internal/setup/rulesets/branches.json`, embedded at build time; the command reads no ruleset file at run time. Their content, in the format of the [rulesets endpoint](https://docs.github.com/en/rest/repos/rules), is part of this interface. They replace `docs/setup/ruleset.json` and `docs/setup/ruleset-branches.json`, which are removed.
+
 **Steps**, in this order. For each, the command reads the current state, compares it with the target, and writes only when they differ.
 
 | Step | Target |
@@ -44,8 +46,8 @@ Output follows the rules of the Interface of increment 02: every line starts wit
 | `agent-account` | `<login>` is a collaborator or has a pending invitation. If missing, `PUT repos/<repo>/collaborators/<login>` with `permission` `push`. |
 | `environment` | The environment `cross-review` exists with `deployment_branch_policy` `{"protected_branches": false, "custom_branch_policies": true}` and exactly one branch policy, `main`. Other branch policies are deleted. |
 | `secret` | The environment `cross-review` has the secret `OPPER_API_KEY`. If missing, the command reads its value as one line from standard input. If present, the command does not read standard input and leaves it as it is. |
-| `ruleset main` | A ruleset named `main` in the repo equals `ruleset.json` in `name`, `target`, `enforcement`, `bypass_actors`, `conditions` and `rules`. If missing, `POST repos/<repo>/rulesets`; if different, `PUT repos/<repo>/rulesets/<id>`. Rulesets with other names stay as they are. |
-| `ruleset branches` | The same for `ruleset-branches.json` and the ruleset named `branches`. |
+| `ruleset main` | A ruleset named `main` in the repo equals `internal/setup/rulesets/main.json` in `name`, `target`, `enforcement`, `bypass_actors`, `conditions` and `rules`. If missing, `POST repos/<repo>/rulesets`; if different, `PUT repos/<repo>/rulesets/<id>`. Rulesets with other names stay as they are. |
+| `ruleset branches` | The same for `internal/setup/rulesets/branches.json` and the ruleset named `branches`. |
 
 **Output lines**, one per step: `setup: unchanged <step>`, `setup: changed <step>`, or with `--dry-run` `setup: would change <step>`. A changed or would-change line of `merge-settings` and of a ruleset names the fields that differ, as `<field> <current> -> <target>` separated by `, `. The last line is `setup: ok 6 checked` or `setup: <n> errors`.
 
@@ -69,7 +71,7 @@ A writing call is a `gh api` call with a method other than `GET`, or `gh secret 
 
 ## Scenarios
 
-- **scenario 03.1** (automated) **The first run sets up a new repo.** On a repo with none of the settings, with a stand-in for `gh` that records each call, `factory setup` with a secret value on standard input reports each of its six steps as changed. Afterwards the stand-in holds: squash merging with the title and description of the pull request as message, no merge commits and no rebase merging, auto-merge, branch deletion, an invitation for the agent account, the environment `cross-review` that only `main` may use, its secret `OPPER_API_KEY`, and the rulesets `main` and `branches` as in their setup files.
+- **scenario 03.1** (automated) **The first run sets up a new repo.** On a repo with none of the settings, with a stand-in for `gh` that records each call, `factory setup` with a secret value on standard input reports each of its six steps as changed. Afterwards the stand-in holds: squash merging with the title and description of the pull request as message, no merge commits and no rebase merging, auto-merge, branch deletion, an invitation for the agent account, the environment `cross-review` that only `main` may use, its secret `OPPER_API_KEY`, and the rulesets `main` and `branches` with the content that the binary carries.
 - **scenario 03.2** (automated) **A second run changes nothing that is in place.** On a repo where every step already has its target state, `factory setup` reports each step as unchanged and writes nothing. It does not read standard input.
 - **scenario 03.3** (automated) **A second run repairs what changed by hand.** On a repo in its target state, where someone then turned merge commits back on and set the ruleset `main` to disabled, `factory setup` reports these two steps as changed, names each field with its old and new value, and sets them back. The other steps stay unchanged. A third ruleset with a name of its own, which the setup does not know, stays as it is.
 - **scenario 03.4** (automated) **A dry run shows the changes and makes none.** On the repo of scenario 03.1, `factory setup --dry-run` reports each step that a run would change, with the differing fields, and makes no writing call. It does not read standard input.
