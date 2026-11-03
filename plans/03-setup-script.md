@@ -72,3 +72,4 @@ Each question names the consequences of each option and carries no recommendatio
 - 2026-11-03T01:07Z draft of design.md without Q5 (check-design ok); claude/03-setup-script-design@974f13a; next: add the Q5 answer (ruleset source, docs/setup path group), fresh-context scenario check, PR; open: Q5
 - 2026-11-03T01:09Z fresh-context check of scenarios 03.1-03.9 done, scenarios rewritten; claude/03-setup-script-design@5ad835e; next: add the Q5 answer, check new scenarios with a fresh context, open the PR; open: Q5
 - 2026-11-03T01:36Z Q5 answered; claude/03-setup-script-design@5ad835e; next: round 3 (Q8 path group of docs/setup), meanwhile write the Q5 parts into design.md; open: Q8
+- 2026-11-03T01:37Z round 3 sent (Q8 path group of docs/setup); Q5 written into design.md; claude/03-setup-script-design@6dab254; next: write the Q8 answer, fresh-context check of changed scenarios, open the PR; open: Q8
