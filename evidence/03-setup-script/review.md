@@ -1,27 +1,32 @@
 # Review of increment 03: setup script
 
-Reviewed commit: 21f81eb27790eaaace2b6937b7832b25a2f8a6e6
+Reviewed commit: 5ef86b24672307255ac2ffd51a80094a479456cd
 Pull request: https://github.com/HannesT117/software-factory/pull/54
-Result: 1 finding
+Result: no findings
 
 ## Findings
 
-- **Failing checks**, `.github/workflows/checks.yml:14` (with `internal/prcheck/prcheck.go:144`): the required check `checks` fails on every commit of the pull request since the first code commit, at 21f81eb too, with `check-pr: 11 errors`: each test file is "changed in commit 414296aff62f after the first commit outside the tests group". The workflow checks out GitHub's merge ref, so `--first-parent` from the merge base sees one merge commit that changes tests and code together, and the pull request reads as mixed. On the branch head, `check-pr` passes. Rebuilt locally: a `--no-ff` merge of 21f81eb into origin/main gives the same 11 errors with main's `factory`. The pull request cannot merge while the check fails. Doubtful because the cause is on `main`, not in this diff: the workflow (for example `ref: ${{ github.event.pull_request.head.sha }}` at the checkout) or `check-pr`'s reading of a merge ref needs a fix in a pull request of its own, and every pull request with tests and code hits it.
+None.
 
-Round 1's finding (rulesets compared by containment while the note said "equals") is no longer a finding: design pull request #56 changes the step `ruleset main` to "holds every key and value that the file sets", and says that keys the file does not set are not compared. `contains` in `internal/setup/compare.go:34` does that. This holds once #56 is on `main`; until then the note on `main` still says "equals".
+`internal/setup/gh.go:100` (`list`) reads invitations, deployment branch policies and rulesets with `gh api --paginate`, as `internal/setup/setup.go:217`, `:258` and `:342` call it. `gh api --help` of gh 2.89.0 states the format it relies on: "Each page is a separate JSON array or object", and only `--slurp` wraps the pages into one outer array. `list` decodes the output as a stream of JSON documents until `io.EOF`: an array endpoint gives one array per page, and the branch-policies endpoint gives one object per page whose `branch_policies` holds the items. Empty output and `[]` give no items. Pagination follows GitHub's `Link` header, which carries `per_page=100` on to later pages. The note's rule that a second run reaches the target state (design note, Goal) now holds for repos with more than 100 invitations, branch policies or rulesets; no input is treated differently from that rule.
+
+A page without the key counts as an empty page, as before the change, where `lookup` also gave nil. The fake gh in `test/acceptance/gh_test.go:497` ignores `--paginate` and answers one page, so no approved scenario covers more than one page; the note asks for none.
+
+Round 2's note on the ruleset comparison is settled: design pull request #56 is on `main`, and the step `ruleset main` there says "holds every key and value that `internal/setup/rulesets/main.json` sets", which `contains` in `internal/setup/compare.go` does.
 
 ## Checks run
 
 - `go vet ./...`: no output
 - `go test -count=1 ./...`: `ok github.com/HannesT117/software-factory/test/acceptance`
-- Commits after round 1 (5a0ca33, 7602992, 21f81eb) change only `docs/setup/README.md`, `docs/increments/03-setup-script/retro.md` and `README.md`; no code, test, CI, `.factory/` or design note. The tests still end at 70ff719, where round 1 saw all 8 tests of 03.1 to 03.8 fail without the code.
-- `factory check-pr --base origin/main` (main's binary) on the branch head: `check-pr: ok 24 checked`; on a merge of the branch into origin/main, as in CI: `check-pr: 11 errors`
-- `factory check-tests --base origin/main`: `check-tests: ok 30 checked`
+- Commit 5ef86b2 changes only `internal/setup/gh.go` and `internal/setup/setup.go`; no test, CI, `.factory/` file or design note. The commits between round 2 and it change only `docs/increments/03-setup-script/retro.md` and this file.
+- `list` against a stub gh that prints `[{"id":1},{"id":2}][{"id":3}]`, two `branch_policies` objects on separate lines, and `[]`: 3, 3 and 0 items (agent test, scaffolding, not committed)
+- `factory check-pr --base origin/main` (main's binary): `check-pr: ok 24 checked`
+- `factory check-tests --base origin/main` (main's binary): `check-tests: ok 30 checked`
+- `factory check-design docs/increments/03-setup-script` (main's binary): `check-design: ok 9 checked`
 - `factory check-adr`: `check-adr: ok 4 checked`
 - `factory validate-skills --strict core/skills`: `validate-skills: ok 6 checked`
-- `factory check-design docs/increments/03-setup-script` on #56's branch: `check-design: ok 9 checked`; this pull request changes no design note
-- `factory hook stop` before this result: it asked for a result for eda89847bf8c7edcefb9d4736b1a5030fe8753f7, the latest commit with code; 21f81eb contains it and changes only docs after it, so this result covers it. Round 1 named 62b966c, which changes no code, so the hook and the CI job `cross-review` did not accept it.
-- GitHub checks at 21f81eb: `test` and `tests-start-red` pass; `checks` fails as above; `cross-review` waited for a review result for eda8984
+- `factory hook stop` before this result: it asked for a result for 5ef86b24672307255ac2ffd51a80094a479456cd
+- The real paging of the GitHub API and the GitHub checks at 5ef86b2 were not run: gh's GitHub access from this session answered HTTP 403.
 
 ## Demonstrated scenarios
 
