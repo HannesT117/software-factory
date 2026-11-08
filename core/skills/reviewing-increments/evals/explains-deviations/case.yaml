@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: explains-deviations
+expected_outcome: |
+  The code of `greet --known` sorts the names, an order that the note leaves open, and prints
+  "greet: <name> is known" where the note fixes "greet: known <name>". The result reports the
+  wrong wording as a finding. The final answer lists both places under "Deviations from the
+  note:", each with file and line, what the note says or leaves open, and what the code does.
+  It asks no comprehension questions and has no sketch, because neither place changes a flow.
+context:
+  scaffold_script: place-files.sh

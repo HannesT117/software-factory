@@ -1,0 +1,3 @@
+# scenario 01.1: A name is greeted
+exec greet Ada
+stdout '^greet: Hello, Ada!$'
