@@ -1,5 +1,6 @@
 // Command factory checks skills, design notes, decision records, acceptance
-// tests and the paths of pull requests, and runs the agent hooks.
+// tests and the paths of pull requests, runs the agent hooks, and applies
+// the admin setup of a repo.
 package main
 
 import (
@@ -16,6 +17,7 @@ import (
 	"github.com/HannesT117/software-factory/internal/gitx"
 	"github.com/HannesT117/software-factory/internal/prcheck"
 	"github.com/HannesT117/software-factory/internal/report"
+	"github.com/HannesT117/software-factory/internal/setup"
 	"github.com/HannesT117/software-factory/internal/skills"
 	"github.com/HannesT117/software-factory/internal/testcheck"
 )
@@ -28,6 +30,7 @@ factory: check-tests [--base <ref>]
 factory: check-pr --base <ref>
 factory: scenarios
 factory: cross-review --base <ref>
+factory: setup --agent <login> [--repo <owner>/<name>] [--dry-run]
 factory: hook pre-tool-use
 factory: hook stop
 `
@@ -116,6 +119,21 @@ func run(args []string, stdin io.Reader, stdout io.Writer) int {
 			return r.Abort(".", "not-a-repo", err.Error())
 		}
 		return crossreview.Run(r, root, *base, os.Getenv(crossreview.KeyVar))
+
+	case "setup":
+		const setupUsage = "factory setup --agent <login> [--repo <owner>/<name>] [--dry-run]"
+		fs := flag.NewFlagSet(cmd, flag.ContinueOnError)
+		fs.SetOutput(io.Discard)
+		agent := fs.String("agent", "", "")
+		repo := fs.String("repo", "", "")
+		dryRun := fs.Bool("dry-run", false, "")
+		if err := fs.Parse(args); err != nil || fs.NArg() != 0 || *agent == "" {
+			return r.Abort("args", "usage", setupUsage)
+		}
+		if !setup.ValidLogin(*agent) {
+			return r.Abort("args", "usage", "--agent takes a GitHub login: "+setupUsage)
+		}
+		return setup.Run(r, setup.Options{Agent: *agent, Repo: *repo, DryRun: *dryRun, Stdin: stdin})
 
 	case "hook":
 		if len(args) != 1 {
