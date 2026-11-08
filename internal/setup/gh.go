@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"io"
 	"os/exec"
 	"strings"
 )
@@ -90,4 +91,35 @@ func (g gh) api(method, path string, body any) (any, error) {
 func isNotFound(err error) bool {
 	var ce *callError
 	return errors.As(err, &ce) && ce.notFound
+}
+
+// list reads every page of the list at path with gh api --paginate. gh
+// prints one JSON document per page. A page is an array, or an object
+// that holds the array under key. The result joins the items of all
+// pages.
+func (g gh) list(path, key string) ([]any, error) {
+	call := "GET " + path
+	out, err := g.run(call, nil, "api", "-X", "GET", "--paginate", "-H", "Accept: application/vnd.github+json", path)
+	if err != nil {
+		return nil, err
+	}
+	dec := json.NewDecoder(bytes.NewReader(out))
+	dec.UseNumber()
+	var items []any
+	for {
+		var page any
+		if err := dec.Decode(&page); err == io.EOF {
+			return items, nil
+		} else if err != nil {
+			return nil, &callError{call: call, first: "the answer is no JSON: " + err.Error()}
+		}
+		if key != "" {
+			page = lookup(page, key)
+		}
+		list, ok := page.([]any)
+		if !ok && page != nil {
+			return nil, &callError{call: call, first: "a page holds no list"}
+		}
+		items = append(items, list...)
+	}
 }

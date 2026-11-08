@@ -214,11 +214,10 @@ func (u *run) agentAccount() (bool, string, error) {
 	if !isNotFound(err) {
 		return false, "", err
 	}
-	v, err := u.gh.api("GET", "repos/"+u.repo+"/invitations?per_page=100", nil)
+	list, err := u.gh.list("repos/"+u.repo+"/invitations?per_page=100", "")
 	if err != nil {
 		return false, "", err
 	}
-	list, _ := v.([]any)
 	for _, inv := range list {
 		if l, _ := lookup(inv, "invitee", "login").(string); strings.EqualFold(l, login) {
 			return false, "", nil
@@ -256,11 +255,10 @@ func (u *run) environment() (bool, string, error) {
 	// branch policies; a dry run on a new environment has none yet.
 	var policies []any
 	if policyOK || !u.opts.DryRun {
-		v, err := u.gh.api("GET", envPath+"/deployment-branch-policies?per_page=100", nil)
+		policies, err = u.gh.list(envPath+"/deployment-branch-policies?per_page=100", "branch_policies")
 		if err != nil {
 			return false, "", err
 		}
-		policies, _ = lookup(v, "branch_policies").([]any)
 	}
 	hasMain := false
 	for _, p := range policies {
@@ -341,12 +339,11 @@ func (u *run) ruleset(name string) (bool, string, error) {
 	if err != nil {
 		return false, "", &stepError{code: "api-failed", detail: err.Error()}
 	}
-	v, err := u.gh.api("GET", "repos/"+u.repo+"/rulesets?per_page=100", nil)
+	list, err := u.gh.list("repos/"+u.repo+"/rulesets?per_page=100", "")
 	if err != nil {
 		return false, "", err
 	}
 	id := ""
-	list, _ := v.([]any)
 	for _, rs := range list {
 		source, _ := lookup(rs, "source_type").(string)
 		if n, _ := lookup(rs, "name").(string); n == name && (source == "" || source == "Repository") {
