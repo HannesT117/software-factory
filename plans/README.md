@@ -16,6 +16,8 @@ Small pull requests outside these plans, done by the orchestrating session:
 - The approval run of `cross-review` is dropped (#53, engineer's decision 2026-11-03); the design note of 06 install and distribution must replace scenario 02.27, which still describes it.
 - `checks` and `tests-start-red` checked GitHub's merge commit, which hides the commits of a pull request: #57 checks out the head.
 - The ruleset comparison of `factory setup` compares only the keys that its file sets: #56.
+- cross-review runs since 2026-11-08. Its comment names the model: #58.
+- After #54 merges: a tests-only pull request from a test-writer session that checks that `factory setup` never reads standard input in 03.2, 03.4 and the retry of 03.8 (finding of cross-review on #54).
 - After the engineer has put `OPPER_API_KEY` into the environment `cross-review`: push to each open pull request once, so that its checks and `cross-review` run.
 
 Order of work, decided by the engineer on 2026-11-03: finish 03 and 04, then 05 tests per increment, then 06 install and distribution (#50 sets this order). Every increment adds a feature that the factory provides to other repos; this repo using the factory is a side effect.
