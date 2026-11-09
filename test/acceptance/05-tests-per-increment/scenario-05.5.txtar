@@ -1,0 +1,95 @@
+# scenario 05.5: Without a base, every missing test counts
+# On the branch of scenario 05.1, check-tests without --base rejects both
+# missing tests of increment 07 and prints no line about waiting
+# increments.
+env GIT_AUTHOR_NAME=Agent GIT_AUTHOR_EMAIL=agent@example.com GIT_COMMITTER_NAME=Agent GIT_COMMITTER_EMAIL=agent@example.com
+cd repo
+exec git init -q -b main
+exec git add -A
+exec git commit -q -m base
+
+exec git checkout -q -b code main
+cp ../edit internal/x.go
+mkdir evidence/06-sample
+cp ../review evidence/06-sample/review.md
+exec git add -A
+exec git commit -q -m code
+exitcode 1 factory check-tests
+stdout '^check-tests: error .*(07\.1\D.*: missing-test|: missing-test .*07\.1(\D|$))'
+stdout '^check-tests: error .*(07\.2\D.*: missing-test|: missing-test .*07\.2(\D|$))'
+stdout -count=2 ': missing-test'
+stdout '^check-tests: 2 errors$'
+! stdout 'waiting'
+
+-- edit --
+package x // changed
+-- review --
+No findings.
+-- repo/README.md --
+# Sample
+-- repo/internal/x.go --
+package x
+-- repo/docs/increments/06-sample/design.md --
+# Increment 06: sample
+
+## Goal
+
+- The sample tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 06.1.
+
+## Scenarios
+
+- **scenario 06.1** (automated) **A sample thing works.** Given a sample thing, the tool accepts it.
+-- repo/test/acceptance/06-sample/scenario-06.1.txtar --
+# scenario 06.1: A sample thing works
+exec sample run thing
+-- repo/docs/increments/07-later/design.md --
+# Increment 07: later
+
+## Goal
+
+- The later tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for later tools.
+
+## Interface
+
+- `later run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 07.1 and 07.2.
+
+## Scenarios
+
+- **scenario 07.1** (automated) **A later thing works.** Given a later thing, the tool accepts it.
+- **scenario 07.2** (automated) **A second later thing works.** Given a second later thing, the tool accepts it.
