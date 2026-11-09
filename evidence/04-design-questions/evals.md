@@ -96,8 +96,8 @@ The seventh review found that in run 0 of asks-comprehension-questions above, th
 | asks-comprehension-questions | old | 1.0, 1.0, 0.9 |
 | asks-comprehension-questions | new | 1.0, 1.0, 1.0 |
 
-- The old version failed grader 07 once. With the new version, two runs show nothing after the questions and one only the next step.
-- check-traces.py: in one run of each version the design agent changed one word of a question ("two signals" to "signals"; "gets no name in the output" to "gives no name"). The skill asks for all questions, not for their exact words, so these are no failures of the skill.
+- The old version failed grader 07 once, but not through a remark after the questions: in that run the fresh session's own question 2 names one of the two signals it asks for, and the design agent shows it word for word. With the new version, the design agent's prompt to the fresh session asks for questions without hints in all three runs, which no old prompt does; two runs show nothing after the questions and one only the next step.
+- check-traces.py: in one run of each version the design agent reworded one question: "the two signals" became "the signals", and "gets no name in the output" became "gives no name". The skill asks for all questions, not for their exact words, so these are no failures of the skill.
 
 ## Limits
 
