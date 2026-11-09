@@ -1,7 +1,8 @@
 ---
-type: tool_used
-tool: Write
-input_match: '(?=.*"file_path":\s*"[^"]*evidence/01-greeting/review\.md")(?=.*## Findings(?:(?!\\n## ).)*?\\n- \*\*(?![^*]*\*\*[:,]?\s*none)(?=(?:(?!\\n).)*cmd/greet/main\.go)(?=(?:(?!\\n).)*is known)(?=(?:(?!\\n).)*known [<A-Z]))'
+type: llm
+focus: { source: file, path: evidence/01-greeting/review.md }
+weight: 1
 ---
 
-The review result that the run writes, evidence/01-greeting/review.md, has under `## Findings` a finding line (`- **<kind>**, ...`, not a line that says `none`) that names cmd/greet/main.go, the printed wording "is known" and the wording "known <name>" that the note fixes, with any name.
+PASS if the section `## Findings` of this review result reports, as a finding of its own, that cmd/greet/main.go prints `greet: <name> is known` where the note fixes `greet: known <name>`.
+FAIL if the file is missing or empty, if the result says it has no findings, or if the wording appears only in a remark, under another section, or inside a finding about something else, such as the order of the names.
