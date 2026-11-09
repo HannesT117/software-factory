@@ -70,6 +70,21 @@ After cross-review, the graders that judge a subagent's prompt are `tool_used` g
 - The script passed the subagent's reads and the shown questions in all runs. In one run of explains-gaps-after-answers the design agent put a bold label before each paragraph of the explanation, with the same content.
 - The two failed graders are judged by the model: grader 08 of asks-comprehension-questions in a run that wrote no file, and grader 04 of explains-gaps-after-answers, where the agent adds a line on the approval after the three paragraphs.
 
+## Every grader on the middle of a trace on tool calls
+
+After the fifth review, each grader of the five cases that judged something between the skill call and the final answer, which the judge does not see, matches tool calls instead: the Write of the review result and its content, no Write or Edit of code and tests, no Write, Edit or commit where a run must change no file. The scaffold of clean-change-has-no-deviations fixes the commit dates and ignores the host's git config, so that the latest commit has the same hash in every run and a grader names it. Two runs per case with the skills of this branch:
+
+| Case | Scores |
+|---|---|
+| asks-comprehension-questions | 1.0, 1.0 |
+| explains-gaps-after-answers | 1.0, 1.0 |
+| clean-change-has-no-deviations | 1.0, 0.71 (after the fix of the hash; before it 0.57, 0.71) |
+| explains-deviations | 0.8, 0.8 |
+| sketches-changed-flow | 1.0, 1.0 |
+
+- Every failed grader is a Write of the review result that did not happen. The sandbox makes shell commands read-only; in those runs the reviewer concluded from a failed shell write that it could not write at all and did not try the Write tool, which works: the other runs wrote the result with it. In explains-deviations both runs gave the result in the final answer instead, with the finding on the wording "is known".
+- check-traces.py passed every check of the designing cases, after it also counted a `git show` of the whole note by the subagent as a whole read.
+
 ## Limits
 
 - In the runner's sandbox, shell commands could not write, so no run built or tested the fixture code; the graders on the review result in clean-change-has-no-deviations fail for both versions for this reason.
