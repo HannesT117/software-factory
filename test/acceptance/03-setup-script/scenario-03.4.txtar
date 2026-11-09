@@ -1,10 +1,11 @@
 # scenario 03.4: A dry run shows the changes and makes none
-# On the new repo of the first run, with nothing on standard input, a dry
-# run reports each step as one it would change, in order, with the
-# differing fields of the merge settings and the rulesets. It makes no
-# writing call, leaves the state as it is, and does not ask for the secret.
+# On the new repo of the first run, a dry run reports each step as one it
+# would change, in order, with the differing fields of the merge settings
+# and the rulesets. It makes no writing call, leaves the state as it is,
+# and neither asks for the secret nor reads the input that stdin-probe
+# gives it.
 cp gh/state.json new-state.json
-exec factory setup --agent project-agent --repo engineer/project --dry-run
+exec stdin-probe factory setup --agent project-agent --repo engineer/project --dry-run
 stdout '(?s)^setup: would change merge-settings(\W.*)?\nsetup: would change agent-account(\W.*)?\nsetup: would change environment(\W.*)?\nsetup: would change secret(\W.*)?\nsetup: would change ruleset main(\W.*)?\nsetup: would change ruleset branches(\W.*)?\nsetup: ok 6 checked\n$'
 ! stdout '^setup: (changed|unchanged) '
 ! stdout 'reading OPPER_API_KEY'

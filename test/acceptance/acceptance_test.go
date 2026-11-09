@@ -25,10 +25,13 @@ var (
 	goEnv []string
 )
 
-// TestMain builds the factory command and installs the stand-in for gh,
-// which every script finds on PATH.
+// TestMain builds the factory command and installs the stand-in for gh and
+// the command stdin-probe, which every script finds on PATH.
 func TestMain(m *testing.M) {
-	testscript.Main(runner{m}, map[string]func(){"gh": func() { os.Exit(ghStandIn()) }})
+	testscript.Main(runner{m}, map[string]func(){
+		"gh":          func() { os.Exit(ghStandIn()) },
+		"stdin-probe": func() { os.Exit(stdinProbe()) },
+	})
 }
 
 type runner struct{ m *testing.M }
