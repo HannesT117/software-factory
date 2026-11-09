@@ -1,7 +1,7 @@
 ---
-type: llm
-focus: trace
-weight: 1
+type: tool_used
+tool: Write
+input_match: '(?=.*"file_path":\s*"[^"]*evidence/01-greeting/review\.md")(?=.*cmd/greet/main\.go)(?=.*is known)'
 ---
 
-evidence/01-greeting/review.md reports as a finding that cmd/greet/main.go prints "greet: <name> is known" where the note fixes "greet: known <name>".
+The review result that the run writes, evidence/01-greeting/review.md, names cmd/greet/main.go and the wording "is known" as a finding.

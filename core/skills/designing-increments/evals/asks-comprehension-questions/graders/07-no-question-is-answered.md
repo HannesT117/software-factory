@@ -4,4 +4,4 @@ focus: trace
 weight: 1
 ---
 
-Neither the final answer nor any message of the subagent answers a question.
+The final answer answers none of its questions.
