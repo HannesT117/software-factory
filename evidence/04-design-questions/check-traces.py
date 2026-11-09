@@ -83,10 +83,16 @@ def check(case, run_no, trace):
     say("the subagent prompt holds nothing of the conversation",
         not any(w in prompt.lower() for w in CONVERSATION[case]))
     if case == "asks-comprehension-questions":
-        reads = [c for c in calls if c["name"] == "Read" and c["parent"] == agent["id"]
-                 and c["input"].get("file_path", "").endswith(NOTE)]
+        # A whole read is a Read without offset or limit, or a `cat` or
+        # `git show` of the note whose output goes to no other command.
+        mine = [c for c in calls if c["parent"] == agent["id"]]
+        reads = [c for c in mine if c["name"] == "Read" and c["input"].get("file_path", "").endswith(NOTE)]
+        shells = [c for c in mine if c["name"] == "Bash" and NOTE in c["input"].get("command", "")
+                  and re.search(r"\b(cat|git\s+show)\b", c["input"]["command"])]
+        whole = [r for r in reads if "offset" not in r["input"] and "limit" not in r["input"]]
+        whole += [b for b in shells if "|" not in b["input"]["command"]]
         say("the subagent reads the note, each time whole",
-            bool(reads) and all("offset" not in r["input"] and "limit" not in r["input"] for r in reads))
+            bool(whole) and len(whole) == len(reads) + len(shells))
         asked, shown = questions(result), questions(final)
         say("2 or 3 questions are shown", 2 <= len(shown) <= 3 and len(shown) == len(asked))
         if asked != shown:
