@@ -101,20 +101,18 @@ The seventh review found that in run 0 of asks-comprehension-questions above, th
 
 ## The wording as a finding of its own
 
-After the merge of #59, cross-review still blocked on grader 01 of explains-deviations: it accepted a result whose `## Findings` only quoted the output. The grader now needs a finding line under `## Findings` that names `cmd/greet/main.go`, the printed "is known" and the note's "greet: known <name>". The runner matches it as a JavaScript regular expression on the JSON of the Write; checked with `node` on the two kept results that the reviewer wrote and on five built results:
+After the merge of #59, cross-review still blocked on grader 01 of explains-deviations: it accepted a result whose `## Findings` only quoted the output. Three versions of a regular expression on the Write of the result followed, each checked with `node` on kept and built results. None could tell a finding from a remark or another finding that quotes the same words, and each failed correct findings in other words or forms; final answers, for example, number their findings.
 
-| Result | Matches |
-|---|---|
-| kept: run 0 of an earlier round, run 1 of the sixth review | yes, both |
-| built: a finding on the wording | yes |
-| built: `none` with a remark that quotes the output | no |
-| built: a finding on the sort only, quoting the output | no |
-| built: the output only under `## Checks run` | no |
-| built: no `## Checks run`, the output under `## Demonstrated scenarios` | no |
+Grader 01 is now a judge that the runner gives the whole written file, `focus: { source: file, path: evidence/01-greeting/review.md }`, instead of the shortened trace. It asks whether `## Findings` reports the wrong wording as a finding of its own. Three runs with the skill of this branch:
 
-The review of the change built eight more results. After its two findings, the grader also skips a line whose label is followed by `none`, and takes the note's wording with any name or without the prefix `greet: `. Of those eight it then rejects both broken ones (a per-kind line `- **<kind>:** none` with a remark that quotes both wordings, with and without `Result: no findings`) and accepts three of the six correct ones. It fails three correct results whose finding is not one `- **<kind>**` line: a finding wrapped onto a second line, a finding nested under a per-kind line, and a numbered finding. The template of the review result puts each finding on one `- **<kind>**` line, and every finding on the wording in the kept traces does so. The first seven results give the same answers as before.
+| Run | Score | Grader 01 | Written result |
+|---|---|---|---|
+| 0 | 1.0 | pass | 1 finding: the wording at `cmd/greet/main.go:23` |
+| 1 | 0.8 | pass | 3 findings, the first the wording at `cmd/greet/main.go:26`, then the sort |
+| 2 | 0.8 | fail | none: the reviewer did not try the Write tool after a failed shell write, so the file does not exist |
 
-No eval ran for this change: the grader is a regular expression, and the checks above run it on the same input as the runner.
+- The judge's evidence in runs 0 and 1 starts with the file's content, so it saw the whole result.
+- The other failed grader in runs 1 and 2 is judged on the final answer.
 
 ## Limits
 
