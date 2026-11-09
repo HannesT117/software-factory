@@ -112,7 +112,9 @@ After the merge of #59, cross-review still blocked on grader 01 of explains-devi
 | built: the output only under `## Checks run` | no |
 | built: no `## Checks run`, the output under `## Demonstrated scenarios` | no |
 
-No eval ran for this change: the grader is a regular expression, and the check above runs it on the same input as the runner.
+The review of the change built eight more results. After its two findings, the grader also skips a line whose label is followed by `none`, and takes the note's wording with any name or without the prefix `greet: `. Of those eight it then rejects both broken ones (a per-kind line `- **<kind>:** none` with a remark that quotes both wordings, with and without `Result: no findings`) and accepts three of the six correct ones. It fails three correct results whose finding is not one `- **<kind>**` line: a finding wrapped onto a second line, a finding nested under a per-kind line, and a numbered finding. The template of the review result puts each finding on one `- **<kind>**` line, and every finding on the wording in the kept traces does so. The first seven results give the same answers as before.
+
+No eval ran for this change: the grader is a regular expression, and the checks above run it on the same input as the runner.
 
 ## Limits
 
