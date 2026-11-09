@@ -29,6 +29,20 @@ The skills changed after the first runs: the question of a sketch goes into its 
 
 explains-gaps-after-answers loaded the skill only after its prompt named it; before, the runs scored 0.8 with the explanation as lists. In the real flow, the design session has the skill loaded already.
 
+## After the findings of cross-review
+
+Grader 02 of asks-comprehension-questions now checks that the shown questions are all those of the fresh session. explains-gaps-after-answers got two details of a design conversation in its prompt and grader 01, which checks that the explanation comes from a session that holds neither. Two runs per version; the old version is the skill before the change of the second paragraph of Comprehension questions.
+
+| Case | Version | Scores |
+|---|---|---|
+| asks-comprehension-questions | unchanged skill | 1.0, 0.8 |
+| explains-gaps-after-answers | old | 0.5, 0.67 |
+| explains-gaps-after-answers | new | 0.83, 1.0 |
+
+- The judge of the runner sees a shortened trace without the subagent call, so it failed grader 01 in all runs. For the new version, a script checked the full traces: both runs start a subagent whose prompt holds the note path, the three questions and the three answers, and neither detail of the design conversation; the scores above count that result. The traces of the old version were not kept; its final answers say that the agent explained the gaps itself.
+- Grader 02 of explains-gaps-after-answers failed once in each version: after the three paragraphs, the agent adds a line that nothing blocks the approval.
+- In asks-comprehension-questions, grader 01 failed once with the unchanged skill.
+
 ## Limits
 
 - In the runner's sandbox, shell commands could not write, so no run built or tested the fixture code; the graders on the review result in clean-change-has-no-deviations fail for both versions for this reason.
