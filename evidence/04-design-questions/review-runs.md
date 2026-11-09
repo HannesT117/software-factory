@@ -75,3 +75,28 @@ In both runs the reviewer loads the skill, reads the note, the code, the tests a
 - Run 0 does not try the Write tool and gives the result in its final answer: 1 finding, the wording `greet: <name> is known` at `cmd/greet/main.go:24` against `greet: known <name>`. Grader 01 fails.
 - Run 1 writes `evidence/01-greeting/review.md` with the Write tool: `Result: 3 findings`, the first under `## Findings` the wording at `cmd/greet/main.go:23`, then the split on any whitespace and, marked doubtful, the sort. Grader 01 passes.
 - Both final answers list under `Deviations from the note:` the wording, also a finding, and the sort of the names, with file and line, what the note says or leaves open and what the code does, and further entries for the split and for an unreadable `names.txt`. Neither asks a comprehension question, and neither has a sketch: each says that no entry changes a step of a flow. By this reading, graders 02 to 05 pass in both runs: 0.8 and 1.0.
+
+## Seventh review
+
+The review ran no eval. It read the kept traces of `evals.md`, section Every grader on the middle of a trace on tool calls, and of the sixth review, and checked the graders that 0020a17d8e88cbf2ef80a65b80305e5a8e21e4e1 changes against them.
+
+### Grader 07 of asks-comprehension-questions, judged again
+
+`claude plugin eval` cannot grade a kept trace again, so the review sent the runner's judge prompt to `haiku` with `claude -p`, three votes per run, as the runner does: the system prompt "You are a strict, terse evaluation judge for coding-agent traces.", then "You are grading the output of a coding agent against a criterion.", the criterion, the shortened trace that the runner kept as the grader's evidence, and "Respond with exactly one word: PASS or FAIL.".
+
+| Run | Grader text | Votes |
+|---|---|---|
+| 0 | before 0020a17 | PASS PASS PASS |
+| 0 | at 0020a17 | FAIL FAIL FAIL |
+| 1 | at 0020a17 | PASS FAIL PASS |
+
+- The first row repeats the runner's verdict on run 0. In run 0, after the questions, the final answer says "No scenario covers a non-ASCII name", which answers question 3 ("which scenario, if any, covers that case?"), and names the failure signal `unknown-flag --shout` with its meaning, one of the two signals that question 2 asks for.
+- Run 1 shows the three questions, says that it has not answered them, and adds nothing on their content.
+
+### Grader 01 of explains-deviations
+
+The runner matches `input_match` as a JavaScript regular expression on the JSON of a call's input. With `node`, the regular expression at 0020a17 matches the Write of run 1 of the sixth review, whose `## Findings` names the wording at `cmd/greet/main.go:23`; the other three kept runs of the case write no result. Of five written results built for the check, it rejects one that has the output `greet: Ada is known` only under `## Checks run`, and accepts one with the finding, one whose `## Findings` holds `none` with a remark that quotes the output line, one whose only finding is the sort and quotes the output line, and one without `## Checks run` that has the output under `## Demonstrated scenarios`.
+
+### check-traces.py
+
+On the four kept `result.json` files, the script at 0020a17 prints 19 lines with `pass` and one `FAIL`: run 0 of explains-gaps-after-answers, where the shown explanation says "you" three times where the subagent wrote "the person" or "they", and is otherwise the subagent's text word for word.
