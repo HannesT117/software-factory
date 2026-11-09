@@ -16,7 +16,9 @@ Small pull requests outside these plans, done by the orchestrating session:
 - The approval run of `cross-review` is dropped (#53, engineer's decision 2026-11-03); the design note of 06 install and distribution must replace scenario 02.27, which still describes it.
 - `checks` and `tests-start-red` checked GitHub's merge commit, which hides the commits of a pull request: #57 checks out the head.
 - The ruleset comparison of `factory setup` compares only the keys that its file sets: #56.
-- cross-review runs since 2026-11-08. Its comment names the model: #58.
+- cross-review runs since 2026-11-08. Its comment names the model: #62 (merged).
+- The agent account is suspended since 2026-11-08; its pull requests are hidden. Until it returns, pull requests are opened under the engineer's account from branch copies with the suffix `-2`, and the engineer merges with the ruleset bypass: #59 (04 code), #61 (docs after CI), #63 (03 code). When the account returns, close the hidden duplicates and delete the `-2` branches.
+- cross-review measures a pull request outside any increment against the latest note (fallback in `internal/crossreview`), so #61 got two false blocking findings about increment 04. Where the fix goes is a question for the engineer.
 - After #54 merges: a tests-only pull request from a test-writer session that checks that `factory setup` never reads standard input in 03.2, 03.4 and the retry of 03.8 (finding of cross-review on #54).
 - After the engineer has put `OPPER_API_KEY` into the environment `cross-review`: push to each open pull request once, so that its checks and `cross-review` run.
 

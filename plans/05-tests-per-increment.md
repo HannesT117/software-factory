@@ -23,3 +23,4 @@
 
 ## Checkpoints
 - 2026-11-03T02:10Z step 1 done; claude/05-tests-per-increment-design pushed; next: step 2 after the engineer approves #52; open: none
+- 2026-11-09T00:14Z design merged as #60; next: test writer for 05.1 to 05.5 after 03 and 04 merge; open: none
