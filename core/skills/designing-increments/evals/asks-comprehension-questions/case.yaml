@@ -1,7 +1,7 @@
 schema_version: "1.1"
 name: asks-comprehension-questions
 expected_outcome: |
-  The agent has a fresh session or subagent read only the note docs/increments/02-shout/design.md
+  The agent has a fresh session or subagent read the whole note docs/increments/02-shout/design.md, and nothing of the design conversation,
   and shows the person all of its 2 or 3 questions, numbered, under "Comprehension questions:".
   At least one asks where a failure shows or what to run when a part fails. Neither the agent nor
   the subagent answers them, and no file of the repository holds them.
