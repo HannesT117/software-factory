@@ -60,7 +60,10 @@ jobs:
           code=$?
           set -e
           cat "$RUNNER_TEMP/review.txt"
-          { echo "Review by another model for $HEAD_SHA:"; echo; echo '```'; cat "$RUNNER_TEMP/review.txt"; echo '```'; } > "$RUNNER_TEMP/comment.md"
+          # The model that factory cross-review asked, from the config on main.
+          kind=code; [ "$design" = yes ] && kind=design
+          model=$(jq -r --arg k "$kind" '.models[$k] // empty' ../base/.factory/cross-review.json 2>/dev/null || true)
+          { echo "Review by \`${model:-another model}\` for $HEAD_SHA:"; echo; echo '```'; cat "$RUNNER_TEMP/review.txt"; echo '```'; } > "$RUNNER_TEMP/comment.md"
           gh api "repos/$REPO/issues/$PR/comments" -F body=@"$RUNNER_TEMP/comment.md" > /dev/null
           if [ "$design" = yes ]; then
             echo "cross-review: design pull request, the findings are notes for the engineer"

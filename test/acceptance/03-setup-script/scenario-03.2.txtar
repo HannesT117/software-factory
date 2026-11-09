@@ -1,0 +1,42 @@
+# scenario 03.2: A second run changes nothing that is in place
+# A first run brings the new repo to its target state, and the agent
+# account accepts its invitation. A second run reports each step as
+# unchanged, in order, makes no writing call, leaves the state as it is,
+# and neither asks for the secret nor reads the input that stdin-probe
+# gives it.
+stdin secret.txt
+exec factory setup --agent project-agent --repo engineer/project
+stdout '^setup: ok 6 checked$'
+exec gh api -X PATCH user/repository_invitations/1
+exec gh api repos/engineer/project/collaborators/project-agent/permission
+stdout '"permission":"write"'
+cp gh/state.json target-state.json
+rm gh/calls.log
+
+exec stdin-probe factory setup --agent project-agent --repo engineer/project
+stdout '^setup: unchanged merge-settings\nsetup: unchanged agent-account\nsetup: unchanged environment\nsetup: unchanged secret\nsetup: unchanged ruleset main\nsetup: unchanged ruleset branches\nsetup: ok 6 checked\n$'
+! stdout 'reading OPPER_API_KEY'
+! grep '^(api (POST|PUT|PATCH|DELETE) |secret set )' gh/calls.log
+cmp gh/state.json target-state.json
+
+-- secret.txt --
+s3cret-2
+-- gh/state.json --
+{
+  "logged_in": true,
+  "user": "engineer",
+  "repos": {
+    "engineer/project": {
+      "admin": true,
+      "settings": {
+        "allow_squash_merge": false,
+        "allow_merge_commit": true,
+        "allow_rebase_merge": true,
+        "allow_auto_merge": false,
+        "delete_branch_on_merge": false,
+        "squash_merge_commit_title": "COMMIT_OR_PR_TITLE",
+        "squash_merge_commit_message": "COMMIT_MESSAGES"
+      }
+    }
+  }
+}
