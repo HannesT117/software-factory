@@ -1,0 +1,55 @@
+# scenario 03.4: A dry run shows the changes and makes none
+# On the new repo of the first run, a dry run reports each step as one it
+# would change, in order, with the differing fields of the merge settings
+# and the rulesets. It makes no writing call, leaves the state as it is,
+# and neither asks for the secret nor reads the input that stdin-probe
+# gives it.
+cp gh/state.json new-state.json
+exec stdin-probe factory setup --agent project-agent --repo engineer/project --dry-run
+stdout '(?s)^setup: would change merge-settings(\W.*)?\nsetup: would change agent-account(\W.*)?\nsetup: would change environment(\W.*)?\nsetup: would change secret(\W.*)?\nsetup: would change ruleset main(\W.*)?\nsetup: would change ruleset branches(\W.*)?\nsetup: ok 6 checked\n$'
+! stdout '^setup: (changed|unchanged) '
+! stdout 'reading OPPER_API_KEY'
+stdout '^setup: would change secret$'
+
+stdout '^setup: would change merge-settings\b.*\ballow_squash_merge false -> true(, |$)'
+stdout '^setup: would change merge-settings\b.*\ballow_merge_commit true -> false(, |$)'
+stdout '^setup: would change merge-settings\b.*\ballow_rebase_merge true -> false(, |$)'
+stdout '^setup: would change merge-settings\b.*\ballow_auto_merge false -> true(, |$)'
+stdout '^setup: would change merge-settings\b.*\bdelete_branch_on_merge false -> true(, |$)'
+stdout '^setup: would change merge-settings\b.*\bsquash_merge_commit_title COMMIT_OR_PR_TITLE -> PR_TITLE(, |$)'
+stdout '^setup: would change merge-settings\b.*\bsquash_merge_commit_message COMMIT_MESSAGES -> PR_BODY(, |$)'
+stdout '^setup: would change ruleset main\b.*\bname .*-> '
+stdout '^setup: would change ruleset main\b.*\btarget .*-> '
+stdout '^setup: would change ruleset main\b.*\benforcement .*-> '
+stdout '^setup: would change ruleset main\b.*\bbypass_actors .*-> '
+stdout '^setup: would change ruleset main\b.*\bconditions .*-> '
+stdout '^setup: would change ruleset main\b.*\brules .*-> '
+stdout '^setup: would change ruleset branches\b.*\bname .*-> '
+stdout '^setup: would change ruleset branches\b.*\btarget .*-> '
+stdout '^setup: would change ruleset branches\b.*\benforcement .*-> '
+stdout '^setup: would change ruleset branches\b.*\bbypass_actors .*-> '
+stdout '^setup: would change ruleset branches\b.*\bconditions .*-> '
+stdout '^setup: would change ruleset branches\b.*\brules .*-> '
+
+! grep '^(api (POST|PUT|PATCH|DELETE) |secret set )' gh/calls.log
+cmp gh/state.json new-state.json
+
+-- gh/state.json --
+{
+  "logged_in": true,
+  "user": "engineer",
+  "repos": {
+    "engineer/project": {
+      "admin": true,
+      "settings": {
+        "allow_squash_merge": false,
+        "allow_merge_commit": true,
+        "allow_rebase_merge": true,
+        "allow_auto_merge": false,
+        "delete_branch_on_merge": false,
+        "squash_merge_commit_title": "COMMIT_OR_PR_TITLE",
+        "squash_merge_commit_message": "COMMIT_MESSAGES"
+      }
+    }
+  }
+}

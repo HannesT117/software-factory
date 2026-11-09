@@ -1,0 +1,78 @@
+# scenario 03.3: A second run repairs what changed by hand
+# The repo already has a ruleset of its own, tags. A first run brings the
+# repo to its target state. Then merge commits are turned back on and the
+# ruleset main is disabled by hand. A second run reports these two steps as
+# changed, each with only the field that differs, sets both back, and
+# leaves the other steps and the ruleset tags as they are.
+stdin secret.txt
+exec factory setup --agent project-agent --repo engineer/project
+stdout '^setup: ok 6 checked$'
+exec gh api repos/engineer/project/rulesets
+cp stdout rulesets.json
+jsonsub rulesets.json '[{"id":1,"name":"tags"},{"id":2,"name":"main"},{"id":3,"name":"branches"}]'
+exec gh api -X PATCH repos/engineer/project -F allow_merge_commit=true
+exec gh api -X PUT repos/engineer/project/rulesets/2 -f enforcement=disabled
+exec gh api repos/engineer/project/rulesets/1
+cp stdout tags-before.json
+rm gh/calls.log
+
+exec factory setup --agent project-agent --repo engineer/project
+stdout '^setup: changed merge-settings\b.*\ballow_merge_commit true -> false(, |$)'
+! stdout '^setup: changed merge-settings\b.*\b(allow_squash_merge|allow_rebase_merge|allow_auto_merge|delete_branch_on_merge|squash_merge_commit_title|squash_merge_commit_message) '
+stdout '^setup: changed ruleset main\b.*\benforcement disabled -> active(, |$)'
+! stdout '^setup: changed ruleset main\b.*\b(name|target|bypass_actors|conditions|rules) '
+stdout '^setup: unchanged agent-account$'
+stdout '^setup: unchanged environment$'
+stdout '^setup: unchanged secret$'
+stdout '^setup: unchanged ruleset branches$'
+stdout '^setup: ok 6 checked$'
+! stdout 'reading OPPER_API_KEY'
+
+# Both are set back; the ruleset main is updated, not created again.
+exec gh api repos/engineer/project
+cp stdout repo.json
+jsonsub repo.json '{"allow_merge_commit":false}'
+exec gh api repos/engineer/project/rulesets
+cp stdout rulesets.json
+jsonsub rulesets.json '[{"id":1,"name":"tags"},{"id":2,"name":"main","enforcement":"active"},{"id":3,"name":"branches"}]'
+
+# The ruleset tags is unchanged.
+exec gh api repos/engineer/project/rulesets/1
+cmp stdout tags-before.json
+! grep '^api (POST|PUT|PATCH|DELETE) repos/engineer/project/rulesets/1 ' gh/calls.log
+
+-- secret.txt --
+s3cret-3
+-- gh/state.json --
+{
+  "logged_in": true,
+  "user": "engineer",
+  "repos": {
+    "engineer/project": {
+      "admin": true,
+      "settings": {
+        "allow_squash_merge": false,
+        "allow_merge_commit": true,
+        "allow_rebase_merge": true,
+        "allow_auto_merge": false,
+        "delete_branch_on_merge": false,
+        "squash_merge_commit_title": "COMMIT_OR_PR_TITLE",
+        "squash_merge_commit_message": "COMMIT_MESSAGES"
+      },
+      "rulesets": [
+        {
+          "id": 1,
+          "node_id": "RRS_1",
+          "source_type": "Repository",
+          "source": "engineer/project",
+          "name": "tags",
+          "target": "tag",
+          "enforcement": "evaluate",
+          "bypass_actors": [],
+          "conditions": {"ref_name": {"include": ["refs/tags/v*"], "exclude": []}},
+          "rules": [{"type": "deletion"}]
+        }
+      ]
+    }
+  }
+}

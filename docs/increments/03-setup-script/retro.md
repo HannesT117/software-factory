@@ -1,0 +1,36 @@
+# Retro of increment 03: setup script
+
+## Metrics
+
+| Metric | Value |
+|---|---|
+| Scenarios | 8 automated, 1 manual (03.9, open) |
+| Test writer's questions | 0 |
+| Tests changed after review | 1: a stdin probe for 03.2, 03.4 and 03.8, after the cross-review found that the tests did not catch a read of standard input |
+| Code commits | 4; about 690 lines in `cmd/` and `internal/`, with the two moved ruleset files |
+| `go test ./...` runs until green | 1 |
+| Review rounds | 4 by `increment-reviewer`: round 1, 1 finding (ruleset comparison); round 2, 1 finding outside the diff (the required check `checks` judged the merge ref); rounds 3 and 4, none. The cross-review of the other vendor found 3 points: paging (fixed), the ruleset comparison (settled by #56), and the weak stdin tests |
+| Engineer's interventions during the code | 3: the account for pushes and pull requests while the agent account was suspended; a stop of the plan; a new branch with the tests first. The orchestrating session settled the ruleset comparison |
+| Agent | Claude Code 2.1.317, cloud session; a test-writer session, an implementing session, and the subagent `increment-reviewer` |
+
+## Corrections
+
+- The design note says that a ruleset on GitHub "equals" the embedded file. The code compares by containment, because GitHub returns default keys that the file lacks; the reviewer reported this as its finding. The orchestrating session kept containment, and design pull request #56 changes the note to "holds every key and value that the file sets".
+- `docs/setup/README.md` told the engineer to build `factory` and then run it in another folder, where it is not on `PATH`. Fixed with `go install`.
+- The implementing session asked the reviewer to name the branch head as the reviewed commit. Round 1 named a docs commit, so neither the stop hook nor the CI job `cross-review` accepted it; round 2 names the latest commit with code as well.
+- The implementing session deleted the reviewer's uncommitted `review.md` in the shared worktree, and restored it from the reviewer's commit.
+
+## Points for the factory
+
+1. **A reviewer subagent shares the implementing session's worktree.** While it wrote `evidence/`, the stop hook asked the implementing session to commit the untracked file, which would have committed an unfinished review. Fix: the reviewer runs in a worktree of its own, or the hook ignores `evidence/` while a review runs.
+2. **A design note can fix the shape of an external answer that nobody has seen.** "Equals" assumed that GitHub returns a ruleset as it was sent. Fix: the skill `designing-increments` asks the note to mark each assumption about an external API as unverified and to name the manual scenario that settles it.
+3. **The retro asks for the agent version, and the cloud harness forbids model names in pushed files.** This retro names the tool version only. Fix: `AGENTS.md` says which version counts.
+4. **The acceptance stand-in for `gh` answers like the documented API, not like the real one.** It returns a ruleset exactly as it was stored, so no test can show the default keys of point 2. Fix: record one real answer per endpoint in scenario 03.9 and let the stand-in add the same defaults.
+
+5. **`checks` judges the merge ref, not the branch.** The workflow checks out GitHub's merge commit of the pull request into `main`; `factory check-pr` then sees one commit that changes tests and code together and reports each test file. Every pull request with tests and then code fails this required check. Fixed on `main`: the workflow now checks out the head of the pull request.
+6. **"The latest commit with code" is easy to get wrong.** The reviewer's prompt and the skill `reviewing-increments` differ on which commit a review names. Fix: `factory hook stop` prints the hash that the review must name.
+7. **A test finding after the first code commit needs a new branch.** Tests cannot change after code on the same branch (`check-pr`), so the stdin probe needed a new branch with the tests first and the code cherry-picked on top, a new review and a new pull request. Fix: the reviewer and the cross-review check each scenario's "does not" clauses before the code starts, or the test writer gets a checklist for them.
+
+## Summary
+
+`factory setup` applies the admin settings of a repo in six steps, with a dry run and with repair on a second run. The tests of 03.1 to 03.8 passed on the first full run; a later stdin probe, on a new branch with the tests first, passed without a code change. Review 1 found one deviation from the note: rulesets are compared by containment, not equality; #56 changes the note to match. The required check `checks` judged the merge ref; `main` now checks the head of the pull request. The manual scenario 03.9 on a real repo is open; it also shows which default keys GitHub adds to a ruleset.

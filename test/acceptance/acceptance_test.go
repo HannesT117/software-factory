@@ -25,9 +25,18 @@ var (
 	goEnv []string
 )
 
+// TestMain builds the factory command and installs the stand-in for gh and
+// the command stdin-probe, which every script finds on PATH.
 func TestMain(m *testing.M) {
-	os.Exit(run(m))
+	testscript.Main(runner{m}, map[string]func(){
+		"gh":          func() { os.Exit(ghStandIn()) },
+		"stdin-probe": func() { os.Exit(stdinProbe()) },
+	})
 }
+
+type runner struct{ m *testing.M }
+
+func (r runner) Run() int { return run(r.m) }
 
 func run(m *testing.M) int {
 	var err error
@@ -75,15 +84,21 @@ func TestAcceptance(t *testing.T) {
 			testscript.Run(t, testscript.Params{
 				Dir:   dir,
 				Setup: setup,
-				Cmds:  map[string]func(*testscript.TestScript, bool, []string){"exitcode": exitcode},
+				Cmds: map[string]func(*testscript.TestScript, bool, []string){
+					"exitcode": exitcode,
+					"jsonsub":  jsonsub,
+					"jsoneq":   jsoneq,
+				},
 			})
 		})
 	}
 }
 
 // setup gives each file its own HOME, no system git config, the factory
-// command on PATH, and REPO. testscript already gives each file a fresh
-// $WORK and TMPDIR.
+// command and the stand-in for gh on PATH, REPO, FACTORY_BIN (the folder
+// of the factory command alone) and GH_STAND_IN (the folder of the
+// stand-in's state). testscript already gives each file a fresh $WORK and
+// TMPDIR.
 func setup(env *testscript.Env) error {
 	home := filepath.Join(env.WorkDir, ".home")
 	if err := os.Mkdir(home, 0o755); err != nil {
@@ -92,6 +107,8 @@ func setup(env *testscript.Env) error {
 	env.Setenv("HOME", home)
 	env.Setenv("GIT_CONFIG_NOSYSTEM", "1")
 	env.Setenv("REPO", repo)
+	env.Setenv("FACTORY_BIN", binDir)
+	env.Setenv("GH_STAND_IN", filepath.Join(env.WorkDir, "gh"))
 	env.Setenv("PATH", binDir+string(os.PathListSeparator)+env.Getenv("PATH"))
 	for i := 0; i < len(goEnv); i += 2 {
 		env.Setenv(goEnv[i], goEnv[i+1])
