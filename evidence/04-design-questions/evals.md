@@ -87,6 +87,18 @@ After the fifth review, each grader of the five cases that judged something betw
 - In run 0 of asks-comprehension-questions the final answer goes on after the questions with a remark that answers question 3; the judge passed grader 07. Its text now names text before or after the questions, and check-traces.py checks the subagent's report.
 - check-traces.py, in its version after the sixth review, passes every check of the designing cases but one: in run 0 of explains-gaps-after-answers the design agent changed "the person" to "you" in two paragraphs of the explanation, which the skill asks it to show unchanged. The content is the same. Not fixed: the fix would be in the skill, with another round of evals and review, for a change of address only.
 
+## No remark after the questions
+
+The seventh review found that in run 0 of asks-comprehension-questions above, the design agent's remark after the questions answers question 3 and part of question 2; judged again with the new text of grader 07, that run fails it, so the case scored 0.9 and 1.0 there. The skill now says that the agent adds no remark on what the questions ask. Three runs per version:
+
+| Case | Version | Scores |
+|---|---|---|
+| asks-comprehension-questions | old | 1.0, 1.0, 0.9 |
+| asks-comprehension-questions | new | 1.0, 1.0, 1.0 |
+
+- The old version failed grader 07 once. With the new version, two runs show nothing after the questions and one only the next step.
+- check-traces.py: in one run of each version the design agent changed one word of a question ("two signals" to "signals"; "gets no name in the output" to "gives no name"). The skill asks for all questions, not for their exact words, so these are no failures of the skill.
+
 ## Limits
 
 - In the runner's sandbox, shell commands cannot write, so no run builds or tests the fixture code, and a reviewer that tries a shell write first may not try the Write tool.

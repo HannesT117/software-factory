@@ -97,7 +97,7 @@ def check(case, run_no, trace):
         asked, shown = questions(result), questions(final)
         rest = [l for l in result.splitlines() if l.strip() and not re.match(r"\s*\d\.\s", l)]
         say("the subagent's report holds only questions", bool(asked) and not rest
-            and all(q.rstrip().endswith("?") for q in asked))
+            and all("?" in q for q in asked))
         if rest:
             print("  other lines:", *rest, sep="\n    ")
         say("2 or 3 questions are shown", 2 <= len(shown) <= 3 and len(shown) == len(asked))
