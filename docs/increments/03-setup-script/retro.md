@@ -6,11 +6,11 @@
 |---|---|
 | Scenarios | 8 automated, 1 manual (03.9, open) |
 | Test writer's questions | 0 |
-| Tests changed after review | 0 |
-| Code commits | 3; 663 lines in `cmd/` and `internal/`, with the two moved ruleset files |
+| Tests changed after review | 1: a stdin probe for 03.2, 03.4 and 03.8, after the cross-review found that the tests did not catch a read of standard input |
+| Code commits | 4; about 690 lines in `cmd/` and `internal/`, with the two moved ruleset files |
 | `go test ./...` runs until green | 1 |
-| Review rounds | 2; round 1: 1 finding (ruleset comparison); round 2: 1 finding outside the diff (the required check `checks` fails on the merge ref) |
-| Engineer's interventions during the code | 0; the orchestrating session settled the one question (how a ruleset is compared) |
+| Review rounds | 4 by `increment-reviewer`: round 1, 1 finding (ruleset comparison); round 2, 1 finding outside the diff (the required check `checks` judged the merge ref); rounds 3 and 4, none. The cross-review of the other vendor found 3 points: paging (fixed), the ruleset comparison (settled by #56), and the weak stdin tests |
+| Engineer's interventions during the code | 3: the account for pushes and pull requests while the agent account was suspended; a stop of the plan; a new branch with the tests first. The orchestrating session settled the ruleset comparison |
 | Agent | Claude Code 2.1.317, cloud session; a test-writer session, an implementing session, and the subagent `increment-reviewer` |
 
 ## Corrections
@@ -29,7 +29,8 @@
 
 5. **`checks` judges the merge ref, not the branch.** The workflow checks out GitHub's merge commit of the pull request into `main`; `factory check-pr` then sees one commit that changes tests and code together and reports each test file. Every pull request with tests and then code fails this required check. Fixed on `main`: the workflow now checks out the head of the pull request.
 6. **"The latest commit with code" is easy to get wrong.** The reviewer's prompt and the skill `reviewing-increments` differ on which commit a review names. Fix: `factory hook stop` prints the hash that the review must name.
+7. **A test finding after the first code commit needs a new branch.** Tests cannot change after code on the same branch (`check-pr`), so the stdin probe needed a new branch with the tests first and the code cherry-picked on top, a new review and a new pull request. Fix: the reviewer and the cross-review check each scenario's "does not" clauses before the code starts, or the test writer gets a checklist for them.
 
 ## Summary
 
-`factory setup` applies the admin settings of a repo in six steps, with a dry run and with repair on a second run. The tests of 03.1 to 03.8 passed on the first full run. Review 1 found one deviation from the note: rulesets are compared by containment, not equality; #56 changes the note to match. The required check `checks` judged the merge ref; `main` now checks the head of the pull request. The manual scenario 03.9 on a real repo is open; it also shows which default keys GitHub adds to a ruleset.
+`factory setup` applies the admin settings of a repo in six steps, with a dry run and with repair on a second run. The tests of 03.1 to 03.8 passed on the first full run; a later stdin probe, on a new branch with the tests first, passed without a code change. Review 1 found one deviation from the note: rulesets are compared by containment, not equality; #56 changes the note to match. The required check `checks` judged the merge ref; `main` now checks the head of the pull request. The manual scenario 03.9 on a real repo is open; it also shows which default keys GitHub adds to a ruleset.
