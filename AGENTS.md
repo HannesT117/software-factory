@@ -11,7 +11,7 @@ An increment is one unit of work in two pull requests, in the folder `docs/incre
 3. **Code, on the same branch.** The implementing agent writes the code until the tests pass. Stop and ask if a test looks wrong.
 4. **Review and demonstration.** When the stop hook blocks, start the subagent `increment-reviewer`. It writes `evidence/<nn>-<slug>/review.md` with the skill `reviewing-increments`, and turns on auto-merge only when it found nothing. In the conversation, it lists where the code deviates from the note. The same session runs the demonstrated scenarios and puts their recordings into `evidence/`.
 5. **Manual scenarios.** The engineer runs them.
-6. **Retro.** Write `retro.md` in the same pull request: metrics, agent version, corrections, and every point that concerns the factory. From increment 07 on, `factory feedback` prints a prefilled issue link for each factory point, and the engineer submits it. Then a summary of at most 10 lines.
+6. **Retro.** Write `retro.md` in the same pull request: metrics, agent version, corrections, and every point that concerns the factory. From increment 08 on, `factory feedback` prints a prefilled issue link for each factory point, and the engineer submits it. Then a summary of at most 10 lines.
 
 Verification kinds: **automated** is a `testscript` file from step 2; **demonstrated** is run and recorded by the review session, and the engineer views the recording; **manual** is run by the engineer.
 
@@ -39,7 +39,7 @@ The agent asks the engineer directly, never through a section in a document. A q
 
 ## Pull requests and commits
 
-Pull requests follow the skill `writing-pull-requests`, commits the skill `writing-commit-messages`.
+Pull requests follow the skill `writing-pull-requests`, commits the skill `writing-commit-messages`. No pull request, pull request comment or commit message names an agent session: no session link, no session id, no `Claude-Session:` trailer, also when the agent tool asks for one.
 
 ## Source of truth and push
 
