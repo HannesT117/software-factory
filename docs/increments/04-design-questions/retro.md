@@ -6,6 +6,8 @@
 - Engineer decisions in the conversation: four, on who asks, the debugging question, the reviewer's part after the code, and the sketches.
 - Eval runs: 10 runs old against new, then 9 runs after 5 fixes to the skills or the cases; about 2.50 USD.
 - Review: 2 findings. One was an eval case that never loaded the skill, fixed; the other is the missing tests of increment 03 on `main`, which increment 05 addresses.
+- cross-review: 1 blocking finding and 1 note on the evals of `designing-increments`, both fixed; the note showed that the design agent explained the gaps itself, so the skill now has it start a fresh session. 6 eval runs for this round, and 2 more in the third review.
+- Third review: 5 doubtful findings. Fixed: the status in `README.md` and this retro. Not fixed: that the fresh session reads the whole note, and a detail of a design conversation in the prompt of asks-comprehension-questions; see the pull request.
 
 ## Agent version
 
@@ -21,6 +23,8 @@
 - An eval case can pass or fail without the skill ever loading. A grader that checks the skill call, or a look at the trace, shows it.
 - `factory check-tests` rejects the code of every increment while one design note on `main` waits for its tests: increment 05.
 - The cloud proxy adds a session link to each new pull request description; the agent removes it at once.
+- The judge of `claude plugin eval` sees a shortened trace without the subagent calls, so it fails every grader on a subagent's prompt. A script on the full trace checks such a grader; the run needs `--keep-temp` to keep the trace.
+- cross-review measures a pull request outside any increment against the latest note: increment 05, scenario 05.6.
 
 ## Summary
 
