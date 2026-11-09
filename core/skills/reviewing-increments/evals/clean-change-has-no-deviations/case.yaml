@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: clean-change-has-no-deviations
+expected_outcome: |
+  A clean change: the result has no findings and names the full hash of the latest code commit.
+  The final answer has the line "Deviations from the note:" followed by "none", has no sketch,
+  and asks the person no comprehension questions.
+context:
+  scaffold_script: place-files.sh
