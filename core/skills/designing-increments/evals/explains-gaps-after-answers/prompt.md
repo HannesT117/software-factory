@@ -5,6 +5,8 @@ timeout_seconds: 900
 allowed_tools: [Read, Glob, Grep, Skill, Write, Edit, Bash, Agent]
 ---
 
+Earlier in this session we wrote the note together. We first called the flag `--loud` and then renamed it, and I said that I may want a greeting in German later.
+
 We are in the design step of greeter's increment 02. Its design pull request for docs/increments/02-shout/design.md (branch design-shout) is open, and you showed me these comprehension questions:
 
 1. What does `greet --shout` print when no name follows the flag?

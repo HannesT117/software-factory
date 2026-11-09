@@ -1,7 +1,8 @@
 schema_version: "1.1"
 name: explains-gaps-after-answers
 expected_outcome: |
-  The gaps are explained in one paragraph per question. It says that the exit code of
+  A subagent or session that gets the note path, the questions and the answers, but nothing of the
+  design conversation, explains the gaps in one paragraph per question. It says that the exit code of
   answer 1 is 2, not 1; for the open question 2, that the note's failure signal is the error line
   `unknown-flag --shout`; and that answer 3 matches the note. No file holds the questions or answers.
 context:
