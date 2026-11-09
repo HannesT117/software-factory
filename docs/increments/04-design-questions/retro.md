@@ -6,12 +6,14 @@
 - Engineer decisions in the conversation: four, on who asks, the debugging question, the reviewer's part after the code, and the sketches.
 - Eval runs: 10 runs old against new, then 9 runs after 5 fixes to the skills or the cases; about 2.50 USD.
 - Review: 2 findings. One was an eval case that never loaded the skill, fixed; the other is the missing tests of increment 03 on `main`, which increment 05 addresses.
-- cross-review: 1 blocking finding and 1 note on the evals of `designing-increments`, both fixed; the note showed that the design agent explained the gaps itself, so the skill now has it start a fresh session. 6 eval runs for this round, and 2 more in the third review.
-- Third review: 5 doubtful findings. Fixed: the status in `README.md` and this retro. Not fixed: that the fresh session reads the whole note, and a detail of a design conversation in the prompt of asks-comprehension-questions; see the pull request.
+- cross-review, round 1: 1 blocking finding and 1 note on the evals of `designing-increments`, both fixed; the note showed that the design agent explained the gaps itself, so the skill now has it start a fresh session. 6 eval runs, and 2 more in the third review.
+- Third review: 5 doubtful findings. Fixed at once: the status in `README.md` and this retro.
+- cross-review, round 2: 1 blocking finding, the same as one of the third review: the fresh session must read the whole note. Fixed in the skill, and the prompt of asks-comprehension-questions got a detail of a design conversation for grader 01. 8 eval runs: 4 recorded, 4 dropped because their prompt led the design agent to change the note.
+- Fourth review: 3 doubtful findings. Fixed: this retro, and the trace check is now a script in the evidence. Not fixed: the failing `checks`, the same as on `main`.
 
 ## Agent version
 
-- Claude Code 2.1.317; orchestrating model `claude-opus-5-5`; eval runs `claude-sonnet-5-5`, judged by `haiku`.
+- Claude Code 2.1.317, from the cross-review findings on 2.1.319; orchestrating model `claude-opus-5-5`; eval runs `claude-sonnet-5-5`, judged by `haiku`.
 
 ## Corrections
 
@@ -23,7 +25,8 @@
 - An eval case can pass or fail without the skill ever loading. A grader that checks the skill call, or a look at the trace, shows it.
 - `factory check-tests` rejects the code of every increment while one design note on `main` waits for its tests: increment 05.
 - The cloud proxy adds a session link to each new pull request description; the agent removes it at once.
-- The judge of `claude plugin eval` sees a shortened trace without the subagent calls, so it fails every grader on a subagent's prompt. A script on the full trace checks such a grader; the run needs `--keep-temp` to keep the trace.
+- The judge of `claude plugin eval` sees a shortened trace without the subagent calls, so its verdict on a grader about a subagent's prompt is a guess, pass or fail. A script on the full trace checks such a grader; the run needs `--keep-temp` to keep the trace.
+- A detail in an eval prompt can change what the agent does: a remark on a later feature made the design agent change the note instead of asking questions.
 - cross-review measures a pull request outside any increment against the latest note: increment 05, scenario 05.6.
 
 ## Summary

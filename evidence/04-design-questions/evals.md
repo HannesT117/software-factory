@@ -39,7 +39,7 @@ Grader 02 of asks-comprehension-questions now checks that the shown questions ar
 | explains-gaps-after-answers | old | 0.5, 0.67 |
 | explains-gaps-after-answers | new | 0.83, 1.0 |
 
-- The judge of the runner sees a shortened trace without the subagent call, so it failed grader 01 in all runs. For the new version, a script checked the full traces: both runs start a subagent whose prompt holds the note path, the three questions and the three answers, and neither detail of the design conversation; the scores above count that result. The traces of the old version were not kept; its final answers say that the agent explained the gaps itself.
+- The judge of the runner sees a shortened trace without the subagent call, so it failed grader 01 in all runs. For the new version, a script checked the full traces: both runs start a subagent whose prompt holds the note path, the three questions and the three answers, and neither detail of the design conversation; the scores above count that result. In run 1 the design agent shows the explanation word for word; in run 0 it changes "the person" to "you", with the same content. The traces of the old version were not kept; its final answers say that the agent explained the gaps itself.
 - Grader 02 of explains-gaps-after-answers failed once in each version: after the three paragraphs, the agent adds a line that nothing blocks the approval.
 - In asks-comprehension-questions, grader 01 failed once with the unchanged skill.
 
@@ -52,7 +52,7 @@ The skill now says that the fresh session reads the whole note. The prompt of as
 | asks-comprehension-questions | old | 0.8, 0.8 | 1.0, 1.0 |
 | asks-comprehension-questions | new | 0.6, 1.0 | 1.0, 1.0 |
 
-- A script checked graders 01, 02 and 05 on the full traces. In all four runs, the subagent's prompt names the note, holds neither detail of the conversation, and the subagent reads the note without offset or limit; the shown questions have the content of the subagent's questions; no run writes a file. The judge failed some of these graders; where its verdict differs from the trace, the score counts the trace.
+- [check-traces.py](check-traces.py) checks graders 01 and 02 on the full traces of a run with `--keep-temp`; grader 05 was checked by reading the tool calls. In all four runs, the subagent's prompt names the note, holds neither detail of the conversation, and the subagent reads the note without offset or limit; the shown questions have the content of the subagent's questions; no run writes a file. The judge failed some of these graders; where its verdict differs from the trace, the score counts the trace.
 - The case does not separate the versions here: the old skill also had the whole note read in both runs. The difference is in the subagent's prompt: the new version says "Read the whole design note", the old one "Read only that note". In the run of the third review, the old skill limited the session to sections.
 - With the new skill, the design agent reworded the questions slightly; the skill asks it to show all of them, not to show them unchanged.
 - A first try of this round was dropped: its prompt said that a greeting in German may come later, and the design agent then tried to change the note, which the read-only sandbox refused, and asked no questions in two of four runs.
