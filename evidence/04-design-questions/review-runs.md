@@ -63,3 +63,15 @@ The final answer then gives the review in the conversation: two findings, the wo
 
 - The trace has 483 lines, most of them streamed chunks of text or tool input; the judge's evidence holds the first 12 and the last 12, which are the start of the skill call and the final message. The judge saw no other tool call.
 - Grader 01 fails because no result file exists. Its judge saw only the final answer, which says that the file could not be written.
+
+## Sixth review
+
+The review ran explains-deviations of scenario 04.2 twice with `--keep-temp`, with `reviewing-increments` at 1e7dd7ed56c66175fc397bbc0abe7333be1b8188, the same skill as at 06b922f. The judge did not run: each of its calls failed on the usage limit of the account, so graders 02 to 05 count as failed in the runner's scores (0.0 and 0.2). The review read both final answers for these graders instead. Cost 0.19 USD, 8 turns per run. The review also read the eight kept traces of the run in `evals.md`, section Every grader on the middle of a trace on tool calls.
+
+### explains-deviations
+
+In both runs the reviewer loads the skill, reads the note, the code, the tests and `names.txt` with `cat`, and tries to build the code; the sandbox makes every shell write fail.
+
+- Run 0 does not try the Write tool and gives the result in its final answer: 1 finding, the wording `greet: <name> is known` at `cmd/greet/main.go:24` against `greet: known <name>`. Grader 01 fails.
+- Run 1 writes `evidence/01-greeting/review.md` with the Write tool: `Result: 3 findings`, the first under `## Findings` the wording at `cmd/greet/main.go:23`, then the split on any whitespace and, marked doubtful, the sort. Grader 01 passes.
+- Both final answers list under `Deviations from the note:` the wording, also a finding, and the sort of the names, with file and line, what the note says or leaves open and what the code does, and further entries for the split and for an unreadable `names.txt`. Neither asks a comprehension question, and neither has a sketch: each says that no entry changes a step of a flow. By this reading, graders 02 to 05 pass in both runs: 0.8 and 1.0.
