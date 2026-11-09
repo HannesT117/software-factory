@@ -99,6 +99,21 @@ The seventh review found that in run 0 of asks-comprehension-questions above, th
 - The old version failed grader 07 once, but not through a remark after the questions: in that run the fresh session's own question 2 names one of the two signals it asks for, and the design agent shows it word for word. With the new version, the design agent's prompt to the fresh session asks for questions without hints in all three runs, which no old prompt does; two runs show nothing after the questions and one only the next step.
 - check-traces.py: in one run of each version the design agent reworded one question: "the two signals" became "the signals", and "gets no name in the output" became "gives no name". The skill asks for all questions, not for their exact words, so these are no failures of the skill.
 
+## The wording as a finding of its own
+
+After the merge of #59, cross-review still blocked on grader 01 of explains-deviations: it accepted a result whose `## Findings` only quoted the output. The grader now needs a finding line under `## Findings` that names `cmd/greet/main.go`, the printed "is known" and the note's "greet: known <name>". The runner matches it as a JavaScript regular expression on the JSON of the Write; checked with `node` on the two kept results that the reviewer wrote and on five built results:
+
+| Result | Matches |
+|---|---|
+| kept: run 0 of an earlier round, run 1 of the sixth review | yes, both |
+| built: a finding on the wording | yes |
+| built: `none` with a remark that quotes the output | no |
+| built: a finding on the sort only, quoting the output | no |
+| built: the output only under `## Checks run` | no |
+| built: no `## Checks run`, the output under `## Demonstrated scenarios` | no |
+
+No eval ran for this change: the grader is a regular expression, and the check above runs it on the same input as the runner.
+
 ## Limits
 
 - In the runner's sandbox, shell commands cannot write, so no run builds or tests the fixture code, and a reviewer that tries a shell write first may not try the Write tool.
