@@ -57,6 +57,19 @@ The skill now says that the fresh session reads the whole note. The prompt of as
 - With the new skill, the design agent reworded the questions slightly; the skill asks it to show all of them, not to show them unchanged.
 - A first try of this round was dropped: its prompt said that a greeting in German may come later, and the design agent then tried to change the note, which the read-only sandbox refused, and asked no questions in two of four runs.
 
+## Graders on the trace
+
+After cross-review, the graders that judge a subagent's prompt are `tool_used` graders: they match the input of the Agent call (the note and the request to read it whole, the answers, no detail of the design conversation) and of each Read of the note (whole, never with offset or limit). [check-traces.py](check-traces.py) adds what these graders cannot tell: that the subagent itself reads the note, and what the subagent returned next to what the design agent showed. Two runs per case with the new skill:
+
+| Case | Scores |
+|---|---|
+| asks-comprehension-questions | 0.88, 1.0 |
+| explains-gaps-after-answers | 0.88, 1.0 |
+
+- Every `tool_used` grader passed in all four runs; the runner counted the Agent call and the subagent's Read. On the kept traces of the round before, grader 01 of asks-comprehension-questions fails for the old skill in both runs, because its prompt to the subagent did not ask for the whole note, and passes for the new one.
+- The script passed the subagent's reads and the shown questions in all runs. In one run of explains-gaps-after-answers the design agent put a bold label before each paragraph of the explanation, with the same content.
+- The two failed graders are judged by the model: grader 08 of asks-comprehension-questions in a run that wrote no file, and grader 04 of explains-gaps-after-answers, where the agent adds a line on the approval after the three paragraphs.
+
 ## Limits
 
 - In the runner's sandbox, shell commands could not write, so no run built or tested the fixture code; the graders on the review result in clean-change-has-no-deviations fail for both versions for this reason.
