@@ -28,7 +28,7 @@
 - `factory check-tests` rejects the code of every increment while one design note on `main` waits for its tests: increment 05.
 - The cloud proxy adds a session link to each new pull request description; the agent removes it at once.
 - The judge of `claude plugin eval` sees only the first and last 12 lines of a trace, and every streamed chunk is a line, so it sees the skill call and the final answer, never the subagent calls, Writes or commits in between; its verdict on them is a guess, pass or fail. `tool_used` graders on the calls' input check them; a script on the full trace, kept with `--keep-temp`, checks what a regex cannot, such as whose Read a call is. `authoring-skills` says the opposite and needs a fix; the graders of the other skills need the same change.
-- In the cloud container the runner runs as root, and its sandbox makes every path read-only, so no eval run can write a file: graders on the review result fail in every version.
+- In the cloud container the runner runs as root, and its sandbox makes every path read-only for shell commands; only the Write tool can write. A run that tries a shell write first may conclude that it cannot write at all.
 - A detail in an eval prompt can change what the agent does: a remark on a later feature made the design agent change the note instead of asking questions.
 - cross-review measures a pull request outside any increment against the latest note: increment 05, scenario 05.6.
 

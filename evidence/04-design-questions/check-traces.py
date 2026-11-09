@@ -3,15 +3,16 @@
 The `tool_used` graders of the cases check the subagent's prompt, but they
 cannot tell whose Read a call is, and the judge of `claude plugin eval` sees
 only the first and last 12 messages of a trace. This script reads the full
-traces: it checks that the subagent itself reads the whole note, and it shows
-what the subagent returned next to what the design agent showed. Run the eval
+traces: it checks that the subagent itself reads the whole note, that its
+report holds only questions, and that the design agent shows the subagent's
+questions and explanation; it prints both when the words differ. Run the eval
 with `--keep-temp`, then pass the `result.json` files:
 
     python3 check-traces.py <result.json> [<result.json> ...]
 
-It prints one line per run and check. Grader 05 of asks-comprehension-questions
-asks for the same content, not the same words, so the script prints both sets
-of questions when the words differ, for a person to compare.
+It prints one line per run and check. The skill asks the design agent to show
+all questions and to show the explanation unchanged; the script reports a
+question with other words as FAIL and prints both, for a person to compare.
 """
 
 import json
@@ -94,14 +95,24 @@ def check(case, run_no, trace):
         say("the subagent reads the note, each time whole",
             bool(whole) and len(whole) == len(reads) + len(shells))
         asked, shown = questions(result), questions(final)
+        rest = [l for l in result.splitlines() if l.strip() and not re.match(r"\s*\d\.\s", l)]
+        say("the subagent's report holds only questions", bool(asked) and not rest
+            and all(q.rstrip().endswith("?") for q in asked))
+        if rest:
+            print("  other lines:", *rest, sep="\n    ")
         say("2 or 3 questions are shown", 2 <= len(shown) <= 3 and len(shown) == len(asked))
+        say("the shown questions are the subagent's, word for word", asked == shown)
         if asked != shown:
             print("  subagent:", *asked, sep="\n    ")
             print("  shown:", *shown, sep="\n    ")
     else:
         say("the subagent prompt holds the answers", all(a in prompt for a in ANSWERS))
         paragraphs = [p.strip() for p in result.split("\n\n") if len(p.strip()) > 80]
-        say("the explanation is shown", bool(paragraphs) and all(p[:60] in final for p in paragraphs))
+        flat = lambda t: " ".join(t.split())
+        missing = [p for p in paragraphs if flat(p) not in flat(final)]
+        say("the explanation is shown unchanged", bool(paragraphs) and not missing)
+        for p in missing:
+            print("  changed:", p[:200])
 
 
 for path in sys.argv[1:]:

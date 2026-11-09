@@ -78,14 +78,16 @@ After the fifth review, each grader of the five cases that judged something betw
 |---|---|
 | asks-comprehension-questions | 1.0, 1.0 |
 | explains-gaps-after-answers | 1.0, 1.0 |
-| clean-change-has-no-deviations | 1.0, 0.71 (after the fix of the hash; before it 0.57, 0.71) |
+| clean-change-has-no-deviations | 1.0, 0.71 (after the fix of the hash) |
 | explains-deviations | 0.8, 0.8 |
 | sketches-changed-flow | 1.0, 1.0 |
 
-- Every failed grader is a Write of the review result that did not happen. The sandbox makes shell commands read-only; in those runs the reviewer concluded from a failed shell write that it could not write at all and did not try the Write tool, which works: the other runs wrote the result with it. In explains-deviations both runs gave the result in the final answer instead, with the finding on the wording "is known".
-- check-traces.py passed every check of the designing cases, after it also counted a `git show` of the whole note by the subagent as a whole read.
+- Shell commands cannot write in the runner's sandbox, but the Write tool can. In the failed runs of the graders on the review result, the reviewer concluded from a failed shell write that it could not write at all and did not try the Write tool; in explains-deviations both runs gave the result in the final answer instead, with the finding on the wording "is known". The other runs wrote the result with the Write tool.
+- Before the fix of the hash, clean-change-has-no-deviations scored 0.57 and 0.71 with the right hash in both written results: grader 05 failed because the reviewer counted its unrun checks as a finding, and grader 02 failed once because the answer listed a deviation.
+- In run 0 of asks-comprehension-questions the final answer goes on after the questions with a remark that answers question 3; the judge passed grader 07. Its text now names text before or after the questions, and check-traces.py checks the subagent's report.
+- check-traces.py, in its version after the sixth review, passes every check of the designing cases but one: in run 0 of explains-gaps-after-answers the design agent changed "the person" to "you" in two paragraphs of the explanation, which the skill asks it to show unchanged. The content is the same. Not fixed: the fix would be in the skill, with another round of evals and review, for a change of address only.
 
 ## Limits
 
-- In the runner's sandbox, shell commands could not write, so no run built or tested the fixture code; the graders on the review result in clean-change-has-no-deviations fail for both versions for this reason.
+- In the runner's sandbox, shell commands cannot write, so no run builds or tests the fixture code, and a reviewer that tries a shell write first may not try the Write tool.
 - Not run again: the unchanged cases finds-hard-coded-test-case and test-misses-its-scenario of reviewing-increments, and asks-before-deciding-terms, replaces-earlier-scenario and writes-note-from-answers of designing-increments.
