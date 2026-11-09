@@ -24,3 +24,4 @@
 ## Checkpoints
 - 2026-11-03T02:10Z step 1 done; claude/05-tests-per-increment-design pushed; next: step 2 after the engineer approves #52; open: none
 - 2026-11-09T00:14Z design merged as #60; next: test writer for 05.1 to 05.5 after 03 and 04 merge; open: none
+- 2026-11-09T00:41Z engineer's decision: the fix of cross-review for pull requests without an increment belongs to 05; design pull request #64 (https://github.com/HannesT117/software-factory/pull/64) adds it to the note with scenario 05.6; claude/05-cross-review-per-increment@525390d; comprehension questions shown; next: after #64 merges, the test writer writes 05.1 to 05.6 and removes the test of 02.7; open: none
