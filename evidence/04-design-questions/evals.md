@@ -99,6 +99,23 @@ The seventh review found that in run 0 of asks-comprehension-questions above, th
 - The old version failed grader 07 once, but not through a remark after the questions: in that run the fresh session's own question 2 names one of the two signals it asks for, and the design agent shows it word for word. With the new version, the design agent's prompt to the fresh session asks for questions without hints in all three runs, which no old prompt does; two runs show nothing after the questions and one only the next step.
 - check-traces.py: in one run of each version the design agent reworded one question: "the two signals" became "the signals", and "gets no name in the output" became "gives no name". The skill asks for all questions, not for their exact words, so these are no failures of the skill.
 
+## The wording as a finding of its own
+
+After the merge of #59, cross-review still blocked on grader 01 of explains-deviations: it accepted a result whose `## Findings` only quoted the output. Three versions of a regular expression on the Write of the result followed, each checked with `node` on kept and built results. None could tell a finding from a remark or another finding that quotes the same words, and each failed correct findings in other words or forms; final answers, for example, number their findings.
+
+Grader 01 is now a judge that the runner gives the whole written file, `focus: { source: file, path: evidence/01-greeting/review.md }`, instead of the shortened trace. It asks whether `## Findings` reports the wrong wording as a finding of its own; the finding may quote the lines with any name or with `<name>`, with or without `greet: `, or name the difference in its own words. Three runs with the skill of this branch and a first wording of the judge, which asked for both lines about as it quotes them:
+
+| Run | Score | Grader 01 | Written result |
+|---|---|---|---|
+| 0 | 1.0 | pass | 1 finding: the wording at `cmd/greet/main.go:23` |
+| 1 | 0.8 | pass | 3 findings, the first the wording at `cmd/greet/main.go:26`, then the sort |
+| 2 | 0.8 | fail | none: the reviewer did not try the Write tool after a failed shell write, so the file does not exist |
+
+- The judge's evidence in runs 0 and 1 starts with the file's content, so it saw the whole result.
+- Run 1 also fails grader 05, which is judged on the final answer: that answer has a Mermaid sketch. In run 2, grader 01 is the only failed grader.
+- The first wording failed correct findings that name the difference in other words, in 2 of 2 runs each. The current wording was checked on 23 written results built for the review, in one run each: it passes the 14 correct ones and fails the 9 broken ones, such as a remark next to a finding, the wording only under another section or inside another finding, and an empty file.
+- With the current wording, the written results of runs 0 and 1 pass in 2 of 2 runs each, with 3 of 3 votes.
+
 ## Limits
 
 - In the runner's sandbox, shell commands cannot write, so no run builds or tests the fixture code, and a reviewer that tries a shell write first may not try the Write tool.
