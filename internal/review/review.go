@@ -1,19 +1,19 @@
-// Package review finds the latest code commit that still needs a review
-// result.
+// Package review finds the latest code commit of a branch, the review
+// result that names it, and reads that result.
 package review
 
 import (
 	"os"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
 
+	"github.com/HannesT117/software-factory/internal/branch"
+	"github.com/HannesT117/software-factory/internal/design"
 	"github.com/HannesT117/software-factory/internal/gitx"
 	"github.com/HannesT117/software-factory/internal/paths"
 )
-
-// Bases are the refs, in this order, whose merge base with HEAD starts the
-// commits of the branch.
-var Bases = []string{"origin/HEAD", "origin/main", "main"}
 
 // ReadCode reads .factory/code-paths from the working tree at root.
 func ReadCode(root string) (paths.Code, error) {
@@ -31,97 +31,115 @@ func ReadCode(root string) (paths.Code, error) {
 // code, when no review result in evidence/*/review.md names its full hash.
 // It returns "" when there is no such commit.
 func Pending(root string) (string, error) {
-	repo := gitx.Repo{Dir: root}
 	code, err := ReadCode(root)
 	if err != nil {
 		return "", err
 	}
-
-	rangeArg := "HEAD"
-	// branch holds the paths that the branch changes against its merge
-	// base, or nil without a base.
-	var branch map[string]bool
-	for _, b := range Bases {
-		mb, err := repo.Run("merge-base", b, "HEAD")
-		if err != nil {
-			continue
-		}
-		mb = strings.TrimSpace(mb)
-		rangeArg = mb + "..HEAD"
-		changed, err := repo.Paths("diff", "--name-only", "--no-renames", "-z", mb, "HEAD")
-		if err != nil {
-			return "", err
-		}
-		branch = map[string]bool{}
-		for _, p := range changed {
-			branch[p] = true
-		}
-		break
-	}
-	lines, err := repo.Lines("rev-list", "--first-parent", "--parents", rangeArg)
+	b, err := branch.ReadAny(gitx.Repo{Dir: root})
 	if err != nil {
 		return "", err
 	}
-
-	for _, line := range lines {
-		// A commit counts with the paths it changes against its first
-		// parent. A merge counts only with the paths that the branch
-		// itself changes, so that a merge from main brings in no code.
-		fields := strings.Fields(line)
-		h := fields[0]
-		var ps []string
-		if len(fields) == 1 {
-			ps, err = repo.Paths("diff-tree", "--root", "-r", "--name-only", "--no-renames", "--no-commit-id", "-z", h)
-		} else {
-			ps, err = repo.Paths("diff", "--name-only", "--no-renames", "-z", fields[1], h)
-		}
-		if err != nil {
-			return "", err
-		}
-		if len(fields) > 2 && branch != nil {
-			var kept []string
-			for _, p := range ps {
-				if branch[p] {
-					kept = append(kept, p)
-				}
-			}
-			ps = kept
-		}
-		if !changesCode(ps, code) {
-			continue
-		}
-		reviewed, err := named(root, h)
-		if err != nil || reviewed {
-			return "", err
-		}
-		return h, nil
+	h := b.LatestCode(code)
+	if h == "" {
+		return "", nil
 	}
-	return "", nil
+	file, err := Find(root, h)
+	if err != nil || file != "" {
+		return "", err
+	}
+	return h, nil
 }
 
-func changesCode(ps []string, code paths.Code) bool {
-	for _, p := range ps {
-		if code.Is(p) {
-			return true
-		}
+// Find returns the path, relative to root and slash-separated, of the
+// first review result in the working tree that names hash, or "".
+func Find(root, hash string) (string, error) {
+	files, err := FindAll(root, hash)
+	if err != nil || len(files) == 0 {
+		return "", err
 	}
-	return false
+	return files[0], nil
 }
 
-// named reports whether a review result in the working tree names hash.
-func named(root, hash string) (bool, error) {
+// FindAll returns the paths, relative to root and slash-separated, of
+// every review result in the working tree that names hash, in path order.
+func FindAll(root, hash string) ([]string, error) {
 	files, err := filepath.Glob(filepath.Join(root, "evidence", "*", "review.md"))
 	if err != nil {
-		return false, err
+		return nil, err
 	}
+	var found []string
 	for _, f := range files {
 		data, err := os.ReadFile(f)
 		if err != nil {
-			return false, err
+			return nil, err
 		}
 		if strings.Contains(string(data), hash) {
-			return true, nil
+			rel, err := filepath.Rel(root, f)
+			if err != nil {
+				return nil, err
+			}
+			found = append(found, filepath.ToSlash(rel))
 		}
 	}
-	return false, nil
+	return found, nil
+}
+
+// ResultLine is the form of the Result line of a review result.
+var ResultLine = regexp.MustCompile(`^Result: (\d+) blocking, (\d+) notes$`)
+
+// Result is what a review result says about its findings.
+type Result struct {
+	// Line is the number of the Result line, or 0 without one.
+	Line int
+	// Valid is true when the Result line has the form of ResultLine.
+	Valid bool
+	// Blocking and Notes are the counts of the Result line.
+	Blocking, Notes int
+	// FoundBlocking and FoundNotes count the finding lines under
+	// ## Findings.
+	FoundBlocking, FoundNotes int
+}
+
+// Parse reads a review result.
+func Parse(text string) Result {
+	var res Result
+	inFindings := false
+	design.Lines(text, func(n int, line string) {
+		line = strings.TrimRight(line, " \r")
+		if strings.HasPrefix(line, "#") {
+			inFindings = line == "## Findings"
+			return
+		}
+		if strings.HasPrefix(line, "Result:") && res.Line == 0 {
+			res.Line = n
+			if m := ResultLine.FindStringSubmatch(line); m != nil {
+				res.Valid = true
+				res.Blocking, _ = strconv.Atoi(m[1])
+				res.Notes, _ = strconv.Atoi(m[2])
+			}
+			return
+		}
+		if !inFindings {
+			return
+		}
+		switch {
+		case strings.HasPrefix(line, "- **blocking**"):
+			res.FoundBlocking++
+		case strings.HasPrefix(line, "- **note**"):
+			res.FoundNotes++
+		}
+	})
+	return res
+}
+
+// ReadCodeAt reads .factory/code-paths from the commit ref of repo.
+func ReadCodeAt(repo gitx.Repo, ref string) (paths.Code, error) {
+	if _, err := repo.Run("cat-file", "-e", ref+":"+paths.CodePathsFile); err != nil {
+		return paths.Code{}, nil
+	}
+	text, err := repo.Run("show", ref+":"+paths.CodePathsFile)
+	if err != nil {
+		return paths.Code{}, err
+	}
+	return paths.Code{List: paths.ParseList(text), Set: true}, nil
 }

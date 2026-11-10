@@ -2,11 +2,11 @@
 
 Reviewed commit: <full 40-character hash>
 Pull request: <link>
-Result: <no findings | n findings>
+Result: <b> blocking, <n> notes
 
 ## Findings
 
-- **<kind of finding>**, `<file>:<line>`: <what is wrong, and why it matters>
+- **<blocking | note>** <kind of finding>, `<file>:<line>`: <what is wrong, and why it matters>
 
 ## Checks run
 

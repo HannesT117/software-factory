@@ -148,3 +148,32 @@ func (c Code) Is(path string) bool {
 	}
 	return false
 }
+
+// IncrementOf returns the folder <nn>-<slug> of an increment when path lies
+// under test/acceptance/<nn>-<slug>/ or evidence/<nn>-<slug>/. A pull
+// request belongs to the increments of the paths that it changes.
+func IncrementOf(path string) (string, bool) {
+	for _, dir := range []string{TestDir, EvidenceDir} {
+		rest, ok := strings.CutPrefix(path, dir)
+		if !ok {
+			continue
+		}
+		folder, _, ok := strings.Cut(rest, "/")
+		if ok && len(folder) > 3 && folder[0] >= '0' && folder[0] <= '9' && folder[1] >= '0' && folder[1] <= '9' && folder[2] == '-' {
+			return folder, true
+		}
+	}
+	return "", false
+}
+
+// Increments returns the folders of the increments that the paths belong
+// to.
+func Increments(ps []string) map[string]bool {
+	set := map[string]bool{}
+	for _, p := range ps {
+		if f, ok := IncrementOf(p); ok {
+			set[f] = true
+		}
+	}
+	return set
+}

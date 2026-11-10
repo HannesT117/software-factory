@@ -9,3 +9,13 @@
 /go.sum @HannesT117
 /.github/ @HannesT117
 /.factory/ @HannesT117
+# The checks, the hooks, the skills and the test runner judge the next
+# pull request, so a change to them waits for the engineer too.
+/cmd/ @HannesT117
+/internal/ @HannesT117
+/adapters/ @HannesT117
+/.claude/ @HannesT117
+/core/ @HannesT117
+/test/ @HannesT117
+# The engineer records manual and demonstrated results.
+/evidence/*/results.md @HannesT117

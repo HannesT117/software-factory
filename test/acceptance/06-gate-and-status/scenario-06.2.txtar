@@ -1,0 +1,175 @@
+# scenario 06.2: A failed or malformed result keeps an increment open
+# The repo is the one of scenario 06.1. A later line of the results file of
+# 07 records its manual scenario as failed: 07 waits for results and names
+# the scenario as failed. A results file with a line in another form, and
+# one with a result for the automated scenario 07.1, are rejected with the
+# file and line.
+env GIT_AUTHOR_NAME=Agent GIT_AUTHOR_EMAIL=agent@example.com GIT_COMMITTER_NAME=Agent GIT_COMMITTER_EMAIL=agent@example.com
+cd repo
+exec git init -q -b main
+exec git add -A
+exec git commit -q -m base
+
+cp ../failed evidence/07-sample/results.md
+exec factory status
+stdout '^status: 07-sample results$'
+stdout '^status: 07-sample failed 07\.2$'
+! stdout '^status: 07-sample done$'
+stdout '^status: ok 3 checked$'
+
+cp ../malformed evidence/07-sample/results.md
+exitcode 1 factory status
+stdout '^status: error \S*evidence/07-sample/results\.md:4: bad-result-line( |$)'
+stdout '^status: 1 errors$'
+
+cp ../automated evidence/07-sample/results.md
+exitcode 1 factory status
+stdout '^status: error \S*evidence/07-sample/results\.md:4: unknown-scenario 07\.1( |$)'
+stdout '^status: 1 errors$'
+
+-- failed --
+# Results of increment 07
+
+- 07.2 passed 2026-11-01: ran the sample tool by hand.
+- 07.2 failed 2026-11-02: ran it again; it rejects a sample thing.
+-- malformed --
+# Results of increment 07
+
+- 07.2 passed 2026-11-01: ran the sample tool by hand.
+- 07.2 done yesterday
+-- automated --
+# Results of increment 07
+
+- 07.2 passed 2026-11-01: ran the sample tool by hand.
+- 07.1 passed 2026-11-01: ran the test by hand.
+-- repo/README.md --
+# Sample
+-- repo/internal/x.go --
+package x
+-- repo/.factory/code-paths --
+internal/**
+-- repo/docs/increments/07-sample/design.md --
+# Increment 07: sample
+
+## Goal
+
+- The sample tool of increment 07 works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 07.1.
+
+## Scenarios
+
+- **scenario 07.1** (automated) **A sample thing works.** Given a sample thing, the tool accepts it.
+- **scenario 07.2** (manual) **A person checks the sample.** Given a sample thing, the tool accepts it.
+-- repo/docs/increments/08-later/design.md --
+# Increment 08: later
+
+## Goal
+
+- The later tool of increment 08 works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for later tools.
+
+## Interface
+
+- `later run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 08.1, 08.2.
+
+## Scenarios
+
+- **scenario 08.1** (automated) **A later thing works.** Given a later thing, the tool accepts it.
+- **scenario 08.2** (automated) **A second later thing works.** Given a later thing, the tool accepts it.
+-- repo/docs/increments/09-third/design.md --
+# Increment 09: third
+
+## Goal
+
+- The third tool of increment 09 works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for third tools.
+
+## Interface
+
+- `third run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 09.1.
+
+## Scenarios
+
+- **scenario 09.1** (automated) **A third thing works.** Given a third thing, the tool accepts it.
+- **scenario 09.2** (demonstrated) **The third thing is shown.** Given a third thing, the tool accepts it.
+-- repo/test/acceptance/07-sample/scenario-07.1.txtar --
+# scenario 07.1: A sample thing works
+exec tool run 1
+-- repo/evidence/07-sample/review.md --
+# Review
+
+Reviewed commit: 0123456789abcdef0123456789abcdef01234567
+Result: 0 blocking, 1 notes
+
+## Findings
+
+- **note** internal/x.go: The name x says little.
+-- repo/evidence/07-sample/results.md --
+# Results of increment 07
+
+- 07.2 passed 2026-11-01: ran the sample tool by hand.
+-- repo/docs/increments/07-sample/retro.md --
+# Retro of increment 07
+-- repo/test/acceptance/08-later/scenario-08.1.txtar --
+# scenario 08.1: A later thing works
+exec tool run 1
+-- repo/test/acceptance/09-third/scenario-09.1.txtar --
+# scenario 09.1: A third thing works
+exec tool run 1
+-- repo/evidence/09-third/review.md --
+# Review
+
+Reviewed commit: 0123456789abcdef0123456789abcdef01234567
+Result: 0 blocking, 0 notes
+
+## Findings
+

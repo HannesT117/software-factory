@@ -1,0 +1,98 @@
+# scenario 05.4: Mistakes in test files count everywhere
+# On main, increment 07 has a test file for each scenario, but the first
+# line of the test of 07.1 names another title. A pull request that adds a
+# review result of 06 belongs only to 06 and is rejected for that test of
+# 07.
+env GIT_AUTHOR_NAME=Agent GIT_AUTHOR_EMAIL=agent@example.com GIT_COMMITTER_NAME=Agent GIT_COMMITTER_EMAIL=agent@example.com
+cd repo
+exec git init -q -b main
+exec git add -A
+exec git commit -q -m base
+
+exec git checkout -q -b review-06 main
+mkdir evidence/06-sample
+cp ../review evidence/06-sample/review.md
+exec git add -A
+exec git commit -q -m review
+exitcode 1 factory check-tests --base main
+stdout '^check-tests: error \S*test/acceptance/07-later/scenario-07\.1\.txtar(:\d+)?: title-mismatch( |$)'
+stdout '^check-tests: 1 errors$'
+! stdout 'missing-test'
+! stdout 'waiting'
+
+-- review --
+No findings.
+-- repo/test/acceptance/07-later/scenario-07.1.txtar --
+# scenario 07.1: An earlier thing works
+exec later run thing
+-- repo/test/acceptance/07-later/scenario-07.2.txtar --
+# scenario 07.2: A second later thing works
+exec later run second
+-- repo/README.md --
+# Sample
+-- repo/internal/x.go --
+package x
+-- repo/docs/increments/06-sample/design.md --
+# Increment 06: sample
+
+## Goal
+
+- The sample tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 06.1.
+
+## Scenarios
+
+- **scenario 06.1** (automated) **A sample thing works.** Given a sample thing, the tool accepts it.
+-- repo/test/acceptance/06-sample/scenario-06.1.txtar --
+# scenario 06.1: A sample thing works
+exec sample run thing
+-- repo/docs/increments/07-later/design.md --
+# Increment 07: later
+
+## Goal
+
+- The later tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for later tools.
+
+## Interface
+
+- `later run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 07.1 and 07.2.
+
+## Scenarios
+
+- **scenario 07.1** (automated) **A later thing works.** Given a later thing, the tool accepts it.
+- **scenario 07.2** (automated) **A second later thing works.** Given a second later thing, the tool accepts it.

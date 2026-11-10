@@ -1,0 +1,163 @@
+# scenario 05.7: A note can list the scenarios whose behaviour stays
+# Each folder holds a design note of increment 07 with an automated and a
+# manual scenario and the section Unchanged behaviour. check-design accepts
+# the note in good/, which lists the automated scenario with a reason. It
+# rejects the note in manual/, which lists the manual scenario, the note in
+# missing/, which lists 07.3, and the note in no-reason/, whose line gives
+# no reason.
+exec factory check-design good/docs/increments/07-later
+stdout '^check-design: ok \d+ checked$'
+! stdout ': error '
+
+exitcode 1 factory check-design manual/docs/increments/07-later
+stdout '^check-design: error \S*manual/docs/increments/07-later/design\.md:\d+: unknown-scenario( |$)'
+stdout '^check-design: 1 errors$'
+
+exitcode 1 factory check-design missing/docs/increments/07-later
+stdout '^check-design: error \S*missing/docs/increments/07-later/design\.md:\d+: unknown-scenario( |$)'
+stdout '^check-design: 1 errors$'
+
+exitcode 1 factory check-design no-reason/docs/increments/07-later
+stdout '^check-design: error \S*no-reason/docs/increments/07-later/design\.md:\d+: bad-unchanged-line( |$)'
+stdout '^check-design: 1 errors$'
+
+-- good/docs/increments/07-later/design.md --
+# Increment 07: later
+
+## Goal
+
+- The later tool of increment 07 works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for later tools.
+
+## Interface
+
+- `later run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 07.1.
+
+## Scenarios
+
+- **scenario 07.1** (automated) **A later thing works.** Given a later thing, the tool accepts it.
+- **scenario 07.2** (manual) **A person checks it.** Given a later thing, the tool accepts it.
+
+## Unchanged behaviour
+
+- 07.1: the tool before this increment already accepts a later thing.
+-- manual/docs/increments/07-later/design.md --
+# Increment 07: later
+
+## Goal
+
+- The later tool of increment 07 works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for later tools.
+
+## Interface
+
+- `later run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 07.1.
+
+## Scenarios
+
+- **scenario 07.1** (automated) **A later thing works.** Given a later thing, the tool accepts it.
+- **scenario 07.2** (manual) **A person checks it.** Given a later thing, the tool accepts it.
+
+## Unchanged behaviour
+
+- 07.2: a person already checks it.
+-- missing/docs/increments/07-later/design.md --
+# Increment 07: later
+
+## Goal
+
+- The later tool of increment 07 works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for later tools.
+
+## Interface
+
+- `later run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 07.1.
+
+## Scenarios
+
+- **scenario 07.1** (automated) **A later thing works.** Given a later thing, the tool accepts it.
+- **scenario 07.2** (manual) **A person checks it.** Given a later thing, the tool accepts it.
+
+## Unchanged behaviour
+
+- 07.3: the tool already accepts a third thing.
+-- no-reason/docs/increments/07-later/design.md --
+# Increment 07: later
+
+## Goal
+
+- The later tool of increment 07 works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for later tools.
+
+## Interface
+
+- `later run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 07.1.
+
+## Scenarios
+
+- **scenario 07.1** (automated) **A later thing works.** Given a later thing, the tool accepts it.
+- **scenario 07.2** (manual) **A person checks it.** Given a later thing, the tool accepts it.
+
+## Unchanged behaviour
+
+- 07.1:

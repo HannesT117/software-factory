@@ -1,0 +1,133 @@
+# scenario 05.3: A pull request without increment folders is not blocked
+# On main, increment 07 has two automated scenarios without tests. A pull
+# request that changes only README.md and a code file, and one that
+# changes only the design note of 07, belong to no increment: each passes
+# and names 07 as waiting with two scenarios.
+env GIT_AUTHOR_NAME=Agent GIT_AUTHOR_EMAIL=agent@example.com GIT_COMMITTER_NAME=Agent GIT_COMMITTER_EMAIL=agent@example.com
+cd repo
+exec git init -q -b main
+exec git add -A
+exec git commit -q -m base
+
+# README.md and a code file.
+exec git checkout -q -b docs-and-code main
+cp ../readme README.md
+cp ../edit internal/x.go
+exec git commit -q -a -m change
+exec factory check-tests --base main
+stdout '^check-tests: waiting 07-later 2 scenarios without tests$'
+stdout '^check-tests: ok \d+ checked$'
+! stdout ': error '
+
+# Only the design note of 07.
+exec git checkout -q -b note-07 main
+cp ../note-07 docs/increments/07-later/design.md
+exec git commit -q -a -m note
+exec factory check-tests --base main
+stdout '^check-tests: waiting 07-later 2 scenarios without tests$'
+stdout '^check-tests: ok \d+ checked$'
+! stdout ': error '
+
+-- readme --
+# Sample, changed
+-- edit --
+package x // changed
+-- note-07 --
+# Increment 07: later
+
+## Goal
+
+- The later tool works, also for a new kind of thing.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for later tools.
+
+## Interface
+
+- `later run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 07.1 and 07.2.
+
+## Scenarios
+
+- **scenario 07.1** (automated) **A later thing works.** Given a later thing, the tool accepts it.
+- **scenario 07.2** (automated) **A second later thing works.** Given a second later thing, the tool accepts it.
+-- repo/README.md --
+# Sample
+-- repo/internal/x.go --
+package x
+-- repo/docs/increments/06-sample/design.md --
+# Increment 06: sample
+
+## Goal
+
+- The sample tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 06.1.
+
+## Scenarios
+
+- **scenario 06.1** (automated) **A sample thing works.** Given a sample thing, the tool accepts it.
+-- repo/test/acceptance/06-sample/scenario-06.1.txtar --
+# scenario 06.1: A sample thing works
+exec sample run thing
+-- repo/docs/increments/07-later/design.md --
+# Increment 07: later
+
+## Goal
+
+- The later tool works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for later tools.
+
+## Interface
+
+- `later run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 07.1 and 07.2.
+
+## Scenarios
+
+- **scenario 07.1** (automated) **A later thing works.** Given a later thing, the tool accepts it.
+- **scenario 07.2** (automated) **A second later thing works.** Given a second later thing, the tool accepts it.

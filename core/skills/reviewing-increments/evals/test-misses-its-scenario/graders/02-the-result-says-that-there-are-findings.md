@@ -4,4 +4,4 @@ focus: trace
 weight: 1
 ---
 
-The result says that there are findings.
+The Result line of the review result counts at least one blocking finding.
