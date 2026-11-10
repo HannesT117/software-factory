@@ -19,3 +19,4 @@ Task of the engineer, 2026-11-10: work on the points of `docs/research/2026-11-f
 ## Checkpoints
 
 - 2026-11-10T20:40Z #68 and #69 open; reviewer running; next: review result, artifact, report.
+- 2026-11-10T22:50Z review round 2 on 16e4808: 05 no findings; 06 one blocking (test 06.11 changed after the code) for the engineer, one note fixed in #68 (cross-review comments only for a sent request). #69 at e11a92d. Summary page https://claude.ai/artifact/6jGnmnCv8s6a2zvuxgL7GR. Branch claude/06-code-wip deleted (content in #69). Next: the engineer's answers to the comprehension questions of #68 and the decision on the blocking finding; then the merges and the workflow patch.
