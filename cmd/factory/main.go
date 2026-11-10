@@ -134,7 +134,7 @@ func run(args []string, stdin io.Reader, stdout io.Writer) int {
 		}
 		root, err := gitx.Toplevel(".")
 		if err != nil {
-			return r.Abort(".", "not-a-repo", err.Error())
+			root = "."
 		}
 		return status.Run(r, root)
 
