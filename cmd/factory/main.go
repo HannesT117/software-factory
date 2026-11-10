@@ -9,26 +9,32 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	claudecode "github.com/HannesT117/software-factory/adapters/claude-code"
 	"github.com/HannesT117/software-factory/internal/adr"
+	"github.com/HannesT117/software-factory/internal/branch"
 	"github.com/HannesT117/software-factory/internal/crossreview"
 	"github.com/HannesT117/software-factory/internal/design"
 	"github.com/HannesT117/software-factory/internal/gitx"
 	"github.com/HannesT117/software-factory/internal/prcheck"
 	"github.com/HannesT117/software-factory/internal/report"
+	"github.com/HannesT117/software-factory/internal/review"
 	"github.com/HannesT117/software-factory/internal/setup"
 	"github.com/HannesT117/software-factory/internal/skills"
+	"github.com/HannesT117/software-factory/internal/status"
 	"github.com/HannesT117/software-factory/internal/testcheck"
 )
 
 const usage = `factory: usage: factory <command> [args]
 factory: validate-skills [--strict] [dir ...]
-factory: check-design <increment-dir>
+factory: check-design <increment-dir> | --base <ref>
 factory: check-adr [dir]
 factory: check-tests [--base <ref>]
 factory: check-pr --base <ref>
+factory: check-review --base <ref>
 factory: scenarios
+factory: status
 factory: cross-review --base <ref>
 factory: setup --agent <login> [--repo <owner>/<name>] [--dry-run]
 factory: hook pre-tool-use
@@ -61,10 +67,18 @@ func run(args []string, stdin io.Reader, stdout io.Writer) int {
 		return skills.Validate(r, dirs, *strict)
 
 	case "check-design":
-		if len(args) != 1 {
-			return r.Abort("args", "usage", "factory check-design <increment-dir>")
+		const designUsage = "factory check-design <increment-dir> | --base <ref>"
+		if len(args) == 2 && args[0] == "--base" {
+			return checkChangedDesigns(r, args[1])
 		}
-		return checkDesign(r, args[0])
+		if len(args) != 1 || strings.HasPrefix(args[0], "-") {
+			return r.Abort("args", "usage", designUsage)
+		}
+		n, code := checkDesign(r, args[0])
+		if code != report.OK {
+			return code
+		}
+		return r.Finish(n)
 
 	case "check-adr":
 		dir := "docs/decisions"
@@ -100,6 +114,29 @@ func run(args []string, stdin io.Reader, stdout io.Writer) int {
 			return r.Abort("args", "usage", "factory check-pr --base <ref>")
 		}
 		return prcheck.Run(r, ".", *base)
+
+	case "check-review":
+		fs := flag.NewFlagSet(cmd, flag.ContinueOnError)
+		fs.SetOutput(io.Discard)
+		base := fs.String("base", "", "")
+		if err := fs.Parse(args); err != nil || fs.NArg() != 0 || *base == "" {
+			return r.Abort("args", "usage", "factory check-review --base <ref>")
+		}
+		root, err := gitx.Toplevel(".")
+		if err != nil {
+			return r.Abort(".", "not-a-repo", err.Error())
+		}
+		return review.Check(r, root, *base)
+
+	case "status":
+		if len(args) != 0 {
+			return r.Abort("args", "usage", "factory status")
+		}
+		root, err := gitx.Toplevel(".")
+		if err != nil {
+			return r.Abort(".", "not-a-repo", err.Error())
+		}
+		return status.Run(r, root)
 
 	case "scenarios":
 		if len(args) != 0 {
@@ -151,15 +188,18 @@ func run(args []string, stdin io.Reader, stdout io.Writer) int {
 	return report.Usage
 }
 
-func checkDesign(r *report.Report, dir string) int {
+// checkDesign checks the note in dir and returns its number of scenarios.
+// The code is Usage when the note cannot be checked, OK otherwise; errors
+// are counted in r.
+func checkDesign(r *report.Report, dir string) (int, int) {
 	nn, ok := design.FolderNumber(dir)
 	if !ok {
-		return r.Abort(dir, "usage", "the folder name is not <nn>-<slug>")
+		return 0, r.Abort(dir, "usage", "the folder name is not <nn>-<slug>")
 	}
 	file := filepath.ToSlash(filepath.Join(dir, "design.md"))
 	data, err := os.ReadFile(file)
 	if err != nil {
-		return r.Abort(file, "unreadable", err.Error())
+		return 0, r.Abort(file, "unreadable", err.Error())
 	}
 
 	// earlier holds the scenarios of the notes beside dir with a lower
@@ -173,12 +213,51 @@ func checkDesign(r *report.Report, dir string) int {
 		}
 		text, err := os.ReadFile(f)
 		if err != nil {
-			return r.Abort(filepath.ToSlash(f), "unreadable", err.Error())
+			return 0, r.Abort(filepath.ToSlash(f), "unreadable", err.Error())
 		}
 		list, _ := design.Scenarios(string(text))
 		earlier[n] = append(earlier[n], list...)
 	}
-	return r.Finish(design.Check(r, file, nn, string(data), earlier))
+	return design.Check(r, file, nn, string(data), earlier), report.OK
+}
+
+// checkChangedDesigns checks each design note that HEAD adds or changes
+// against its merge base with base.
+func checkChangedDesigns(r *report.Report, base string) int {
+	root, err := gitx.Toplevel(".")
+	if err != nil {
+		return r.Abort(".", "not-a-repo", err.Error())
+	}
+	repo := gitx.Repo{Dir: root}
+	if _, err := repo.Run("rev-parse", "--verify", "--quiet", base+"^{commit}"); err != nil {
+		return r.Abort(base, "unknown-ref", "no commit "+base)
+	}
+	b, err := branch.Read(repo, base)
+	if err != nil {
+		return r.Abort(root, "git-failed", err.Error())
+	}
+	total := 0
+	for _, p := range b.Changed {
+		dir, name := filepath.Split(p)
+		if name != "design.md" || !strings.HasPrefix(p, "docs/increments/") || strings.Count(p, "/") != 3 {
+			continue
+		}
+		if _, err := os.Stat(filepath.Join(root, p)); err != nil {
+			continue // deleted
+		}
+		target := filepath.Join(root, dir)
+		if wd, err := os.Getwd(); err == nil {
+			if rel, err := filepath.Rel(wd, target); err == nil {
+				target = rel
+			}
+		}
+		n, code := checkDesign(r, target)
+		if code != report.OK {
+			return code
+		}
+		total += n
+	}
+	return r.Finish(total)
 }
 
 // scenarios prints each scenario in force of the notes under
