@@ -51,26 +51,37 @@ func Pending(root string) (string, error) {
 }
 
 // Find returns the path, relative to root and slash-separated, of the
-// review result in the working tree that names hash, or "".
+// first review result in the working tree that names hash, or "".
 func Find(root, hash string) (string, error) {
-	files, err := filepath.Glob(filepath.Join(root, "evidence", "*", "review.md"))
-	if err != nil {
+	files, err := FindAll(root, hash)
+	if err != nil || len(files) == 0 {
 		return "", err
 	}
+	return files[0], nil
+}
+
+// FindAll returns the paths, relative to root and slash-separated, of
+// every review result in the working tree that names hash, in path order.
+func FindAll(root, hash string) ([]string, error) {
+	files, err := filepath.Glob(filepath.Join(root, "evidence", "*", "review.md"))
+	if err != nil {
+		return nil, err
+	}
+	var found []string
 	for _, f := range files {
 		data, err := os.ReadFile(f)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		if strings.Contains(string(data), hash) {
 			rel, err := filepath.Rel(root, f)
 			if err != nil {
-				return "", err
+				return nil, err
 			}
-			return filepath.ToSlash(rel), nil
+			found = append(found, filepath.ToSlash(rel))
 		}
 	}
-	return "", nil
+	return found, nil
 }
 
 // ResultLine is the form of the Result line of a review result.

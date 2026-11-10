@@ -35,22 +35,30 @@ func Check(r *report.Report, root, base string) int {
 		r.Line("no code change")
 		return r.Finish(0)
 	}
-	file, err := Find(root, h)
+	files, err := FindAll(root, h)
 	if err != nil {
 		return r.Abort(root, "unreadable", err.Error())
 	}
-	if file == "" {
+	if len(files) == 0 {
 		r.Error(h, 0, "missing-review", "no review result in evidence/*/review.md names the latest code commit")
 		return r.Finish(1)
 	}
-	data, err := os.ReadFile(filepath.Join(root, file))
-	if err != nil {
-		return r.Abort(file, "unreadable", err.Error())
+	// Every result that names the commit counts, so that a blocking finding
+	// in one of them holds the merge.
+	for _, file := range files {
+		data, err := os.ReadFile(filepath.Join(root, file))
+		if err != nil {
+			return r.Abort(file, "unreadable", err.Error())
+		}
+		check(r, file, string(data), h, b.Touching(file))
 	}
-	round := b.Touching(file)
-	r.Line(fmt.Sprintf("reviewed %s in %s, round %d", h, file, round))
+	return r.Finish(len(files))
+}
 
-	res := Parse(string(data))
+// check reports the problems of one review result.
+func check(r *report.Report, file, text, h string, round int) {
+	r.Line(fmt.Sprintf("reviewed %s in %s, round %d", h, file, round))
+	res := Parse(text)
 	switch {
 	case !res.Valid:
 		r.Error(file, 0, "bad-result", "the Result line is not: Result: <b> blocking, <n> notes")
@@ -69,5 +77,4 @@ func Check(r *report.Report, root, base string) int {
 		}
 		r.Error(file, 0, "blocking", detail)
 	}
-	return r.Finish(1)
 }
