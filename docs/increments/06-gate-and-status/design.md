@@ -35,10 +35,10 @@ title: What holds a pull request with code, and who decides?
 flowchart LR
   T[tests pushed] --> X1[other model reviews the tests]
   X1 --> C[code pushed]
-  C --> R[fresh-context review]
-  R -->|blocking, round 1 or 2| C
-  R -->|blocking, round 3| E[engineer decides]
-  R -->|no blocking finding| X2[other model reviews the code]
+  C --> R[fresh-context review writes its result]
+  R --> X2[other model reviews the code]
+  R -->|blocking, round 1| C
+  R -->|blocking, round 2| E[engineer decides about round 3]
   X2 --> M[engineer approves as code owner]
 ```
 
@@ -96,9 +96,9 @@ When it sends a request, its first line is `cross-review: model <model>`, with t
 
 **Acceptance run.** `go test ./test/acceptance/` builds `factory` with coverage of the packages of the module, runs each script with its coverage data written to one folder, and after the run prints `acceptance: coverage <p>% of statements` and one line `acceptance: uncovered <file>:<line> <function>` for each function that no script reached. The results of the tests do not change.
 
-**Workflows**, in their own commit of the group CI and config. `checks` builds `factory` from `main` and calls `check-pr`, `check-adr`, `check-design --base`, `check-tests --base` and `check-review --base`, each as one step, and every step runs also after a failed one. `cross-review` calls `factory cross-review --base`, and posts its output as a comment headed with the model of its first line, unless the review does not apply.
+**Workflows**, in their own commit of the group CI and config. `checks` builds `factory` from `main` and calls `check-pr`, `check-adr`, `check-design --base`, `check-tests --base` and `check-review --base`, each as one step, and every step runs also after a failed one. `cross-review` calls `factory cross-review --base`, and, when it sent a request, posts its output as a comment headed with the model of its first line. Without a request, as when it waits for the review result or the review does not apply, the job log holds the reason.
 
-**Owned paths.** `.github/CODEOWNERS` adds `/cmd/`, `/internal/`, `/adapters/`, `/core/`, `/test/` and `/evidence/*/results.md`.
+**Owned paths.** `.github/CODEOWNERS` adds `/cmd/`, `/internal/`, `/adapters/`, `/.claude/`, `/core/`, `/test/` and `/evidence/*/results.md`.
 
 **Rules.** In `docs/principles.md` and `AGENTS.md`:
 
