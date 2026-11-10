@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/HannesT117/software-factory/internal/branch"
 	"github.com/HannesT117/software-factory/internal/gitx"
 	"github.com/HannesT117/software-factory/internal/paths"
 	"github.com/HannesT117/software-factory/internal/report"
@@ -31,12 +32,6 @@ type Result struct {
 	Mixed []Mixed
 	// TestsEnd is the last commit that changes test files, or "".
 	TestsEnd string
-}
-
-// commit is one commit of the pull request with the paths it changes.
-type commit struct {
-	hash  string
-	paths []string
 }
 
 // Run checks HEAD of the repo at dir against base and returns the exit code.
@@ -69,31 +64,19 @@ func Run(r *report.Report, dir, base string) int {
 // Check reads the commits between the merge base with base and HEAD.
 func Check(repo gitx.Repo, base string) (Result, error) {
 	var res Result
-	mb, err := repo.Run("merge-base", base, "HEAD")
+	b, err := branch.Read(repo, base)
 	if err != nil {
 		return res, err
 	}
-	mb = strings.TrimSpace(mb)
-
-	overall, err := repo.Paths("diff", "--name-only", "--no-renames", "-z", mb, "HEAD")
-	if err != nil {
-		return res, err
-	}
+	overall := append([]string(nil), b.Changed...)
 	sort.Strings(overall)
-	changed := map[string]bool{}
 	kinds := map[paths.Group]bool{}
 	for _, p := range overall {
 		g := paths.GroupOf(p)
 		res.Changed = append(res.Changed, Change{Path: p, Group: g})
-		changed[p] = true
 		if !paths.IsEvidence(p) {
 			kinds[g] = true
 		}
-	}
-
-	commits, err := readCommits(repo, mb, changed)
-	if err != nil {
-		return res, err
 	}
 
 	switch {
@@ -110,9 +93,9 @@ func Check(repo gitx.Repo, base string) (Result, error) {
 	}
 
 	testPhase := true
-	for _, c := range commits {
+	for _, c := range b.Commits {
 		groups := map[paths.Group]bool{}
-		for _, p := range c.paths {
+		for _, p := range c.Paths {
 			if !paths.IsEvidence(p) {
 				groups[paths.GroupOf(p)] = true
 			}
@@ -121,56 +104,18 @@ func Check(repo gitx.Repo, base string) (Result, error) {
 			continue
 		}
 		if testPhase && len(groups) == 1 && groups[paths.Tests] {
-			res.TestsEnd = c.hash
+			res.TestsEnd = c.Hash
 			continue
 		}
 		testPhase = false
 		if !groups[paths.Tests] {
 			continue
 		}
-		for _, p := range c.paths {
+		for _, p := range c.Paths {
 			if paths.GroupOf(p) == paths.Tests {
-				res.Mixed = append(res.Mixed, Mixed{Path: p, Detail: "group tests, changed in commit " + c.hash[:12] + " after the first commit outside the tests group"})
+				res.Mixed = append(res.Mixed, Mixed{Path: p, Detail: "group tests, changed in commit " + c.Hash[:12] + " after the first commit outside the tests group"})
 			}
 		}
 	}
 	return res, nil
-}
-
-// readCommits returns the commits on the first-parent line from mb to HEAD,
-// oldest first, each with the paths that it changes against its first
-// parent. A merge commit counts only the paths that the pull request
-// changes.
-func readCommits(repo gitx.Repo, mb string, changed map[string]bool) ([]commit, error) {
-	lines, err := repo.Lines("rev-list", "--reverse", "--first-parent", "--parents", mb+"..HEAD")
-	if err != nil {
-		return nil, err
-	}
-	var commits []commit
-	for _, line := range lines {
-		fields := strings.Fields(line)
-		hash := fields[0]
-		var ps []string
-		if len(fields) == 1 {
-			ps, err = repo.Paths("diff-tree", "--root", "-r", "--name-only", "--no-renames", "--no-commit-id", "-z", hash)
-		} else {
-			ps, err = repo.Paths("diff", "--name-only", "--no-renames", "-z", fields[1], hash)
-		}
-		if err != nil {
-			return nil, err
-		}
-		if len(fields) > 2 {
-			var kept []string
-			for _, p := range ps {
-				if changed[p] {
-					kept = append(kept, p)
-				}
-			}
-			ps = kept
-		}
-		if len(ps) > 0 {
-			commits = append(commits, commit{hash: hash, paths: ps})
-		}
-	}
-	return commits, nil
 }
