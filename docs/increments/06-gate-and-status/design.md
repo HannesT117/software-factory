@@ -114,7 +114,7 @@ When it sends a request, its first line is `cross-review: model <model>`, with t
 
 ## Scenarios
 
-In scenarios 06.1 to 06.3, the repo holds the design notes of increments 07, 08 and 09. In scenarios 06.3 to 06.12, a pull request is a branch from `main`, and a file under `internal/` is code, as `.factory/code-paths` on `main` says. A review result is a file `evidence/<nn>-<slug>/review.md` that names the full hash of a commit.
+In scenarios 06.1 to 06.3, the repo holds the design notes of increments 07, 08 and 09. In scenarios 06.3 to 06.12 and 06.15, a pull request is a branch from `main`, and a file under `internal/` is code, as `.factory/code-paths` on `main` says. A review result is a file `evidence/<nn>-<slug>/review.md` that names the full hash of a commit.
 
 - **scenario 06.1** (automated) **Status shows where each increment stands.** Increment 07 has an automated scenario with its test file, a manual scenario with a result `passed`, a review result without a blocking finding, and a retro: it is done. Increment 08 has two automated scenarios, and only the first has a test file: it waits for tests, and the output names the second scenario. Increment 09 has its test file and a review result, but its demonstrated scenario has no result and it has no retro: it waits for results, and the output names the demonstrated scenario as waiting for the engineer, and the missing retro.
 - **scenario 06.2** (automated) **A failed or malformed result keeps an increment open.** The results file of 07 has a result `passed` for its manual scenario and, in a later line, a result `failed` for it: 07 waits for results, and the output names the scenario as failed. Status rejects a results file with the line `- 07.2 done yesterday`, and one with a result for 07.1, which is automated, and names the file and line of each.
@@ -128,16 +128,18 @@ In scenarios 06.1 to 06.3, the repo holds the design notes of increments 07, 08 
 - **scenario 06.10** (automated) **The other model waits for the review result.** A pull request whose latest code commit no review result names is not sent; the command fails and names the commit. After a commit that adds a review result for it, the pull request is sent.
 - **scenario 06.11** (automated) **The other model reviews the tests before the code.** A pull request that adds only a test file of increment 08 is sent with the note of 08, its scenario titles and the diff, and with instructions that ask whether each test checks what its scenario says. No review result names the test commit, and the request is sent all the same.
 - **scenario 06.12** (automated) **The model heads the review, and a design note is never held.** A pull request that changes a design note gets output whose first line names the model for design reviews in `.factory/cross-review.json` on `main`, and a blocking finding of the stand-in does not make the command fail. A pull request with code gets the model for code reviews in its first line.
+- **scenario 06.15** (automated) **A blocking finding of the other model holds code.** A pull request has a code commit and a review result for it. With a stand-in that reports one blocking finding, `cross-review` prints the finding and fails. With a stand-in that reports only notes, it prints them and passes. When the model cannot be reached, or answers in another form, it fails.
 - **scenario 06.13** (demonstrated) **The acceptance run names what no test reaches.** The review session runs the acceptance tests and records the coverage line and the functions that no script reaches.
 - **scenario 06.14** (manual) **Owned code needs the engineer.** After the engineer turns on code owner review in the ruleset `main`, a pull request that changes a file under `internal/` cannot merge until the engineer approves it.
 
 ## Replaced scenarios
 
+- 02.26: a pull request with code is sent only once a review result names its latest code commit, a blocking finding on a design note no longer makes the command fail, and a pull request without a design note and code is not sent. Scenarios 06.9, 06.10, 06.12 and 06.15 replace it, with its other cases.
 - 05.6: a pull request that changes no design note and no code is no longer sent to the other model. Scenario 06.9 replaces it, with its other cases.
 
 ## Evidence
 
-- **Approved scenarios:** 06.1 to 06.12.
+- **Approved scenarios:** 06.1 to 06.12, and 06.15.
 - **Demonstrated:** 06.13, by the review session.
 - **Manual:** 06.14, by the engineer.
 - **Not evidence:** unit tests from the implementing agent.
