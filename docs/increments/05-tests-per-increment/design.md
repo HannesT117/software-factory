@@ -6,6 +6,7 @@
 - The output names each increment whose tests are still missing on `<ref>`, so that a reader sees what waits.
 - Every other mistake in a test file still counts in every pull request.
 - `factory cross-review --base <ref>` sends a code pull request to the other model with the design notes of the increments that it belongs to, by the same rule. A pull request that belongs to no increment, such as a change to the docs, goes without a design note, so that the other model does not measure it against the note of an increment that it does not touch.
+- A design note can list the scenarios whose behaviour the code before the increment already has, such as a scenario that fixes what a narrower rule keeps. The job `tests-start-red` expects the tests of these scenarios to pass before the code, and every other added test to fail. So such a scenario needs no bypass of the merge.
 
 ## Out of scope
 
@@ -23,6 +24,7 @@
 | Part | Checked | Decision | Reason |
 |---|---|---|---|
 | Linking a pull request to its increment | path filters of GitHub Actions (`on.pull_request.paths`); `.github/CODEOWNERS`; the folders that the factory already names per increment | the folders per increment | Path filters decide whether a workflow runs, not which tests a check asks for. Every pull request with code already holds a review result in `evidence/<nn>-<slug>/`, because the stop hook asks for one. |
+| Tests of unchanged behaviour | a bypass of the merge for each pull request with such a test; no scenario for unchanged behaviour; unchanged behaviour as a step of a scenario with new behaviour; a list in the note, like `## Replaced scenarios` | a list in the note | A bypass is needed again in each increment that makes a rule narrower or wider. Without such scenarios, code that goes too far passes, such as code that also skips the mistakes in the test files of other increments. As a step of a larger scenario, a failure names only the larger scenario. The list shows the engineer at approval which tests start green, and `check-design` on `main` already allows other headings, so a note can use the list before its check exists. |
 | The design note for cross-review | the note of the latest increment, as `factory cross-review` sends today when no increment folder changes; the other model choosing the note itself; the folders per increment | the folders per increment | The latest note makes the other model measure an unrelated pull request against it: a docs pull request got blocking findings about increment 04. A model that chooses the note gets every note and can choose wrong. The folders give the same answer as `check-tests`. |
 
 ## Interface
@@ -35,9 +37,13 @@
 
 `factory cross-review --base <ref>`, as in increment 02, with this change for a pull request that changes no design note. The request holds the design notes of the increments that the pull request belongs to, by the rule above, the titles of their scenarios in force, and the diff. For a pull request that belongs to no increment, it holds the diff, with no design note and no scenario title, and its instructions ask the other model to judge the change by itself. The model, the output lines and the exit codes are unchanged. A pull request that changes a design note is sent as before.
 
+**Design note**, as in increment 02, with an optional heading `## Unchanged behaviour`. Each line under it matches `^- (\d{2})\.([1-9]\d*): (.+)$`: the id of an automated scenario of the same note, and why the code before this increment already behaves so. `factory check-design` reports the error `bad-unchanged-line` for a line in another form, and `unknown-scenario` for an id that is not an automated scenario of the note.
+
+**Job `tests-start-red`** of the workflow `test`, as in increment 02, with this change: on the commit where the test phase ends, the added test of each scenario listed under `## Unchanged behaviour` in its note on the base branch, which the engineer has approved, passes, each other added test fails, and every other test passes. The output lines are unchanged: `tests-start-red: error <test>: <result>, want <result>` for each test with another result, then `tests-start-red: ok <n> checked` or `tests-start-red: <k> errors`. The job runs from the workflow of the pull request, so the change applies already to the pull request that brings it.
+
 ## Scenarios
 
-In each scenario, the base branch `main` holds the design note of increment 06, with all its test files, and the design note of increment 07, with two automated scenarios. A pull request is a branch from `main`, and `factory check-tests --base main` runs on it; in scenario 05.6, `factory cross-review --base main` runs on it, with a stand-in for the other model that keeps each request. A pull request belongs to an increment when it changes a file in that increment's folder of test files or of evidence, such as `evidence/07-later/`.
+In scenarios 05.1 to 05.6, the base branch `main` holds the design note of increment 06, with all its test files, and the design note of increment 07, with two automated scenarios. A pull request is a branch from `main`, and `factory check-tests --base main` runs on it; in scenario 05.6, `factory cross-review --base main` runs on it, with a stand-in for the other model that keeps each request. A pull request belongs to an increment when it changes a file in that increment's folder of test files or of evidence, such as `evidence/07-later/`.
 
 - **scenario 05.1** (automated) **Another increment's code is not blocked.** Increment 07 has no test files. A pull request that changes a code file and adds `evidence/06-sample/review.md` belongs only to increment 06 and passes. The output names increment 07 as waiting, with two scenarios.
 - **scenario 05.2** (automated) **An increment's own pull request still waits for its tests.** Increment 07 has no test files. Each of these pull requests is rejected, with one missing test for each scenario of 07 without a test file: one that adds `evidence/07-later/review.md`; one that adds the test file of only the first scenario of 07, which leaves the second missing; and one that adds `evidence/06-sample/review.md` and `evidence/07-later/review.md`. A pull request that deletes a test file of increment 06 is rejected with that missing test.
@@ -45,17 +51,27 @@ In each scenario, the base branch `main` holds the design note of increment 06, 
 - **scenario 05.4** (automated) **Mistakes in test files count everywhere.** On `main`, increment 07 has a test file for each scenario, but the first line of one of them names a title that differs from its scenario. A pull request that adds `evidence/06-sample/review.md` belongs only to increment 06, and is rejected for that file of increment 07.
 - **scenario 05.5** (automated) **Without a base, every missing test counts.** Increment 07 has no test files. On the branch of scenario 05.1, `factory check-tests` without `--base` rejects both missing tests of increment 07 and prints no line about waiting increments.
 - **scenario 05.6** (automated) **The other model gets only the notes of the pull request's own increments.** Increment 07 has no test files. A pull request that changes a code file and adds `evidence/06-sample/review.md` is sent with its diff and the design note of 06, and with neither the note of 07 nor the title of a scenario of 07. One that adds `evidence/06-sample/review.md` and `evidence/07-later/review.md` is sent with both notes. One that changes only `README.md` belongs to no increment and is sent with its diff, but with neither note and no scenario title.
+- **scenario 05.7** (automated) **A note can list the scenarios whose behaviour stays.** A design note of increment 07 with an automated and a manual scenario lists the automated one as unchanged behaviour, with a reason, and `factory check-design` accepts the note. The check rejects the note when the list names a scenario that is not automated, such as the manual one, or a scenario that the note does not have, such as 07.3, or gives no reason.
+- **scenario 05.8** (demonstrated) **A test of unchanged behaviour starts green.** On a pull request that changes test files, the CI job `tests-start-red` passes only when, on the last commit before the code, the added test of each scenario that the design note of its increment on the base branch lists as unchanged behaviour passed, every other added test failed, and every other test passed. It fails when the test of a listed scenario failed there.
 
 ## Replaced scenarios
 
 - 02.7: a pull request is no longer rejected for the missing tests of an increment that it does not belong to. Scenarios 05.1 to 05.3 replace it.
+- 02.20: the added test of a scenario listed as unchanged behaviour passes before the code. Scenario 05.8 replaces it.
+
+## Unchanged behaviour
+
+- 05.4: `check-tests` already reports a wrong title in every test file of the working tree.
+- 05.5: without `--base`, `check-tests` already reports every missing test, and it prints no line about waiting increments.
 
 ## Evidence
 
-- **Approved scenarios:** 05.1 to 05.6.
+- **Approved scenarios:** 05.1 to 05.7.
+- **Demonstrated:** 05.8, by the review session: the output of `tests-start-red` on the pull request of this increment, where the tests of 05.4 and 05.5 pass before the code, and a run of the same check on those results with the test of 05.4 set to failed.
 - **Not evidence:** unit tests from the implementing agent.
 
 ## Rollout
 
-- **Off switch:** none needed; a later increment changes the rule again.
-- **Failure signal:** the code of an increment reaches `main` before its tests; or a pull request is rejected for the missing tests of an increment that it does not touch. The `waiting` lines in the output of `checks` show which increments still wait for tests. For cross-review: its comment on a pull request names findings about an increment that the pull request does not touch.
+- **Off switch:** none needed; a later increment changes the rule again. A note without `## Unchanged behaviour` keeps the rule of increment 02 for `tests-start-red`.
+- **Order:** the change of `tests-start-red` comes with the tests of this increment, after this note is on the base branch; without the note there, the tests of 05.4 and 05.5 get `pass, want fail`.
+- **Failure signal:** the code of an increment reaches `main` before its tests; or a pull request is rejected for the missing tests of an increment that it does not touch. The `waiting` lines in the output of `checks` show which increments still wait for tests. For cross-review: its comment on a pull request names findings about an increment that the pull request does not touch. For unchanged behaviour: `tests-start-red` reports `fail, want pass` for a listed test, so the note or the test is wrong.
