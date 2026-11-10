@@ -137,6 +137,10 @@ In scenarios 06.1 to 06.3, the repo holds the design notes of increments 07, 08 
 - 02.26: a pull request with code is sent only once a review result names its latest code commit, a blocking finding on a design note no longer makes the command fail, and a pull request without a design note and code is not sent. Scenarios 06.9, 06.10, 06.12 and 06.15 replace it, with its other cases.
 - 05.6: a pull request that changes no design note and no code is no longer sent to the other model. Scenario 06.9 replaces it, with its other cases.
 
+## Unchanged behaviour
+
+- 06.15: `cross-review` already prints the findings of the other model and fails on a blocking one; the wait for the review result before it is new, and scenario 06.10 tests that.
+
 ## Evidence
 
 - **Approved scenarios:** 06.1 to 06.12, and 06.15.
