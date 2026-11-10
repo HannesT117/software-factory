@@ -107,7 +107,7 @@ When it sends a request, its first line is `cross-review: model <model>`, with t
 - Rule 28 states that CI checks the order of tests and code, not which session wrote the tests: all sessions push as one account.
 - Rule 34 covers the CLI, the adapter, the skills and the test runner, and the checks for the next pull request.
 - A new rule: the results file, with its source, the nine manual and demonstrated scenarios of increments 02 to 04 that have no recorded result.
-- "Enforced by" gets a clock: a rule that is still "not enforced" after two retros names its check and increment, moves to the backlog with a trigger, or becomes a principle without a re-check. The retro of this increment applies it.
+- "Enforced by" gets a clock: a rule that is still "not enforced" after two retros names its check and increment, moves to the backlog with a trigger, or becomes a principle, which says so in "Enforced by" and keeps its re-check. The retro of this increment applies it.
 - The entries "planned (CI pull request of increment 02)" name what is on `main` and what the ruleset does not yet require.
 - `AGENTS.md`: the pull request opens as a draft once the tests are pushed, so that the other model reviews them; after two review rounds with a blocking finding, the agent stops and asks the engineer; the engineer writes the results file; the retro has a table with one row per review source: findings, findings that changed code or a note, and cost.
 - The README: the next step after this increment is one increment of a project, `health`, with a hand copy of the skills and workflows; until then no new rule without an observed failure. The later increments become 07 install and distribution, 08 docs for people, 09 handover.
