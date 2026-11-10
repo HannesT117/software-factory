@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/HannesT117/software-factory/internal/design"
+	"github.com/HannesT117/software-factory/internal/gitx"
 	"github.com/HannesT117/software-factory/internal/report"
 	"github.com/HannesT117/software-factory/internal/review"
 )
@@ -32,8 +33,8 @@ const (
 )
 
 // Run prints the stage and the open points of each increment of the repo
-// at root, and the code commit that waits for a review, and returns the
-// exit code.
+// at root, and, when root is a git working tree with commits, the code
+// commit that waits for a review. It returns the exit code.
 func Run(r *report.Report, root string) int {
 	notes, err := design.ReadNotes(root, "")
 	if err != nil {
@@ -47,12 +48,14 @@ func Run(r *report.Report, root string) int {
 	for _, n := range notes {
 		increment(r, root, n, byNumber[n.Number])
 	}
-	h, err := review.Pending(root)
-	if err != nil {
-		return r.Abort(root, "git-failed", err.Error())
-	}
-	if h != "" {
-		r.Line("review-open " + h)
+	if _, err := (gitx.Repo{Dir: root}).Run("rev-parse", "--verify", "--quiet", "HEAD"); err == nil {
+		h, err := review.Pending(root)
+		if err != nil {
+			return r.Abort(root, "git-failed", err.Error())
+		}
+		if h != "" {
+			r.Line("review-open " + h)
+		}
 	}
 	return r.Finish(len(notes))
 }
