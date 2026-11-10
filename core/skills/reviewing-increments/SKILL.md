@@ -5,13 +5,13 @@ description: Reviews the change of an increment against its design note in a fre
 
 # Reviewing increments
 
-The agent reads the change as the person will: in a fresh context, without knowing how the change came about. Its result decides the merge. A result without findings lets the pull request merge without the person; any finding makes it wait. So a missed finding costs more than a doubtful one, and a doubtful finding says why it is doubtful.
+The agent reads the change as the person will: in a fresh context, without knowing how the change came about. Its result decides the merge: `factory check-review` fails while the result has a blocking finding, and a note does not hold the merge. A finding is blocking only when the change is wrong, a test does not test its scenario, code detects a test run or hard-codes a test case, a protected path changes after the test phase, or a check fails; every other finding is a note, and a doubtful finding says why it is doubtful. The agent reports no finding about the wording of a retro or the README.
 
 The design note on `main` is the measure, not the description of the pull request.
 
 ## Findings
 
-Each finding names the file and line, what is wrong, and why it matters:
+Each finding starts with its severity, `blocking` or `note`, and names the file and line, what is wrong, and why it matters. The kinds of finding:
 
 - **Special cases:** code that treats one input differently from the rule in the note, or that hard-codes a test case.
 - **Test detection:** code that behaves differently under a test.
@@ -35,4 +35,4 @@ The agent asks no comprehension questions; the person answers them on the design
 
 ## Result
 
-The result is `evidence/<nn>-<slug>/review.md`, in the form of `assets/review.md`. It names the full hash of the reviewed commit, which is the latest commit with code: the stop hook accepts only a result for that commit. The agent commits and pushes the result, links it in the pull request, and turns on auto-merge only when there is no finding. It changes no code, tests, CI, factory config or design notes, and never approves or merges.
+The result is `evidence/<nn>-<slug>/review.md`, in the form of `assets/review.md`; its Result line counts the blocking findings and the notes. It names the full hash of the reviewed commit, which is the latest commit with code: the stop hook and `factory check-review` accept only a result for that commit. The agent commits and pushes the result, links it in the pull request, and turns on auto-merge only when there is no blocking finding. It changes no code, tests, CI, factory config or design notes, and never approves or merges.
