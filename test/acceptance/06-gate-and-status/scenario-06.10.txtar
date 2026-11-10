@@ -25,10 +25,10 @@ exec git tag code
 exec sh -c 'rm -f ../request ../model'
 
 exitcode 1 factory cross-review --base main
-cp stdout ../out
-exec sh -c 'grep -qx "cross-review: waiting for a review result for $(git rev-parse code)" ../out'
 stdout '^cross-review: blocking$'
 ! stdout '^cross-review: ok$'
+cp stdout ../out
+exec sh -c 'grep -qx "cross-review: waiting for a review result for $(git rev-parse code)" ../out'
 ! exists ../request
 
 exec sh ../review.sh evidence/07-sample/review.md code 'Result: 0 blocking, 0 notes' 0 0

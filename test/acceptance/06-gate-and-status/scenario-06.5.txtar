@@ -15,9 +15,9 @@ exec git commit -q -a -m code
 exec git tag code
 
 exitcode 1 factory check-review --base main
+stdout '^check-review: 1 errors$'
 cp stdout ../out
 exec sh -c 'grep -qE "^check-review: error $(git rev-parse code): missing-review( |$)" ../out'
-stdout '^check-review: 1 errors$'
 
 exec git checkout -q -b later code
 exec sh ../review.sh evidence/07-sample/review.md code 'Result: 0 blocking, 0 notes' 0 0
@@ -27,10 +27,10 @@ cp ../edit-again internal/x.go
 exec git commit -q -a -m 'more code'
 exec git tag code2
 exitcode 1 factory check-review --base main
-cp stdout ../out
-exec sh -c 'grep -qE "^check-review: error $(git rev-parse code2): missing-review( |$)" ../out'
 ! stdout '^check-review: reviewed '
 stdout '^check-review: 1 errors$'
+cp stdout ../out
+exec sh -c 'grep -qE "^check-review: error $(git rev-parse code2): missing-review( |$)" ../out'
 
 exec git checkout -q -b readme main
 cp ../readme README.md
