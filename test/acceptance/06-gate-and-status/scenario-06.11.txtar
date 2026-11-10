@@ -3,11 +3,16 @@
 # of 127.0.0.1, writes repo/.factory/cross-review.json with its endpoint and
 # the models design-model and code-model, and then creates the file ready.
 # For each request with the right key, it writes the model to the file
-# model and the content of all messages to the file request, and answers
-# with the content of the file answer, or with no findings without it.
+# model, the content of all messages to the file request and the content of
+# the system messages to the file instructions, and answers with the
+# content of the file answer, or with no findings without it.
 # The branch tests adds only a test file of increment 08, and no review
 # result names that commit. It is sent all the same, to the model for code,
-# with the note of 08, its scenario titles and the diff.
+# with the note of 08, its scenario titles and the diff, and with
+# instructions that ask whether each test checks what its scenario says,
+# including each case where something must not happen. The branch work
+# changes a code file and has a review result for it: its instructions
+# differ from those of the tests.
 env PYTHONDONTWRITEBYTECODE=1
 env FACTORY_MODEL_KEY=test-key
 env GIT_AUTHOR_NAME=Agent GIT_AUTHOR_EMAIL=agent@example.com GIT_COMMITTER_NAME=Agent GIT_COMMITTER_EMAIL=agent@example.com
@@ -34,10 +39,29 @@ grep 'Increment 08: later' ../request
 grep 'A later thing works' ../request
 grep 'A second later thing works' ../request
 grep 'marker-in-the-test' ../request
+grep '(?i)checks what its scenario says' ../instructions
+grep '(?i)must not happen' ../instructions
+cp ../instructions ../instructions-tests
+
+exec git checkout -q -b work main
+cp ../edit internal/x.go
+exec git commit -q -a -m code
+exec git tag code
+exec sh ../review.sh evidence/07-sample/review.md code 'Result: 0 blocking, 0 notes' 0 0
+exec git add evidence
+exec git commit -q -m review
+exec sh -c 'rm -f ../request ../model ../instructions'
+exec factory cross-review --base main
+stdout '\Across-review: model code-model\n'
+stdout '^cross-review: ok$'
+grep 'marker-in-the-diff' ../request
+! cmp ../instructions ../instructions-tests
 
 kill standin
 wait standin
 
+-- edit --
+package x // marker-in-the-diff
 -- test-08-1 --
 # scenario 08.1: A later thing works
 exec later run marker-in-the-test
@@ -95,6 +119,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return self.reply(400, {"error": "bad request"})
         with open("model", "w") as f:
             f.write(model + "\n")
+        with open("instructions", "w") as f:
+            for m in request["messages"]:
+                if m.get("role") == "system":
+                    c = m["content"]
+                    f.write((c if isinstance(c, str) else json.dumps(c)) + "\n")
         with open("request", "w") as f:
             f.write("\n".join(c if isinstance(c, str) else json.dumps(c) for c in contents) + "\n")
         content = '{"findings": []}'
