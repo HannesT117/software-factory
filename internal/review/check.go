@@ -53,9 +53,9 @@ func Check(r *report.Report, root, base string) int {
 	res := Parse(string(data))
 	switch {
 	case !res.Valid:
-		r.Error(file, res.Line, "bad-result", "the Result line is not: Result: <b> blocking, <n> notes")
+		r.Error(file, 0, "bad-result", "the Result line is not: Result: <b> blocking, <n> notes")
 	case res.Blocking != res.FoundBlocking || res.Notes != res.FoundNotes:
-		r.Error(file, res.Line, "result-mismatch", fmt.Sprintf("the Result line says %d blocking, %d notes; the findings hold %d blocking, %d notes",
+		r.Error(file, 0, "result-mismatch", fmt.Sprintf("the Result line says %d blocking, %d notes; the findings hold %d blocking, %d notes",
 			res.Blocking, res.Notes, res.FoundBlocking, res.FoundNotes))
 	}
 	blocking := res.Blocking
