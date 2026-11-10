@@ -12,7 +12,9 @@ v0 leaves these parts out on purpose. Each part is built when a project that use
 | Property statements by the engineer, generators by the agent (rule 8) | the first logic with clear invariants |
 | Chaos: sabotage tests and a `running-chaos-exercises` skill; product chaos with a check that the target is not production (rule 23) | the harness or a project has something worth breaking |
 | `reviewing-architecture` and `writing-docs` skills | the second increment of a project |
-| `factory status` (what waits for the engineer) and `factory next` (starts the session that fits the current step) | the engineer's steps per increment cost more time than the work |
+| `factory next`: starts the session that fits the current step | the engineer's steps per increment cost more time than the work |
+| `check_sources` of `authoring-skills` in `checks` for changed skills; then the guard hook no longer asks a session to load `authoring-skills` | the script tells the files of a skill apart from the docs of the repo that holds it |
+| Lint rules with messages that name the fix, for the factory's own Go | increment 07 builds them for projects |
 | Decision-model check routing through Opper | a project has enough changes to measure misses |
 | `factory install --watch`: copies factory changes into the project at once | the factory changes often while a project uses it |
 | Architecture model as code, checked against the import graph | a project has at least two packages |
