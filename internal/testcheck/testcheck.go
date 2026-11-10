@@ -3,13 +3,16 @@
 package testcheck
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
 
+	"github.com/HannesT117/software-factory/internal/branch"
 	"github.com/HannesT117/software-factory/internal/design"
+	"github.com/HannesT117/software-factory/internal/gitx"
 	"github.com/HannesT117/software-factory/internal/paths"
 	"github.com/HannesT117/software-factory/internal/report"
 )
@@ -19,11 +22,23 @@ var testFile = regexp.MustCompile(`^scenario-(\d{2}\.[1-9]\d*)\.txtar$`)
 // Check compares the notes, read from base or, when base is empty, from the
 // working tree at root, with the test files in the working tree at root.
 // A scenario that a note replaces needs no test, and its test file is an
-// error.
+// error. With a base, a missing test counts only for the increments that
+// HEAD belongs to against base; each other increment with missing tests
+// gets a line that it waits.
 func Check(r *report.Report, root, base string) int {
 	notes, err := design.ReadNotes(root, base)
 	if err != nil {
 		return r.Abort(root, "unreadable", err.Error())
+	}
+	// own holds the increments whose missing tests are errors; nil means
+	// all of them.
+	var own map[string]bool
+	if base != "" {
+		b, err := branch.Read(gitx.Repo{Dir: root}, base)
+		if err != nil {
+			return r.Abort(root, "git-failed", err.Error())
+		}
+		own = paths.Increments(b.Changed)
 	}
 	replaced := design.ReplacedIDs(notes)
 
@@ -90,10 +105,19 @@ func Check(r *report.Report, root, base string) int {
 			ids = append(ids, id)
 		}
 		sort.Strings(ids)
+		waiting := 0
 		for _, id := range ids {
-			if !found[n.Folder][id] {
-				r.Error(paths.TestDir+n.Folder+"/scenario-"+id+".txtar", 0, "missing-test", "scenario "+id+" of "+n.Path)
+			if found[n.Folder][id] {
+				continue
 			}
+			if own != nil && !own[n.Folder] {
+				waiting++
+				continue
+			}
+			r.Error(paths.TestDir+n.Folder+"/scenario-"+id+".txtar", 0, "missing-test", "scenario "+id+" of "+n.Path)
+		}
+		if waiting > 0 {
+			r.Line(fmt.Sprintf("waiting %s %d scenarios without tests", n.Folder, waiting))
 		}
 	}
 	return r.Finish(checked)

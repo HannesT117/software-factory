@@ -25,6 +25,10 @@ var RequiredSections = []string{"## Goal", "## Out of scope", "## Existing tools
 // replacedHeading starts the optional list of replaced scenarios.
 const replacedHeading = "## Replaced scenarios"
 
+// unchangedHeading starts the optional list of scenarios whose behaviour
+// the code before the increment already has.
+const unchangedHeading = "## Unchanged behaviour"
+
 // Scenario is one scenario line of a note.
 type Scenario struct {
 	ID    string // for example "02.1"
@@ -85,11 +89,23 @@ type Replaced struct {
 // ReplacedScenarios returns the lines under Replaced scenarios, and the
 // numbers of lines there that do not match the format.
 func ReplacedScenarios(text string) (replaced []Replaced, bad []int) {
+	return listed(text, replacedHeading)
+}
+
+// UnchangedScenarios returns the lines under Unchanged behaviour, and the
+// numbers of lines there that do not match the format. Reason holds why
+// the code before the increment already behaves so.
+func UnchangedScenarios(text string) (unchanged []Replaced, bad []int) {
+	return listed(text, unchangedHeading)
+}
+
+// listed returns the lines "- <nn>.<n>: <text>" under heading.
+func listed(text, heading string) (list []Replaced, bad []int) {
 	in := false
 	Lines(text, func(n int, line string) {
 		line = strings.TrimRight(line, " \r")
 		if strings.HasPrefix(line, "## ") || strings.HasPrefix(line, "# ") {
-			in = line == replacedHeading
+			in = line == heading
 			return
 		}
 		if !in || line == "" {
@@ -100,9 +116,9 @@ func ReplacedScenarios(text string) (replaced []Replaced, bad []int) {
 			bad = append(bad, n)
 			return
 		}
-		replaced = append(replaced, Replaced{ID: m[1] + "." + m[2], Reason: m[3], Line: n})
+		list = append(list, Replaced{ID: m[1] + "." + m[2], Reason: m[3], Line: n})
 	})
-	return replaced, bad
+	return list, bad
 }
 
 // Check checks the note text at file, in the folder with increment number
@@ -157,6 +173,20 @@ func Check(r *report.Report, file, nn, text string, earlier map[string][]Scenari
 		}
 		if !known {
 			r.Error(file, rep.Line, "unknown-scenario", "no scenario "+rep.ID+" in the note of increment "+inc)
+		}
+	}
+
+	kinds := map[string]string{}
+	for _, s := range scenarios {
+		kinds[s.ID] = s.Kind
+	}
+	unchanged, badUnchanged := UnchangedScenarios(text)
+	for _, n := range badUnchanged {
+		r.Error(file, n, "bad-unchanged-line", "does not match - <nn>.<n>: <reason>")
+	}
+	for _, u := range unchanged {
+		if kinds[u.ID] != "automated" {
+			r.Error(file, u.Line, "unknown-scenario", "no automated scenario "+u.ID+" in this note")
 		}
 	}
 	return len(scenarios)
