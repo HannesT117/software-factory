@@ -1,0 +1,123 @@
+# scenario 06.8: check-design checks each note that a pull request changes
+# main holds a correct note of 07. The branch notes changes that note, which
+# stays correct, and adds a note of 08 without the section Goal: only the
+# note of 08 is rejected. The branch readme changes no note and passes.
+env GIT_AUTHOR_NAME=Agent GIT_AUTHOR_EMAIL=agent@example.com GIT_COMMITTER_NAME=Agent GIT_COMMITTER_EMAIL=agent@example.com
+cd repo
+exec git init -q -b main
+exec git add -A
+exec git commit -q -m base
+
+exec git checkout -q -b notes main
+cp ../note-07 docs/increments/07-sample/design.md
+mkdir docs/increments/08-later
+cp ../note-08 docs/increments/08-later/design.md
+exec git add -A
+exec git commit -q -m notes
+exitcode 1 factory check-design --base main
+stdout '^check-design: error \S*docs/increments/08-later/design\.md(:\d+)?: missing-section( |$)'
+! stdout 'error \S*07-sample'
+stdout '^check-design: \d+ errors$'
+
+exec git checkout -q -b readme main
+cp ../readme README.md
+exec git commit -q -a -m readme
+exec factory check-design --base main
+stdout '^check-design: ok 0 checked$'
+! stdout ': error '
+
+-- readme --
+# Sample, changed
+-- note-07 --
+# Increment 07: sample
+
+## Goal
+
+- The sample tool of increment 07 works.
+- It also works for a second kind of thing.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 07.1.
+
+## Scenarios
+
+- **scenario 07.1** (automated) **A sample thing works.** Given a sample thing, the tool accepts it.
+-- note-08 --
+# Increment 08: later
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for later tools.
+
+## Interface
+
+- `later run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 08.1.
+
+## Scenarios
+
+- **scenario 08.1** (automated) **A later thing works.** Given a later thing, the tool accepts it.
+-- repo/README.md --
+# Sample
+-- repo/internal/x.go --
+package x
+-- repo/.factory/code-paths --
+internal/**
+-- repo/docs/increments/07-sample/design.md --
+# Increment 07: sample
+
+## Goal
+
+- The sample tool of increment 07 works.
+
+## Out of scope
+
+- Everything else.
+
+## Existing tools
+
+- None found; searched for sample tools.
+
+## Interface
+
+- `sample run`
+
+## Rollout
+
+- Off switch: none. Failure signal: the tool rejects a correct input.
+
+## Evidence
+
+- Approved scenarios: 07.1.
+
+## Scenarios
+
+- **scenario 07.1** (automated) **A sample thing works.** Given a sample thing, the tool accepts it.
