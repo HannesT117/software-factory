@@ -1,11 +1,11 @@
 # Recording of scenario 06.13
 
-`go test -count=1 -v ./test/acceptance/` at e30dda011b555807d757e4a6753d5402b888d486, the latest code commit, with Go 1.25.0 on linux/amd64. The run builds `factory` with `-cover -coverpkg=./...` and gives every script the same `GOCOVERDIR`.
+`go test -count=1 -v ./test/acceptance/` at 16e4808119f0ab47fd9adabffe583e1f021d587b, the latest code commit, with Go 1.25.0 on linux/amd64. The run builds `factory` with `-cover -coverpkg=./...` and gives every script the same `GOCOVERDIR`.
 
 ## The lines of the acceptance run
 
 ```
-acceptance: coverage 85.3% of statements
+acceptance: coverage 85.4% of statements
 acceptance: uncovered internal/report/report.go:44 Warning
 acceptance: uncovered internal/setup/setup.go:62 Error
 acceptance: uncovered internal/skills/skills.go:140 lastLine
@@ -17,7 +17,7 @@ acceptance: uncovered internal/skills/skills.go:140 lastLine
 
 ```
 PASS
-ok  	github.com/HannesT117/software-factory/test/acceptance	3.992s
+ok  	github.com/HannesT117/software-factory/test/acceptance	3.701s
 ```
 
 The patched job `test` runs the same command and prints the lines that start with `acceptance: `, `--- FAIL`, `FAIL` or `ok `.
